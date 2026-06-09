@@ -1,0 +1,142 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: isac2026-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+      - node
+    develop:
+      watch:
+        - action: sync
+          path: ./public
+          target: /var/www/html/public
+        - action: sync
+          path: ./resources
+          target: /var/www/html/resources
+        - action: sync
+          path: ./routes
+          target: /var/www/html/routes
+        - action: sync+restart
+          path: ./docker/nginx/default.conf
+          target: /etc/nginx/conf.d/default.conf
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: isac2026-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    expose:
+      - "9000"
+    volumes:
+      - .:/var/www/html
+      - vendor:/var/www/html/vendor
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: isac2026
+      DB_USERNAME: isac
+      DB_PASSWORD: isac_password
+    command: sh -c "composer install && php-fpm"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /var/www/html/app
+        - action: sync
+          path: ./bootstrap
+          target: /var/www/html/bootstrap
+        - action: sync
+          path: ./config
+          target: /var/www/html/config
+        - action: sync
+          path: ./database
+          target: /var/www/html/database
+        - action: sync
+          path: ./public
+          target: /var/www/html/public
+        - action: sync
+          path: ./resources
+          target: /var/www/html/resources
+        - action: sync
+          path: ./routes
+          target: /var/www/html/routes
+        - action: sync
+          path: ./tests
+          target: /var/www/html/tests
+        - action: sync+restart
+          path: ./.env
+          target: /var/www/html/.env
+        - action: rebuild
+          path: ./Dockerfile
+        - action: rebuild
+          path: ./composer.json
+        - action: rebuild
+          path: ./composer.lock
+
+  node:
+    image: node:22-alpine
+    container_name: isac2026-node
+    restart: unless-stopped
+    working_dir: /var/www/html
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    develop:
+      watch:
+        - action: sync
+          path: ./resources
+          target: /var/www/html/resources
+        - action: sync
+          path: ./public
+          target: /var/www/html/public
+        - action: sync+restart
+          path: ./vite.config.js
+          target: /var/www/html/vite.config.js
+        - action: sync+restart
+          path: ./package.json
+          target: /var/www/html/package.json
+        - action: sync+restart
+          path: ./package-lock.json
+          target: /var/www/html/package-lock.json
+
+  mysql:
+    image: mysql:8.4
+    container_name: isac2026-mysql
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: isac2026
+      MYSQL_USER: isac
+      MYSQL_PASSWORD: isac_password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  vendor:
+  node_modules:
+  mysql_data:

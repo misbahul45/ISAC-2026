@@ -1,0 +1,7 @@
+.git
+node_modules
+vendor
+storage/logs
+.env
+.DS_Store
+repomix-output.xml

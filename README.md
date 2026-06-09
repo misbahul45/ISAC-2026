@@ -1,58 +1,123 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ISAC-2026
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel 13 + React/Inertia + TanStack Query + Vite + MySQL + Nginx + Docker Compose Watch.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 13
+- PHP-FPM
+- Nginx
+- React
+- Inertia.js
+- TanStack Query
+- Vite
+- Tailwind CSS
+- MySQL 8.4
+- Docker Compose Watch
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Development URL
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- App: http://localhost:8080
+- Vite: http://localhost:5173
+- API Status: http://localhost:8080/api/system/status
+- MySQL Host Port: 3307
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Setup
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cp .env.example .env
+docker compose down
+docker compose up --build --watch
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Setelah container berjalan, buat `APP_KEY`:
 
-## Contributing
+```bash
+docker compose exec app php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Database Migration
 
-## Code of Conduct
+```bash
+docker compose exec app php artisan migrate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Jika perlu reset database development:
 
-## Security Vulnerabilities
+```bash
+docker compose exec app php artisan migrate:fresh
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Docker Compose Watch
 
-## License
+Jalankan mode development:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+docker compose up --build --watch
+```
+
+Perilaku watch:
+
+- Perubahan kode Laravel di `app`, `bootstrap`, `config`, `database`, `public`, `resources`, `routes`, dan `tests` akan disinkronkan ke container `app`.
+- Perubahan React/Vite di `resources` dan `public` akan disinkronkan ke container `node`.
+- Perubahan `docker/nginx/default.conf` akan sync dan restart service `nginx`.
+- Perubahan `composer.json`, `composer.lock`, atau `Dockerfile` akan rebuild service `app`.
+- Perubahan `package.json`, `package-lock.json`, atau `vite.config.js` akan sync dan restart service `node`, lalu command `npm install && npm run dev -- --host 0.0.0.0` berjalan ulang.
+- Perubahan `.env` akan sync dan restart service `app`.
+
+## Masuk Container
+
+```bash
+docker compose exec app sh
+docker compose exec node sh
+docker compose exec mysql mysql -uisac -pisac_password isac2026
+```
+
+## Troubleshooting
+
+### Nginx rebuild error
+
+Jika muncul error:
+
+```text
+can't watch service "nginx" with action rebuild without a build context
+```
+
+Pastikan service `nginx` tidak memakai `action: rebuild`. Service `nginx` memakai image langsung `nginx:1.27-alpine`, sehingga perubahan config harus memakai `sync+restart`.
+
+### Docker daemon
+
+Jika Docker command gagal karena daemon belum aktif, jalankan Docker Desktop atau service Docker, lalu ulangi:
+
+```bash
+docker compose ps
+```
+
+### MySQL
+
+MySQL di dalam Docker memakai host `mysql` dan port `3306`. Dari komputer lokal gunakan port `3307`.
+
+Jika koneksi gagal, cek healthcheck dan log:
+
+```bash
+docker compose ps
+docker compose logs mysql
+```
+
+Data MySQL disimpan di volume `mysql_data`, sehingga tetap aman saat container dibuat ulang.
+
+### Vite
+
+Vite tersedia di:
+
+```text
+http://localhost:5173
+```
+
+Jika asset frontend tidak ter-refresh, cek log node:
+
+```bash
+docker compose logs node
+```
+
+Pastikan `npm run dev` berjalan dengan host `0.0.0.0` agar bisa diakses dari host.
