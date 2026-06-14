@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Collection;
 class TodoRepository implements TodoRepositoryInterface
 {
     /**
+     * 
      * @return Collection<int, Todo>
+     * 
      */
     public function allLatest(): Collection
     {
