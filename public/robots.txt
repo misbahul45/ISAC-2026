@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Disallow: /
+
+# Production public example:
+# User-agent: *
+# Allow: /
+# Sitemap: https://your-production-domain.com/sitemap.xml
