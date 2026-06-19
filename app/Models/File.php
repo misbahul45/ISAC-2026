@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class File extends Model
@@ -13,7 +12,6 @@ class File extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
-
     public $incrementing = false;
 
     protected $fillable = [
@@ -28,27 +26,24 @@ class File extends Model
         'metadata',
     ];
 
-    protected static function booted(): void
+    protected function casts(): array
     {
         return [
             'size' => 'integer',
             'metadata' => 'array',
         ];
     }
-
-    public function teamDocuments(): HasMany
+    
+    public function getUrlAttribute(): ?string
     {
-        return $this->hasMany(Team::class, 'document_file_id');
-    }
+        if (! $this->disk || ! $this->path) {
+            return null;
+        }
 
-    public function teamTwibbons(): HasMany
-    {
-        return $this->hasMany(Team::class, 'twibbon_file_id');
-    }
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk($this->disk);
 
-    public function memberPhotos(): HasMany
-    {
-        return $this->hasMany(Member::class, 'photo_file_id');
+        return $disk->url($this->path);
     }
 
     public function registrationPaymentProofs(): HasMany

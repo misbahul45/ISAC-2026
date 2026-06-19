@@ -7,31 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-enum RegistrationStatus: string
-{
-    case DRAFT = 'DRAFT';
-    case PROFILE_INCOMPLETE = 'PROFILE_INCOMPLETE';
-    case MEMBER_INCOMPLETE = 'MEMBER_INCOMPLETE';
-    case REQUIREMENT_INCOMPLETE = 'REQUIREMENT_INCOMPLETE';
-    case WAITING_PAYMENT = 'WAITING_PAYMENT';
-    case WAITING_VERIFICATION = 'WAITING_VERIFICATION';
-    case VERIFIED = 'VERIFIED';
-    case REJECTED = 'REJECTED';
-    case REVISION_REQUIRED = 'REVISION_REQUIRED';
-    case CANCELLED = 'CANCELLED';
-}
-
-enum PaymentMethod: string
-{
-    case BANK_TRANSFER = 'BANK_TRANSFER';
-    case QRIS = 'QRIS';
-}
-
 class Registration extends Model
 {
     use HasFactory, SoftDeletes;
-
-    protected $table = 'registrations';
 
     protected $keyType = 'string';
     public $incrementing = false;
@@ -59,9 +37,6 @@ class Registration extends Model
     protected function casts(): array
     {
         return [
-            'status' => RegistrationStatus::class,
-            'payment_method' => PaymentMethod::class,
-
             'amount_paid' => 'decimal:2',
             'paid_at' => 'datetime',
             'data_validated_at' => 'datetime',
@@ -74,22 +49,22 @@ class Registration extends Model
 
     public function competition(): BelongsTo
     {
-        return $this->belongsTo(Competition::class, 'competition_id', 'id');
+        return $this->belongsTo(Competition::class);
     }
 
     public function batch(): BelongsTo
     {
-        return $this->belongsTo(Batch::class, 'batch_id', 'id');
+        return $this->belongsTo(Batch::class);
     }
 
     public function team(): BelongsTo
     {
-        return $this->belongsTo(Team::class, 'team_id', 'id');
+        return $this->belongsTo(Team::class);
     }
 
     public function paymentProofFile(): BelongsTo
     {
-        return $this->belongsTo(File::class, 'payment_proof_file_id', 'id');
+        return $this->belongsTo(File::class, 'payment_proof_file_id');
     }
 
     public function verifiedBy(): BelongsTo
