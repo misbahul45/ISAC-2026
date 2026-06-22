@@ -58,7 +58,6 @@ class Registration extends Model
         return [
             'status' => RegistrationStatus::class,
             'payment_method' => PaymentMethod::class,
-
             'amount_paid' => 'decimal:2',
             'paid_at' => 'datetime',
             'approved_at' => 'datetime',
