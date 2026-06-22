@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class File extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -27,19 +29,23 @@ class File extends Model
         'metadata',
     ];
 
-    protected function casts(): array
+    protected static function booted(): void
     {
-        return [
-            'size' => 'integer',
-            'metadata' => 'array',
-        ];
+        static::creating(function (File $file) {
+            if (! $file->id) {
+                $file->id = (string) Str::uuid();
+            }
+
+            if (! $file->file_id) {
+                $file->file_id = 'FILE-' . strtoupper(Str::random(10));
+            }
+        });
     }
-    
-    public function getUrlAttribute(): ?string
+
+    public function teamDocuments(): HasMany
     {
-        if (! $this->disk || ! $this->path) {
-            return null;
-        }
+        return $this->hasMany(TeamDocument::class, 'file_id');
+    }
 
     public function registrationPaymentProofs(): HasMany
     {
@@ -54,18 +60,5 @@ class File extends Model
     public function teamTwibbons(): HasMany
     {
         return $this->hasMany(Team::class, 'twibbon_file_id');
-    }
-
-        return $disk->url($this->path);
-    }
-
-    public function registrationPaymentProofs(): HasMany
-    {
-        return $this->hasMany(Registration::class, 'payment_proof_file_id');
-    }
-
-    public function submissions(): HasMany
-    {
-        return $this->hasMany(Submission::class, 'file_id');
     }
 }
