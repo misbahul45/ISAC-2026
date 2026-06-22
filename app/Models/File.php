@@ -4,37 +4,59 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class File extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'original_name', 'stored_name', 'path', 'disk', 'mime_type', 'size', 'collection', 'metadata'
+        'id',
+        'file_id',
+        'url',
     ];
 
-    protected function casts(): array
+    protected static function booted(): void
     {
-        return [
-            'size' => 'integer',
-            'metadata' => 'json',
-        ];
+        static::creating(function (File $file) {
+            if (! $file->id) {
+                $file->id = (string) Str::uuid();
+            }
+
+            if (! $file->file_id) {
+                $file->file_id = 'FILE-' . strtoupper(Str::random(10));
+            }
+        });
     }
-    
-    public function getUrlAttribute(): ?string
+
+    public function teamDocuments(): HasMany
     {
-        if (! $this->disk || ! $this->path) {
-            return null;
-        }
+        return $this->hasMany(Team::class, 'document_file_id');
+    }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk($this->disk);
+    public function teamTwibbons(): HasMany
+    {
+        return $this->hasMany(Team::class, 'twibbon_file_id');
+    }
 
-        return $disk->url($this->path);
+    public function memberPhotos(): HasMany
+    {
+        return $this->hasMany(Member::class, 'photo_file_id');
+    }
+
+    public function registrationPaymentProofs(): HasMany
+    {
+        return $this->hasMany(Registration::class, 'payment_proof_file_id');
+    }
+
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(Submission::class, 'file_id');
     }
 }
