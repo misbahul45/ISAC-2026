@@ -34,6 +34,7 @@ class Registration extends Model
     protected $table = 'registrations';
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -45,7 +46,6 @@ class Registration extends Model
         'status',
         'amount_paid',
         'payment_method',
-        'transaction_id',
         'paid_at',
         'approved_by',
         'approved_at',
