@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\TodoController;
 use Illuminate\Support\Facades\Route;
@@ -26,3 +27,7 @@ Route::patch('/todos/{todo}', [TodoController::class, 'update']);
 Route::delete('/todos/{todo}', [TodoController::class, 'destroy']);
 
 Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+
+Route::prefix('auth')->group(function (): void {
+    Route::post('/register', [AuthController::class, 'register']);
+});
