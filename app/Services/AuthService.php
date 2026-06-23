@@ -54,6 +54,11 @@ class AuthService
         ];
     }
 
+    public function logout(Team $team): void
+    {
+        $team->currentAccessToken()->delete();
+    }
+
     private function generateTeamCode(): string
     {
         $count = Team::withTrashed()->count() + 1;

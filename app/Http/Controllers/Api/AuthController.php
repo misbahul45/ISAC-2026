@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\TeamAuthResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -15,6 +16,21 @@ class AuthController extends Controller
         private readonly AuthService $authService,
     ) {
         //
+    }
+
+    public function logout(Request $request) :JsonResponse
+    {
+        $team = $request->user();
+
+        $this->authService->logout($team);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Logout berhasil',
+            'data' => null,
+            'metadata' => (object) [],
+            'error' => null,
+        ]);
     }
 
     public function login(LoginRequest $request): JsonResponse
