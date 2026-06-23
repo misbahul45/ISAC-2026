@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\InvalidCredentialException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -33,6 +34,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 'error' => [
                     'code' => 'VALIDATION_ERROR',
                     'fields' => $e->errors(),
+                ],
+            ], $e->status);
+        });
+
+        $exceptions->render(function (InvalidCredentialException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'data' => null,
+                'metadata' => (object) [],
+                'error' => [
+                    'code' => 'INVALID_CREDENTIALS',
                 ],
             ], $e->status);
         });

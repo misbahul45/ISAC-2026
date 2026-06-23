@@ -19,4 +19,9 @@ class AuthRepository implements AuthRepositoryInterface
             'status' => $data['status'],
         ]);
     }
+
+    public function findByEmail(string $email): ?Team
+    {
+        return Team::query()->where('email', $email)->first();
+    }
 }
