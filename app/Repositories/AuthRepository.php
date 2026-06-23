@@ -3,9 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\Team;
-use App\Repositories\Contracts\TeamRepositoryInterface;
+use App\Repositories\Contracts\AuthRepositoryInterface;
 
-class TeamRepository implements TeamRepositoryInterface
+class AuthRepository implements AuthRepositoryInterface
 {
     /**
      * @param  array{email: string, password: string, code: string, status: string}  $data
