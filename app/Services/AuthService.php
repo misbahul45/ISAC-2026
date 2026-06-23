@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Models\Team;
-use App\Repositories\Contracts\TeamRepositoryInterface;
+use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
 class AuthService
 {
     public function __construct(
-        private readonly TeamRepositoryInterface $teamRepository,
+        private readonly AuthRepositoryInterface $authRepository,
     ) {
         //
     }
@@ -20,7 +20,7 @@ class AuthService
     public function register(array $data): Team
     {
         return DB::transaction(function () use ($data): Team {
-            return $this->teamRepository->createTeam([
+            return $this->authRepository->createTeam([
                 'email' => $data['email'],
                 'password' => $data['password'],
                 'code' => $this->generateTeamCode(),
