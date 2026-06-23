@@ -12,8 +12,11 @@ class TeamRepository implements TeamRepositoryInterface
      */
     public function update(Team $team, array $data): Team
     {
-        $team->update($data);
-
-        return $team->fresh();
+        return Team::query()->create([
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'code' => $data['code'],
+            'status' => $data['status'],
+        ]);
     }
 }
