@@ -10,4 +10,6 @@ interface AuthRepositoryInterface
      * @param  array{email: string, password: string, code: string, status: string}  $data
      */
     public function createTeam(array $data): Team;
+
+    public function findByEmail(string $email): ?Team;
 }

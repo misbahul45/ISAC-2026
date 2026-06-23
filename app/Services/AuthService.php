@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\InvalidCredentialException;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
@@ -31,14 +33,24 @@ class AuthService
 
     /**
      * @param  array{email: string, password: string}  $credentials
-     * @return array<string, mixed>
+     * @return array{token: string, tokenType: string, team: Team}|null
      */
-    public function login(array $credentials): array
+    public function login(array $credentials): ?array
     {
+        $team = $this->authRepository->findByEmail($credentials['email']);
+
+        if ($team === null || ! Hash::check($credentials['password'], (string) $team->password)) {
+            throw new InvalidCredentialException("Email atau password salah");
+        }
+
+        $team->tokens()->delete();
+
+        $token = $team->createToken('auth-token');
+
         return [
-            'status' => 'success',
-            'message' => 'Login request validated successfully.',
-            'data' => null,
+            'token' => $token->plainTextToken,
+            'tokenType' => 'Bearer',
+            'team' => $team,
         ];
     }
 
