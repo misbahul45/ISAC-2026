@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Team extends Model
 {
-    use Authenticatable, HasApiTokens, HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, SoftDeletes, HasApiTokens, HasUuids, Authenticatable;
 
     protected $keyType = 'string';
     public $incrementing = false;
