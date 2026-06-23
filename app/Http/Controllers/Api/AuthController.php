@@ -24,6 +24,23 @@ class AuthController extends Controller
         //
     }
 
+    public function login(LoginRequest $request): JsonResponse
+    {
+        $result = $this->authService->login($request->validated());
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Login berhasil',
+            'data' => [
+                'token' => $result['token'],
+                'tokenType' => $result['tokenType'],
+                'team' => new TeamAuthResource($result['team']),
+            ],
+            'metadata' => (object) [],
+            'error' => null,
+        ], 200);
+    }
+
     public function register(RegisterRequest $request): JsonResponse
     {
         $team = $this->authService->register($request->validated());
