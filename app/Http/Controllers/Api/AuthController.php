@@ -24,6 +24,21 @@ class AuthController extends Controller
         //
     }
 
+    public function logout(Request $request) :JsonResponse
+    {
+        $team = $request->user();
+
+        $this->authService->logout($team);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Logout berhasil',
+            'data' => null,
+            'metadata' => (object) [],
+            'error' => null,
+        ]);
+    }
+
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login($request->validated());
