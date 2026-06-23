@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Models\Team;
 use App\Repositories\Contracts\TeamRepositoryInterface;
-use Illuminate\Support\Str;
 
 class TeamRepository implements TeamRepositoryInterface
 {
@@ -13,8 +12,7 @@ class TeamRepository implements TeamRepositoryInterface
      */
     public function createTeam(array $data): Team
     {
-        return Team::query()->forceCreate([
-            'id' => Str::uuid()->toString(),
+        return Team::query()->create([
             'email' => $data['email'],
             'password' => $data['password'],
             'code' => $data['code'],
