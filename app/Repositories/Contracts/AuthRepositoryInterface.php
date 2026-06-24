@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Contracts;
 
+use App\Models\PasswordResetCode;
 use App\Models\Team;
 
 interface AuthRepositoryInterface
@@ -12,4 +13,8 @@ interface AuthRepositoryInterface
     public function createTeam(array $data): Team;
 
     public function findByEmail(string $email): ?Team;
+
+    public function createResetCode(array $data): PasswordResetCode;
+
+    public function deleteOldResetCodes(string $email): void;
 }
