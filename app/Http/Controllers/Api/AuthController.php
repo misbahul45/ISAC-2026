@@ -82,6 +82,19 @@ class AuthController extends Controller
         ]);
     }
 
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        $result = $this->authService->forgotPassword($request->validated());
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => 'Kode reset password berhasil dikirim ke email',
+            'data'     => $result,
+            'metadata' => (object) [],
+            'error'    => null,
+        ]);
+    }
+
 
 
     public function register(RegisterRequest $request): JsonResponse
