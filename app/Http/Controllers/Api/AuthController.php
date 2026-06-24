@@ -95,6 +95,19 @@ class AuthController extends Controller
         ]);
     }
 
+    public function verifyCode(VerifyCodeRequest $request): JsonResponse
+    {
+        $result = $this->authService->verifyCode($request->validated());
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => 'Kode berhasil diverifikasi',
+            'data'     => $result,
+            'metadata' => (object) [],
+            'error'    => null,
+        ]);
+    }
+
 
 
     public function register(RegisterRequest $request): JsonResponse
