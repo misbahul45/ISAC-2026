@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\VerifyCodeRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\TeamAuthResource;
 use App\Services\AuthService;
@@ -85,6 +86,19 @@ class AuthController extends Controller
         return response()->json([
             'status'   => 'success',
             'message'  => 'Kode reset password berhasil dikirim ke email',
+            'data'     => $result,
+            'metadata' => (object) [],
+            'error'    => null,
+        ]);
+    }
+
+    public function verifyCode(VerifyCodeRequest $request): JsonResponse
+    {
+        $result = $this->authService->verifyCode($request->validated());
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => 'Kode berhasil diverifikasi',
             'data'     => $result,
             'metadata' => (object) [],
             'error'    => null,

@@ -17,4 +17,8 @@ interface AuthRepositoryInterface
     public function createResetCode(array $data): PasswordResetCode;
 
     public function deleteOldResetCodes(string $email): void;
+
+    public function findValidResetCode(string $email, string $code): ?PasswordResetCode;
+
+    public function markCodeAsVerified(PasswordResetCode $resetCode, string $resetToken): void;
 }

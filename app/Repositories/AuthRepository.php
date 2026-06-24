@@ -36,4 +36,23 @@ class AuthRepository implements AuthRepositoryInterface
         PasswordResetCode::query()->where('email', $email)->delete();
     }
 
+    public function findValidResetCode(string $email, string $code): ?PasswordResetCode
+    {
+        return PasswordResetCode::query()
+            ->where('email', $email)
+            ->where('code', $code)
+            ->whereNull('verified_at')
+            ->whereNull('used_at')
+            ->where('expired_at', '>', now())
+            ->first();
+    }
+
+    public function markCodeAsVerified(PasswordResetCode $resetCode, string $resetToken): void
+    {
+        $resetCode->update([
+            'reset_token' => $resetToken,
+            'verified_at' => now(),
+        ]);
+    }
+
 }
