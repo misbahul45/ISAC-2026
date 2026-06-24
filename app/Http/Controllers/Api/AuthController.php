@@ -108,6 +108,9 @@ class AuthController extends Controller
         ]);
     }
 
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        $this->authService->changePassword($request->validated());
 
 
     public function register(RegisterRequest $request): JsonResponse
