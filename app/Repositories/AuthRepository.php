@@ -55,4 +55,23 @@ class AuthRepository implements AuthRepositoryInterface
         ]);
     }
 
+    public function findValidResetToken(string $resetToken): ?PasswordResetCode
+    {
+        return PasswordResetCode::query()
+            ->where('reset_token', $resetToken)
+            ->whereNotNull('verified_at')
+            ->whereNull('used_at')
+            ->where('expired_at', '>', now())
+            ->first();
+    }
+
+    public function markTokenAsUsed(PasswordResetCode $resetCode): void
+    {
+        $resetCode->update(['used_at' => now()]);
+    }
+
+    public function updateTeamPassword(Team $team, string $password): void
+    {
+        $team->update(['password' => $password]);
+    }
 }

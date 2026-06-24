@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -105,6 +106,16 @@ class AuthController extends Controller
         ]);
     }
 
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        $this->authService->changePassword($request->validated());
 
-
+        return response()->json([
+            'status'   => 'success',
+            'message'  => 'Password berhasil diubah',
+            'data'     => null,
+            'metadata' => (object) [],
+            'error'    => null,
+        ]);
+    }
 }
