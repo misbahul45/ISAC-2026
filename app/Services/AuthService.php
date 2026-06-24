@@ -146,6 +146,21 @@ class AuthService
         return ['email' => $email];
     }
 
+    public function verifyCode(array $data): array
+    {
+        $resetCode = $this->authRepository->findValidResetCode($data['email'], $data['code']);
+
+        if ($resetCode === null) {
+            throw new InvalidResetPasswordException('Kode OTP tidak valid atau sudah kadaluarsa.');
+        }
+
+        $resetToken = Str::random(64);
+
+        $this->authRepository->markCodeAsVerified($resetCode, $resetToken);
+
+        return ['resetToken' => $resetToken];
+    }
+
     private function generateTeamCode(): string
     {
         $count = Team::withTrashed()->count() + 1;
