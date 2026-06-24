@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @property-read Team $resource
  */
-class TeamAuthResource extends JsonResource
+class AuthResource extends JsonResource
 {
     /**
      * @return array<string, mixed>
@@ -20,9 +20,6 @@ class TeamAuthResource extends JsonResource
             'id' => $this->id,
             'code' => $this->code,
             'email' => $this->email,
-            'name' => $this->name,
-            'phone' => $this->phone,
-            'schoolName' => $this->school_name,
             'status' => strtoupper((string) $this->status),
         ];
     }
