@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\PasswordResetCode;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 
@@ -24,4 +25,15 @@ class AuthRepository implements AuthRepositoryInterface
     {
         return Team::query()->where('email', $email)->first();
     }
+
+    public function createResetCode(array $data): PasswordResetCode
+    {
+        return PasswordResetCode::query()->create($data);
+    }
+
+    public function deleteOldResetCodes(string $email): void
+    {
+        PasswordResetCode::query()->where('email', $email)->delete();
+    }
+
 }

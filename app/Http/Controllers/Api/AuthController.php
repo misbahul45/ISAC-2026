@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\AuthResource;
@@ -74,6 +75,19 @@ class AuthController extends Controller
             'data' => null,
             'metadata' => (object) [],
             'error' => null,
+        ]);
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        $result = $this->authService->forgotPassword($request->validated());
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => 'Kode reset password berhasil dikirim ke email',
+            'data'     => $result,
+            'metadata' => (object) [],
+            'error'    => null,
         ]);
     }
 
