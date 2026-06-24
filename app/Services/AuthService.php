@@ -127,6 +127,25 @@ class AuthService
         });
     }
 
+    public function forgotPassword(array $data): array
+    {
+        $email = $data['email'];
+
+        $this->authRepository->deleteOldResetCodes($email);
+
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $this->authRepository->createResetCode([
+            'email'      => $email,
+            'code'       => $code,
+            'expired_at' => now()->addMinutes(5),
+        ]);
+
+        Mail::to($email)->send(new ResetPasswordMail($code));
+
+        return ['email' => $email];
+    }
+
     private function generateTeamCode(): string
     {
         $count = Team::withTrashed()->count() + 1;
