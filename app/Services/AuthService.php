@@ -161,6 +161,27 @@ class AuthService
         return ['resetToken' => $resetToken];
     }
 
+    public function changePassword(array $data): void
+    {
+        $resetCode = $this->authRepository->findValidResetToken($data['resetToken']);
+
+        if ($resetCode === null) {
+            throw new InvalidResetPasswordException('Sesi tidak valid atau sudah kadaluarsa.');
+        }
+
+        $team = $this->authRepository->findByEmail($resetCode->email);
+
+        if ($team === null) {
+            throw new InvalidResetPasswordException('Team tidak ditemukan.');
+        }
+
+        DB::transaction(function () use ($team, $resetCode, $data): void {
+            $this->authRepository->updateTeamPassword($team, $data['password']);
+            $this->authRepository->markTokenAsUsed($resetCode);
+            $team->tokens()->delete();
+        });
+    }
+
     private function generateTeamCode(): string
     {
         $count = Team::withTrashed()->count() + 1;
