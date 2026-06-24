@@ -13,7 +13,6 @@ class PasswordResetCode extends Model
     protected $fillable = [
         'email',
         'code',
-        'type',
         'reset_token',
         'expired_at',
         'verified_at',
