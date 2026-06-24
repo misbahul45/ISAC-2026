@@ -33,6 +33,7 @@ Route::prefix('auth')->group(function (): void {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/verify-code', [AuthController::class, 'verifyCode']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout']);

@@ -21,4 +21,10 @@ interface AuthRepositoryInterface
     public function findValidResetCode(string $email, string $code): ?PasswordResetCode;
 
     public function markCodeAsVerified(PasswordResetCode $resetCode, string $resetToken): void;
+
+    public function findValidResetToken(string $resetToken): ?PasswordResetCode;
+
+    public function markTokenAsUsed(PasswordResetCode $resetCode): void;
+
+    public function updateTeamPassword(Team $team, string $hashedPassword): void;
 }
