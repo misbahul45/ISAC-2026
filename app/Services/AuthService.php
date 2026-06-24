@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use App\Exceptions\InvalidCredentialException;
+use App\Exceptions\InvalidResetPasswordException;
 use App\Mail\ResetPasswordMail;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthService
 {
@@ -78,6 +80,21 @@ class AuthService
         Mail::to($email)->send(new ResetPasswordMail($code));
 
         return ['email' => $email];
+    }
+
+    public function verifyCode(array $data): array
+    {
+        $resetCode = $this->authRepository->findValidResetCode($data['email'], $data['code']);
+
+        if ($resetCode === null) {
+            throw new InvalidResetPasswordException('Kode OTP tidak valid atau sudah kadaluarsa.');
+        }
+
+        $resetToken = Str::random(64);
+
+        $this->authRepository->markCodeAsVerified($resetCode, $resetToken);
+
+        return ['resetToken' => $resetToken];
     }
 
     private function generateTeamCode(): string

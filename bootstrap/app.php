@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\InvalidCredentialException;
+use App\Exceptions\InvalidResetPasswordException;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -46,6 +47,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 'metadata' => (object) [],
                 'error' => [
                     'code' => 'INVALID_CREDENTIALS',
+                ],
+            ], $e->status);
+        });
+
+        $exceptions->render(function (InvalidResetPasswordException $e) {
+            return response()->json([
+                'status'   => 'error',
+                'message'  => $e->getMessage(),
+                'data'     => null,
+                'metadata' => (object) [],
+                'error'    => [
+                    'code' => 'INVALID_RESET_TOKEN',
                 ],
             ], $e->status);
         });
