@@ -6,5 +6,11 @@ use Exception;
 
 class InvalidResetPasswordException extends Exception
 {
-    public $status = 422;
+    public function __construct(
+        string $message,
+        public string $errorCode,
+        public int $status = 422)
+    {
+        parent::__construct($message);
+    }
 }

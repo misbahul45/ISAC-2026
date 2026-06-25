@@ -58,7 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'data'     => null,
                 'metadata' => (object) [],
                 'error'    => [
-                    'code' => 'INVALID_RESET_TOKEN',
+                    'code' => $e->errorCode,
                 ],
             ], $e->status);
         });

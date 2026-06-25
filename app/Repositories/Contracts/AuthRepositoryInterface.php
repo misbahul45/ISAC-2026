@@ -26,5 +26,5 @@ interface AuthRepositoryInterface
 
     public function markTokenAsUsed(PasswordResetCode $resetCode): void;
 
-    public function updateTeamPassword(Team $team, string $hashedPassword): void;
+    public function updateTeamPassword(Team $team, string $password): void;
 }

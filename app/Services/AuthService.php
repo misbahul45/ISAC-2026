@@ -87,7 +87,7 @@ class AuthService
         $resetCode = $this->authRepository->findValidResetCode($data['email'], $data['code']);
 
         if ($resetCode === null) {
-            throw new InvalidResetPasswordException('Kode OTP tidak valid atau sudah kadaluarsa.');
+            throw new InvalidResetPasswordException('Kode OTP tidak valid atau sudah kadaluarsa.', 'INVALID_OTP');
         }
 
         $resetToken = Str::random(64);
@@ -102,13 +102,13 @@ class AuthService
         $resetCode = $this->authRepository->findValidResetToken($data['resetToken']);
 
         if ($resetCode === null) {
-            throw new InvalidResetPasswordException('Sesi tidak valid atau sudah kadaluarsa.');
+            throw new InvalidResetPasswordException('Sesi tidak valid atau sudah kadaluarsa.', 'INVALID_RESET_TOKEN');
         }
 
         $team = $this->authRepository->findByEmail($resetCode->email);
 
         if ($team === null) {
-            throw new InvalidResetPasswordException('Team tidak ditemukan.');
+            throw new InvalidResetPasswordException('Team tidak ditemukan.', 'INVALID_RESET_TOKEN');
         }
 
         DB::transaction(function () use ($team, $resetCode, $data): void {
