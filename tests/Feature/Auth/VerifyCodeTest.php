@@ -65,7 +65,7 @@ test('verify code rejects expired otp', function (): void {
 
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
-        ->assertJsonPath('error.code', 'INVALID_RESET_TOKEN');
+        ->assertJsonPath('error.code', 'INVALID_OTP');
 });
 
 test('verify code rejects already verified otp', function (): void {
@@ -85,7 +85,7 @@ test('verify code rejects already verified otp', function (): void {
 
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
-        ->assertJsonPath('error.code', 'INVALID_RESET_TOKEN');
+        ->assertJsonPath('error.code', 'INVALID_OTP');
 });
 
 test('verify code rejects already used otp', function (): void {
@@ -105,7 +105,7 @@ test('verify code rejects already used otp', function (): void {
 
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
-        ->assertJsonPath('error.code', 'INVALID_RESET_TOKEN');
+        ->assertJsonPath('error.code', 'INVALID_OTP');
 });
 
 test('verify code rejects wrong code', function (): void {
@@ -124,7 +124,7 @@ test('verify code rejects wrong code', function (): void {
 
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
-        ->assertJsonPath('error.code', 'INVALID_RESET_TOKEN');
+        ->assertJsonPath('error.code', 'INVALID_OTP');
 });
 
 test('verify code rejects missing email and code', function (): void {
