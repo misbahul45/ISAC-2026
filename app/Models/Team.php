@@ -15,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Team extends Model
 {
-    use HasFactory, SoftDeletes, HasApiTokens, HasUuids, Authenticatable;
+    use Authenticatable, HasApiTokens, HasFactory, HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
 
