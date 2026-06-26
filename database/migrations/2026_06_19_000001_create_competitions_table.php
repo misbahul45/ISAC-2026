@@ -13,6 +13,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            $table->enum('type', ['olympiad', 'business_plan', 'business_it_case'])->default('olympiad');
+            $table->enum('payment_flow', ['upfront', 'semifinal'])->default('upfront');
             $table->date('start_date');
             $table->date('end_date');
             $table->enum('status', ['draft', 'registration_open', 'registration_closed', 'ongoing', 'completed'])->default('draft');

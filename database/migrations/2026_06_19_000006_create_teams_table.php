@@ -20,7 +20,22 @@ return new class extends Migration
             $table->foreignUuid('document_file_id')->nullable()->constrained('files')->nullOnDelete();
             $table->foreignUuid('twibbon_file_id')->nullable()->constrained('files')->nullOnDelete();
             $table->foreignUuid('current_stage_id')->nullable()->constrained('stages')->nullOnDelete();
-            $table->enum('status', ['registered', 'verified', 'disqualified', 'completed'])->default('registered');
+            $table->enum('status', [
+                'EMAIL_UNVERIFIED',
+                'ACTIVE',
+                'COMPETITION_NOT_SELECTED',
+                'BATCH_NOT_SELECTED',
+                'PROFILE_INCOMPLETE',
+                'MEMBER_INCOMPLETE',
+                'REQUIREMENT_INCOMPLETE',
+                'WAITING_PAYMENT',
+                'WAITING_VERIFICATION',
+                'VERIFIED',
+                'REVISION_REQUIRED',
+                'REJECTED',
+                'SUSPENDED',
+                'DISQUALIFIED',
+            ])->default('EMAIL_UNVERIFIED');
             $table->timestamp('verified_at')->nullable();
             $table->foreignUuid('verified_by')->nullable()->constrained('admins')->nullOnDelete();
             $table->timestamps();

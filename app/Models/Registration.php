@@ -47,8 +47,11 @@ class Registration extends Model
         'payment_method',
         'transaction_id',
         'paid_at',
-        'approved_by',
-        'approved_at',
+        'data_validated_at',
+        'payment_initiated_at',
+        'auto_verified_at',
+        'verified_by',
+        'verified_at',
         'rejection_reason',
         'metadata',
     ];
@@ -61,7 +64,10 @@ class Registration extends Model
 
             'amount_paid' => 'decimal:2',
             'paid_at' => 'datetime',
-            'approved_at' => 'datetime',
+            'data_validated_at' => 'datetime',
+            'payment_initiated_at' => 'datetime',
+            'auto_verified_at' => 'datetime',
+            'verified_at' => 'datetime',
             'metadata' => 'array',
         ];
     }
@@ -86,8 +92,8 @@ class Registration extends Model
         return $this->belongsTo(File::class, 'payment_proof_file_id', 'id');
     }
 
-    public function approvedBy(): BelongsTo
+    public function verifiedBy(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'approved_by', 'id');
+        return $this->belongsTo(Admin::class, 'verified_by', 'id');
     }
 }

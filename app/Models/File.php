@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class File extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
 
@@ -18,21 +18,22 @@ class File extends Model
 
     protected $fillable = [
         'id',
-        'file_id',
-        'url',
+        'original_name',
+        'stored_name',
+        'path',
+        'disk',
+        'mime_type',
+        'size',
+        'collection',
+        'metadata',
     ];
 
-    protected static function booted(): void
+    protected function casts(): array
     {
-        static::creating(function (File $file) {
-            if (! $file->id) {
-                $file->id = (string) Str::uuid();
-            }
-
-            if (! $file->file_id) {
-                $file->file_id = 'FILE-' . strtoupper(Str::random(10));
-            }
-        });
+        return [
+            'size' => 'integer',
+            'metadata' => 'array',
+        ];
     }
 
     public function teamDocuments(): HasMany
