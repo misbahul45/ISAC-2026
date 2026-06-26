@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class File extends Model
 {
@@ -29,17 +28,12 @@ class File extends Model
         'metadata',
     ];
 
-    protected static function booted(): void
+    protected function casts(): array
     {
-        static::creating(function (File $file) {
-            if (! $file->id) {
-                $file->id = (string) Str::uuid();
-            }
-
-            if (! $file->file_id) {
-                $file->file_id = 'FILE-' . strtoupper(Str::random(10));
-            }
-        });
+        return [
+            'size' => 'integer',
+            'metadata' => 'array',
+        ];
     }
 
     public function teamDocuments(): HasMany
