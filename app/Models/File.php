@@ -18,11 +18,17 @@ class File extends Model
 
     protected $fillable = [
         'id',
-        'file_id',
-        'url',
+        'original_name',
+        'stored_name',
+        'path',
+        'disk',
+        'mime_type',
+        'size',
+        'collection',
+        'metadata',
     ];
 
-    protected static function booted(): void
+    protected function casts(): array
     {
         return [
             'size' => 'integer',
