@@ -19,7 +19,6 @@ class Batch extends Model
 
     public $incrementing = false;
 
-    public $incrementing = false;
 
     protected $fillable = [
         'id',
