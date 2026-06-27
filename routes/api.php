@@ -34,6 +34,8 @@ Route::prefix('auth')->group(function (): void {
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/verify-code', [AuthController::class, 'verifyCode']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::post('/send-verification', [AuthController::class, 'sendVerification']);
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout']);

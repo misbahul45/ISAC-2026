@@ -75,4 +75,28 @@ class AuthRepository implements AuthRepositoryInterface
     {
         $team->update(['password' => $password]);
     }
+
+    public function deleteOldVerificationCodes(string $email): void
+    {
+        PasswordResetCode::query()
+            ->where('email', $email)
+            ->where('type', 'verify_email')
+            ->delete();
+    }
+
+    public function findValidVerificationCode(string $email, string $code): ?PasswordResetCode
+    {
+        return PasswordResetCode::query()
+            ->where('email', $email)
+            ->where('code', $code)
+            ->where('type', 'verify_email')
+            ->whereNull('used_at')
+            ->where('expired_at', '>', now())
+            ->first();
+    }
+
+    public function updateTeamStatus(Team $team, string $status): void
+    {
+        $team->update(['status' => $status]);
+    }
 }
