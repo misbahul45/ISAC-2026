@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\SendVerificationRequest;
+use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Http\Requests\VerifyCodeRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\TeamAuthResource;
@@ -24,12 +26,16 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $team = $this->authService->register($request->validated());
+        $result = $this->authService->register($request->validated());
 
         return response()->json([
             'status' => 'success',
             'message' => 'Akun team berhasil dibuat',
-            'data' => new AuthResource($team),
+            'data' => [
+                'token' => $result['token'],
+                'tokenType' => $result['tokenType'],
+                'team' => new AuthResource($result['team']),
+            ],
             'metadata' => (object) [],
             'error' => null,
         ], 201);
