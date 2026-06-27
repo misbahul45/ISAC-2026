@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\InvalidCredentialException;
 use App\Exceptions\InvalidResetPasswordException;
 use App\Mail\ResetPasswordMail;
+use App\Mail\VerifyEmailMail;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\DB;
@@ -22,17 +23,30 @@ class AuthService
 
     /**
      * @param  array{email: string, password: string}  $data
+     * @return array{token: string, tokenType: string, team: Team}
      */
-    public function register(array $data): Team
+    public function register(array $data): array
     {
-        return DB::transaction(function () use ($data): Team {
-            return $this->authRepository->createTeam([
+        $result = DB::transaction(function () use ($data): array {
+            $team = $this->authRepository->createTeam([
                 'email' => $data['email'],
                 'password' => $data['password'],
                 'code' => $this->generateTeamCode(),
-                'status' => 'registered',
+                'status' => Team::STATUS_EMAIL_UNVERIFIED,
             ]);
+
+            $token = $team->createToken('auth_token');
+
+            return [
+                'token' => $token->plainTextToken,
+                'tokenType' => 'Bearer',
+                'team' => $team,
+            ];
         });
+
+        $this->sendVerificationCode(['email' => $result['team']->email]);
+
+        return $result;
     }
 
     /**
@@ -45,6 +59,10 @@ class AuthService
 
         if ($team === null || ! Hash::check($credentials['password'], (string) $team->password)) {
             throw new InvalidCredentialException("Email atau password salah");
+        }
+
+        if ($team->status === Team::STATUS_EMAIL_UNVERIFIED) {
+            throw new InvalidCredentialException("Email belum diverifikasi. Silakan cek email kamu.");
         }
 
         $team->tokens()->delete();
@@ -60,7 +78,7 @@ class AuthService
 
     public function logout(Team $team): void
     {
-        $team->currentAccessToken()->delete();
+        $team->currentAccessToken()?->delete();
     }
 
     public function forgotPassword(array $data): array
@@ -123,5 +141,62 @@ class AuthService
         $count = Team::withTrashed()->count() + 1;
 
         return 'ISAC-TM-'.str_pad((string) $count, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * @param  array{email: string}  $data
+     */
+    public function sendVerificationCode(array $data): void
+    {
+        $email = $data['email'];
+
+        $team = $this->authRepository->findByEmail($email);
+
+        if ($team === null) {
+            throw new InvalidCredentialException('Email tidak ditemukan.');
+        }
+
+        if ($team->status !== Team::STATUS_EMAIL_UNVERIFIED) {
+            throw new InvalidCredentialException('Email sudah diverifikasi.');
+        }
+
+        $this->authRepository->deleteOldVerificationCodes($email);
+
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $this->authRepository->createResetCode([
+            'email'      => $email,
+            'code'       => $code,
+            'type'       => 'verify_email',
+            'expired_at' => now()->addMinutes(5),
+        ]);
+
+        Mail::to($email)->send(new VerifyEmailMail($code));
+    }
+
+    /**
+     * @param  array{email: string, code: string}  $data
+     */
+    public function verifyEmail(array $data): void
+    {
+        $resetCode = $this->authRepository->findValidVerificationCode(
+            $data['email'],
+            $data['code'],
+        );
+
+        if ($resetCode === null) {
+            throw new InvalidCredentialException('Kode verifikasi tidak valid atau sudah kadaluarsa.');
+        }
+
+        $team = $this->authRepository->findByEmail($data['email']);
+
+        if ($team === null) {
+            throw new InvalidCredentialException('Team tidak ditemukan.');
+        }
+
+        DB::transaction(function () use ($team, $resetCode): void {
+            $this->authRepository->markTokenAsUsed($resetCode);
+            $this->authRepository->updateTeamStatus($team, Team::STATUS_ACTIVE);
+        });
     }
 }

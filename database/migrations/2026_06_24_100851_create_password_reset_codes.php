@@ -13,6 +13,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('email')->index();
             $table->string('code', 6);
+            $table->enum('type', ['reset_password', 'verify_email'])->default('reset_password');
             $table->string('reset_token')->nullable()->unique();
             $table->timestamp('expired_at');
             $table->timestamp('verified_at')->nullable();
