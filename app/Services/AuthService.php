@@ -23,30 +23,21 @@ class AuthService
 
     /**
      * @param  array{email: string, password: string}  $data
-     * @return array{token: string, tokenType: string, team: Team}
      */
-    public function register(array $data): array
+    public function register(array $data): Team
     {
-        $result = DB::transaction(function () use ($data): array {
-            $team = $this->authRepository->createTeam([
+        $team = DB::transaction(function () use ($data): Team {
+            return $this->authRepository->createTeam([
                 'email' => $data['email'],
                 'password' => $data['password'],
                 'code' => $this->generateTeamCode(),
                 'status' => Team::STATUS_EMAIL_UNVERIFIED,
             ]);
-
-            $token = $team->createToken('auth_token');
-
-            return [
-                'token' => $token->plainTextToken,
-                'tokenType' => 'Bearer',
-                'team' => $team,
-            ];
         });
 
-        $this->sendVerificationCode(['email' => $result['team']->email]);
+        $this->sendVerificationCode(['email' => $team->email]);
 
-        return $result;
+        return $team;
     }
 
     /**
