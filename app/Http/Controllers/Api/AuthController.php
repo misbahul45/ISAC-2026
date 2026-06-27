@@ -26,16 +26,12 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $result = $this->authService->register($request->validated());
+        $team = $this->authService->register($request->validated());
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Akun team berhasil dibuat',
-            'data' => [
-                'token' => $result['token'],
-                'tokenType' => $result['tokenType'],
-                'team' => new AuthResource($result['team']),
-            ],
+            'message' => 'Akun team berhasil dibuat. Silakan cek email kamu untuk kode verifikasi.',
+            'data' => new AuthResource($team),
             'metadata' => (object) [],
             'error' => null,
         ], 201);
