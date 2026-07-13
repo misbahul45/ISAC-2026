@@ -6,6 +6,8 @@ info:
 collections:
   - name: "Untitled Collection"
     path: "collections/Untitled Collection"
+  - name: "Team"
+    path: "collections/Team"
 
 specs:
 

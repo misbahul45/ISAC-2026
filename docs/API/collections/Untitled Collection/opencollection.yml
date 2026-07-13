@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: AUTH
+  name: Auth
 config:
   proxy:
     inherit: true
