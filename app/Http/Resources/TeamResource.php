@@ -24,6 +24,8 @@ class TeamResource extends JsonResource
             'phone' => $this->phone,
             'schoolName' => $this->school_name,
             'schoolAddress' => $this->school_address,
+            'documentFileId' => $this->document_file_id,
+            'twibbonFileId' => $this->twibbon_file_id,
             'status' => strtoupper((string) $this->status),
             'verifiedAt' => $this->verified_at?->toISOString(),
         ];

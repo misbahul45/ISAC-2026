@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TodoController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,11 @@ Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 Route::prefix('teams')->middleware('auth:sanctum')->group(function (): void {
     Route::get('/me', [TeamController::class, 'show']);
     Route::patch('/me', [TeamController::class, 'update']);
+});
+
+Route::prefix('files')->middleware('auth:sanctum')->group(function (): void {
+    Route::post('/', [FileController::class, 'store']);
+    Route::get('/{file}', [FileController::class, 'show'])->name('files.show');
 });
 
 Route::prefix('auth')->group(function (): void {
