@@ -3,13 +3,19 @@ import { cn } from '@/lib/utils'
 import React, { useRef } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
+import { Link, usePage } from '@inertiajs/react'
 
 gsap.registerPlugin(useGSAP)
 
-
+const getStepPath = (index: number, name: string) =>
+  index === 0 ? '/registration' : `/registration/${name.toLowerCase()}`
 
 const Steps = () => {
-  const [currentStep, setCurrentStep] = React.useState(1)
+  const { url } = usePage()
+  const pathname = url.split('?')[0]
+
+  const rawStep = REGISTRATION_STEPS.findIndex((step, index) => pathname === getStepPath(index, step.name))
+  const currentStep = rawStep === -1 ? 0 : rawStep
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const circleRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -46,8 +52,6 @@ const Steps = () => {
       if (!hasMounted.current) return
 
       REGISTRATION_STEPS.forEach((step, index) => {
-        const active = currentStep >= index
-
         const circle = circleRefs.current[index]
         if (circle) {
           gsap.to(circle, {
@@ -72,22 +76,34 @@ const Steps = () => {
               currentStep >= index && 'text-primary-foreground'
             )}
           >
-            <div
-              onClick={() => setCurrentStep(index)}
-              ref={(el) => {
-                circleRefs.current[index] = el
+            <Link
+              href={getStepPath(index, step.name)}
+              onClick={(e) => {
+                if (currentStep < index) {
+                  e.preventDefault()
+                }
               }}
               className={cn(
-                'p-8 border-4 border-gray-400 rounded-full transition-colors duration-300 cursor-pointer',
-                currentStep >= index && 'border-primary-foreground bg-primary shadow-2xl shadow-white'
+                'flex items-center justify-center',
+                currentStep >= index ? 'cursor-pointer' : 'cursor-not-allowed'
               )}
             >
-              {step.icon && <step.icon size={24} />}
-            </div>
+              <div
+                ref={(el) => {
+                  circleRefs.current[index] = el
+                }}
+                className={cn(
+                  'p-8 border-4 border-gray-400 rounded-full transition-colors duration-300',
+                  currentStep >= index && 'border-primary-foreground bg-primary shadow-2xl shadow-white'
+                )}
+              >
+                {step.icon && <step.icon size={24} />}
+              </div>
+            </Link>
             <div>{step.name}</div>
           </div>
 
-          {index !== 4 && (
+          {index !== REGISTRATION_STEPS.length - 1 && (
             <div
               ref={(el) => {
                 lineRefs.current[index] = el
