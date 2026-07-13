@@ -4,8 +4,10 @@ info:
   type: workspace
 
 collections:
-  - name: "Untitled Collection"
-    path: "collections/Untitled Collection"
+  - name: "Auth"
+    path: "collections/Auth"
+  - name: "Team"
+    path: "collections/Team"
 
 specs:
 
