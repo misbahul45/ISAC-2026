@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: AUTH
+  name: Auth
 config:
   proxy:
     inherit: true
@@ -19,3 +19,6 @@ extensions:
     ignore:
       - node_modules
       - .git
+    presets:
+      request:
+        type: http

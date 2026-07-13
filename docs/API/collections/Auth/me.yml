@@ -1,0 +1,22 @@
+info:
+  name: me
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: http://127.0.0.1:8000/api/auth/me
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
