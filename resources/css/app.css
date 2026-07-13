@@ -12,7 +12,6 @@
   --font-sans: "Geom", ui-sans-serif, system-ui, sans-serif;
 }
 
-
 @theme inline {
     --font-heading: var(--font-sans);
     --color-sidebar-ring: var(--sidebar-ring);
