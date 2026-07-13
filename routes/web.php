@@ -69,6 +69,13 @@ Route::get('/todos', function () {
     ]);
 })->name('todos.page');
 
+
+Route::get('/registration', function () {
+    return Inertia::render('Registration/Index', [
+        'title' => 'Registration',
+    ]);
+})->name('registration.index');
+
 Route::fallback(function () {
     return Inertia::render('Errors/NotFound')
         ->toResponse(request())
