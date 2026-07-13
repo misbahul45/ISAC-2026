@@ -40,18 +40,18 @@ export const COMPETITIONS = [
     id: "OLIMPIADE",
     name: "OLIMPIADE",
     description:
-      "Kompetisi akademik yang menguji kemampuan peserta dalam menyelesaikan soal-soal sesuai bidang yang dilombakan.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   },
   {
     id: "BUSINESS_PLAN",
     name: "BUSINESS PLAN",
     description:
-      "Kompetisi penyusunan proposal bisnis inovatif yang berfokus pada solusi, kelayakan, dan keberlanjutan usaha.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   },
   {
     id: "BUSINESS_IT_CASE",
     name: "BUSINESS IT CASE",
     description:
-      "Kompetisi analisis dan pemecahan studi kasus bisnis berbasis teknologi informasi dengan solusi yang aplikatif.",
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   },
 ] as const;

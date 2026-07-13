@@ -7,7 +7,7 @@ import { ROUTES } from '@/constants/routes';
 export default function NotFound() {
     return (
         <>
-            <Head title="404" />
+            <Head title="404 - Halaman Tidak Ditemukan" />
 
             <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
                 <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-3xl items-center justify-center">
@@ -20,15 +20,16 @@ export default function NotFound() {
                             <section className="space-y-6">
                                 <div className="space-y-3">
                                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-700">
-                                        404
+                                        404 · ISAC 2026
                                     </p>
                                     <div className="space-y-2">
                                         <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
                                             Halaman tidak ditemukan
                                         </h1>
                                         <p className="max-w-xl text-sm leading-6 text-slate-600">
-                                            URL yang kamu buka tidak tersedia, sudah dipindahkan,
-                                            atau tidak termasuk route aplikasi ISAC 2026.
+                                            Halaman yang kamu buka tidak tersedia, sudah dipindahkan,
+                                            atau kamu belum memiliki akses ke halaman ini. Pastikan
+                                            akun Team atau Admin kamu sudah login, lalu coba lagi.
                                         </p>
                                     </div>
                                 </div>
@@ -44,16 +45,17 @@ export default function NotFound() {
                                         Ke Dashboard
                                     </Link>
 
-                                    <Link
-                                        href={ROUTES.todos}
+                                    <button
+                                        type="button"
+                                        onClick={() => window.history.back()}
                                         className={buttonVariants({
                                             variant: 'outline',
-                                            className: 'rounded-lg',
+                                            className: 'rounded-lg text-white',
                                         })}
                                     >
                                         <ArrowLeft className="size-4" />
-                                        Buka Todos
-                                    </Link>
+                                        Kembali
+                                    </button>
                                 </div>
                             </section>
                         </CardContent>
