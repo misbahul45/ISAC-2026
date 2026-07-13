@@ -113,6 +113,7 @@
     --chart-3: #9DFF4A;
     --chart-4: #FEFEFE;
     --chart-5: #5B3FBF;
+    --radius: 0.625rem;
     --sidebar: #171B3B;
     --sidebar-foreground: #FEFEFE;
     --sidebar-primary: #8B5CFF;
@@ -134,4 +135,3 @@
     @apply font-sans;
   }
 }
- 
