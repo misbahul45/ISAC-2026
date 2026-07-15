@@ -1,0 +1,37 @@
+info:
+  name: me-show
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://127.0.0.1:8000/api/teams/me
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/teams/me — TeamController@show
+  - **Deskripsi**: Profil lengkap team terautentikasi.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:34`.
+  - **Request**: Header `Authorization: Bearer <token>`.
+  - **Alur Proses**: `new TeamResource($request->user())`
+    (`TeamController.php:20-29`, `app/Http/Resources/TeamResource.php`).
+  - **Database yang Terkena**: `teams` — SELECT (Auth::user()).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `TeamResource` → id, code, email, name, phone,
+    schoolName(school_name), schoolAddress(school_address),
+    documentFileId(document_file_id), twibbonFileId(twibbon_file_id),
+    status(uppercase), verifiedAt(verified_at→ISOString).
+  - **Catatan**: Tidak ada.

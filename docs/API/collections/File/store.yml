@@ -1,0 +1,54 @@
+info:
+  name: store
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://127.0.0.1:8000/api/files
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: formUrlEncoded
+    data:
+      - name: collection
+        value: documents
+  auth:
+    type: bearer
+    token: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/files — FileController@store
+  - **Deskripsi**: Upload file (pdf/jpg/jpeg/png, maks 5 MB) ke disk `local`,
+    simpan metadata ke tabel `files`.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:39`.
+  - **Request** (validasi `StoreFileRequest`,
+    `app/Http/Requests/File/StoreFileRequest.php:17-22`):
+    - `file`: required, file, max:5120 (KB), mimes:pdf,jpg,jpeg,png
+    - `collection`: sometimes, nullable, string, max:100
+    (Catatan: di Bruno, set body type `multipartFormData` dan lampirkan file
+    pada field `file`; di sini `collection` ditulis sebagai contoh.)
+  - **Alur Proses** (`FileService::upload`, `app/Services/FileService.php:20-36`):
+    1. `storedName = Str::uuid().'.'.$clientExt`.
+    2. `folder = $collection ?: 'uploads'`.
+    3. `$file->storeAs($folder, $storedName, 'local')` →
+       `storage/app/private/{folder}/{storedName}`
+       (disk `local` root = `storage/app/private`, `config/filesystems.php:33-39`).
+    4. `fileRepository->create([...])` (`app/Repositories/FileRepository.php:13-16`).
+  - **Database yang Terkena**: `files` — INSERT (`original_name`, `stored_name`,
+    `path`, `disk='local'`, `mime_type`, `size`, `collection`). Migrasi
+    `..._000003_create_files_table.php:11-26`.
+  - **Efek Samping**: Menulis file fisik ke `storage/app/private`.
+  - **Response** (201): `{status:'success', message:'File uploaded successfully.',
+    data: FileResource, metadata:{}, error:null}`. `FileResource`
+    (`app/Http/Resources/FileResource.php`) menyertakan `url = route('files.show', $id)`.
+  - **Catatan**: Tidak ada.

@@ -25,3 +25,23 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |-
+  #### POST /api/auth/login — AuthController@login
+  - **Deskripsi**: Autentikasi team, terbitkan Sanctum token (Bearer).
+  - **Middleware & Auth**: Publik + `throttle:5,1` (maks 5 req/menit per IP).
+    Sumber: `routes/api.php:45`.
+  - **Request** (`LoginRequest.php:17-23`): `email` required/email;
+    `password` required/string.
+  - **Alur Proses** (`AuthService::login`, `app/Services/AuthService.php:47-68`):
+    findByEmail → Hash::check (gagal → InvalidCredentialException) → cek status
+    `EMAIL_UNVERIFIED` (gagal → InvalidCredentialException) → `tokens()->delete()`
+    → `createToken('auth-token')`.
+  - **Database**: `teams` SELECT; `personal_access_tokens` DELETE (token lama) +
+    INSERT. Migrasi `..._235056_create_personal_access_tokens_table.php`.
+  - **Efek Samping**: hapus seluruh Sanctum token team (force re-login semua device).
+  - **Response** (200): `{token, tokenType:'Bearer', team: AuthResource}`.
+    (401) `INVALID_CREDENTIALS`; (422) `VALIDATION_ERROR`.
+  - **Catatan**: ⚠️ `throttle:5,1` mengembalikan 429 tanpa envelope kustom
+    (Lampiran B #6).
+

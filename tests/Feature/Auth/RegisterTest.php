@@ -16,9 +16,9 @@ test('register creates a team on valid payload', function (): void {
 
     $response->assertCreated()
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('message', 'Akun team berhasil dibuat')
+        ->assertJsonPath('message', 'Akun team berhasil dibuat. Silakan cek email kamu untuk kode verifikasi.')
         ->assertJsonPath('data.email', 'team.alpha@gmail.com')
-        ->assertJsonPath('data.status', 'REGISTERED')
+        ->assertJsonPath('data.status', 'EMAIL_UNVERIFIED')
         ->assertJsonStructure(['data' => ['id', 'code', 'email', 'status']]);
 
     $this->assertDatabaseHas('teams', ['email' => 'team.alpha@gmail.com']);

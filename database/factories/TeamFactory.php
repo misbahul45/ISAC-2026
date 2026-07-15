@@ -26,7 +26,7 @@ class TeamFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => bcrypt('Password123!'),
             'code' => 'ISAC-TM-'.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT),
-            'status' => 'registered',
+            'status' => Team::STATUS_ACTIVE,
         ];
     }
 }

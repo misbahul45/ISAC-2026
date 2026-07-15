@@ -1,0 +1,34 @@
+info:
+  name: destroy
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: http://127.0.0.1:8000/api/todos/{{todo_id}}
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### DELETE /api/todos/{todo} — TodoController@destroy
+  - **Deskripsi**: Hapus todo (hard delete).
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:29`.
+  - **Request**: hanya `{todo}` di path.
+  - **Alur Proses**: `todoService->deleteTodo` → `todoRepository->delete` →
+    `$todo->delete()` (`app/Services/TodoService.php:44-47`,
+    `app/Repositories/TodoRepository.php:41-44`). `Todo` model tidak pakai SoftDeletes.
+  - **Database yang Terkena**: `todos` — DELETE (hard delete) (⚠️ Lampiran B #1).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status:'success', message:'Todo deleted successfully.',
+    data:null}`.
+  - **Catatan**: ⚠️ Hard delete + publik tanpa otorisasi (Lampiran B #4).

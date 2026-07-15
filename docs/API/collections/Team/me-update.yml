@@ -1,0 +1,57 @@
+info:
+  name: me-update
+  type: http
+  seq: 2
+
+http:
+  method: PATCH
+  url: http://127.0.0.1:8000/api/teams/me
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "name": "Alpha Team",
+          "phone": "081234567890",
+          "school_name": "SMA Negeri 1",
+          "school_address": "Jl. Pendidikan No. 1",
+          "document_file_id": "00000000-0000-0000-0000-000000000000",
+          "twibbon_file_id": "00000000-0000-0000-0000-000000000000"
+      }
+  auth:
+    type: bearer
+    token: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### PATCH /api/teams/me — TeamController@update
+  - **Deskripsi**: Update profil team (name, phone, school, file dokumen/twibbon).
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:35`.
+  - **Request** (validasi `UpdateTeamRequest`,
+    `app/Http/Requests/Team/UpdateTeamRequest.php:17-26`):
+    - `name`: sometimes, required, string, min:2, max:255
+    - `phone`: sometimes, nullable, string, max:20
+    - `school_name`: sometimes, nullable, string, max:255
+    - `school_address`: sometimes, nullable, string
+    - `document_file_id`: sometimes, nullable, uuid, exists:`files,id`
+    - `twibbon_file_id`: sometimes, nullable, uuid, exists:`files,id`
+  - **Alur Proses**: `teamService->updateProfile($user, validated)` →
+    `teamRepository->update($team, $data)` (`app/Services/TeamService.php:19-23`,
+    `app/Repositories/TeamRepository.php:13-18`, lalu `$team->fresh()`).
+  - **Database yang Terkena**: `teams` — UPDATE; `files` — SELECT (validasi
+    `exists:files,id`, FK `document_file_id`/`twibbon_file_id` → `files.id`,
+    migrasi `..._000006_create_teams_table.php:20-21`).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status:'success', message:'Team profile updated
+    successfully.', data: TeamResource, metadata:{}, error:null}`.
+  - **Catatan**: ⚠️ `document_file_id`/`twibbon_file_id` harus sudah ada di
+    `files` (di-upload via `POST /files` dulu; tidak ada penciptaan otomatis).

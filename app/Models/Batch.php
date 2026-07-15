@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Batch extends Model
 {
@@ -16,9 +18,6 @@ class Batch extends Model
     protected $keyType = 'string';
 
     public $incrementing = false;
-
-    const CREATED_AT = 'createdAt';
-    const UPDATED_AT = 'updatedAt';
 
     protected $fillable = [
         'id',
@@ -38,8 +37,8 @@ class Batch extends Model
     protected function casts(): array
     {
         return [
-            'startDate' => 'datetime',
-            'endDate' => 'datetime',
+            'start_date' => 'datetime',
+            'end_date' => 'datetime',
             'price' => 'decimal:2',
         ];
     }

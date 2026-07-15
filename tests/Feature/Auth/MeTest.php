@@ -24,7 +24,7 @@ test('me returns authenticated team data', function (): void {
         ->assertJsonPath('data.name', 'Alpha Team')
         ->assertJsonPath('data.phone', '081234567890')
         ->assertJsonPath('data.schoolName', 'SMA Negeri 1')
-        ->assertJsonPath('data.status', 'REGISTERED')
+        ->assertJsonPath('data.status', 'ACTIVE')
         ->assertJsonPath('error', null)
         ->assertJsonStructure([
             'status',

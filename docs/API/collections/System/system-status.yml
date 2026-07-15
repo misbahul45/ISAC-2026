@@ -1,0 +1,38 @@
+info:
+  name: system-status
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://127.0.0.1:8000/api/system/status
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/system/status — Closure (anonim)
+  - **Deskripsi**: Endpoint health-check. Mengembalikan status aplikasi, environment,
+    dan metadata teknis (nama app, backend, frontend, query client, database, timestamp).
+  - **Middleware & Auth**: Publik (hanya `SubstituteBindings`, default group `api`).
+    Sumber: `routes/api.php:10-24`.
+  - **Request**: Tidak ada header/body wajib.
+  - **Alur Proses** (`routes/api.php:10-24`):
+    1. Langsung `response()->json([...])`.
+    2. Ambil `config('app.name')`, `app()->environment()`,
+       `config('database.default')`, `now()->toISOString()`.
+  - **Database yang Terkena**: Tidak ada.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data:{app, environment, backend,
+    frontend, query, database, timestamp}}`.
+  - **Catatan**: `data.database` = `config('database.default')` → `mysql` (.env) /
+    `sqlite` (phpunit.xml:26). ⚠️ Nilai berubah per environment.

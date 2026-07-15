@@ -20,3 +20,16 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |-
+  #### GET /api/auth/me — AuthController@me
+  - **Deskripsi**: Data team yang sedang login.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:54`.
+  - **Request**: Header `Authorization: Bearer <token>`.
+  - **Alur Proses**: `$team = $request->user()` → `TeamAuthResource($team)`
+    (`app/Http/Resources/TeamAuthResource.php`).
+  - **Database**: `teams` SELECT (Auth::user()).
+  - **Response** (200): `TeamAuthResource` → id, code, email, name, phone,
+    schoolName, status (uppercase).
+  - **Catatan**: Tidak ada.
+
