@@ -1,20 +1,37 @@
 import React from 'react'
 import RegistrationLayout from './components/RegistrationLayout'
 import { COMPETITIONS } from '@/constants/registration'
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 
 const Index = () => {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-16 flex justify-between gap-6">
-      {COMPETITIONS.map((competition) => (
-        <div key={competition.id} className="mb-6 text-center text-primary-foreground">
-          <h2 className="text-4xl font-bold mb-4 ">{competition.name}</h2>
-          <div className='border-2 border-primary/80 p-4 rounded-md'>
-            <p className="text-primary-foreground/80 text-medium mb-4">{competition.description}</p>
-            <Button className={'rounded-sm font-semibold'}>Register</Button>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 mt-8">
+      {COMPETITIONS.map((competition, index) => {
+        const isLastOdd =
+          COMPETITIONS.length % 2 === 1 &&
+          index === COMPETITIONS.length - 1
+
+        return (
+          <div
+            key={competition.id}
+            className={`flex h-full flex-col rounded-lg border-4 border-primary/80 p-6 text-center text-primary-foreground ${
+              isLastOdd ? "md:col-span-2 xl:col-span-1" : ""
+            }`}
+          >
+            <h2 className="mb-4 text-3xl font-bold lg:text-4xl">
+              {competition.name}
+            </h2>
+
+            <p className="flex-1 text-sm md:text-base text-primary-foreground/80">
+              {competition.description}
+            </p>
+
+            <Button className="mt-6 w-full rounded-sm font-semibold">
+              Register
+            </Button>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

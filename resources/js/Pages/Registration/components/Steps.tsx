@@ -67,12 +67,12 @@ const Steps = () => {
   )
 
   return (
-    <div ref={containerRef} className='flex gap-4 items-center justify-center'>
+    <div ref={containerRef} className='flex gap-2 sm:gap-3 md:gap-4 lg:gap-6 items-center justify-center'>
       {REGISTRATION_STEPS.map((step, index) => (
-        <div key={index} className='flex items-center gap-4'>
+        <div key={index} className='flex items-center gap-2 sm:gap-3 md:gap-4'>
           <div
             className={cn(
-              'flex flex-col items-center gap-4 text-gray-400',
+              'flex flex-col items-center gap-2 sm:gap-3 md:gap-4 text-gray-400',
               currentStep >= index && 'text-primary-foreground'
             )}
           >
@@ -93,14 +93,14 @@ const Steps = () => {
                   circleRefs.current[index] = el
                 }}
                 className={cn(
-                  'p-8 border-4 border-gray-400 rounded-full transition-colors duration-300',
-                  currentStep >= index && 'border-primary-foreground bg-primary shadow-2xl shadow-white'
+                  'p-2 sm:p-3 md:p-5 lg:p-7 border sm:border-2 md:border-4 border-gray-400 rounded-full transition-colors duration-300',
+                  currentStep >= index && 'border-primary-foreground bg-primary shadow-lg md:shadow-2xl shadow-white'
                 )}
               >
-                {step.icon && <step.icon size={24} />}
+                {step.icon && <step.icon className='size-2 sm:size-3 md:size-4 lg:size-5' />}
               </div>
             </Link>
-            <div>{step.name}</div>
+            <div className='text-[10px] sm:text-sm md:text-base lg:text-xl font-font-semibold md:font-bold'>{step.name}</div>
           </div>
 
           {index !== REGISTRATION_STEPS.length - 1 && (
@@ -109,7 +109,7 @@ const Steps = () => {
                 lineRefs.current[index] = el
               }}
               className={cn(
-                'w-16 h-1 font-bold md:text-xl bg-gray-300 mb-8 border-4 border-gray-400 rounded-full transition-colors duration-300',
+                'w-5 sm:w-10 md:w-12 lg:w-16 h-0.5 sm:h-1 bg-gray-300 mb-4 sm:mb-6 md:mb-8 border-2 md:border-4 border-gray-400 rounded-full transition-colors duration-300',
                 currentStep > index && 'bg-secondary border-secondary'
               )}
             ></div>
