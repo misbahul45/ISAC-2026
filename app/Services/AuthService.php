@@ -127,61 +127,6 @@ class AuthService
         });
     }
 
-    public function forgotPassword(array $data): array
-    {
-        $email = $data['email'];
-
-        $this->authRepository->deleteOldResetCodes($email);
-
-        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        $this->authRepository->createResetCode([
-            'email'      => $email,
-            'code'       => $code,
-            'expired_at' => now()->addMinutes(5),
-        ]);
-
-        Mail::to($email)->send(new ResetPasswordMail($code));
-
-        return ['email' => $email];
-    }
-
-    public function verifyCode(array $data): array
-    {
-        $resetCode = $this->authRepository->findValidResetCode($data['email'], $data['code']);
-
-        if ($resetCode === null) {
-            throw new InvalidResetPasswordException('Kode OTP tidak valid atau sudah kadaluarsa.', 'INVALID_OTP');
-        }
-
-        $resetToken = Str::random(64);
-
-        $this->authRepository->markCodeAsVerified($resetCode, $resetToken);
-
-        return ['resetToken' => $resetToken];
-    }
-
-    public function changePassword(array $data): void
-    {
-        $resetCode = $this->authRepository->findValidResetToken($data['resetToken']);
-
-        if ($resetCode === null) {
-            throw new InvalidResetPasswordException('Sesi tidak valid atau sudah kadaluarsa.', 'INVALID_RESET_TOKEN');
-        }
-
-        $team = $this->authRepository->findByEmail($resetCode->email);
-
-        if ($team === null) {
-            throw new InvalidResetPasswordException('Team tidak ditemukan.', 'INVALID_RESET_TOKEN');
-        }
-
-        DB::transaction(function () use ($team, $resetCode, $data): void {
-            $this->authRepository->updateTeamPassword($team, $data['password']);
-            $this->authRepository->markTokenAsUsed($resetCode);
-            $team->tokens()->delete();
-        });
-    }
-
     private function generateTeamCode(): string
     {
         $count = Team::withTrashed()->count() + 1;
