@@ -1,6 +1,7 @@
 opencollection: 1.0.0
+
 info:
-  name: "ISAC-2026"
+  name: ISAC-2026
   type: workspace
 
 collections:
@@ -8,7 +9,70 @@ collections:
     path: "collections/Auth"
   - name: "Team"
     path: "collections/Team"
+  - name: "File"
+    path: "collections/File"
+  - name: "Todo"
+    path: "collections/Todo"
+  - name: "Dashboard"
+    path: "collections/Dashboard"
+  - name: "System"
+    path: "collections/System"
 
 specs:
 
-docs: ''
+docs: |-
+  # ISAC-2026 API Report (Bruno / OpenCollection)
+
+  Laporan seluruh API JSON Laravel `ISAC-2026`. Disusun dari baca langsung
+  file sumber; setiap klaim merujuk file+baris. Aturan main:
+  1. Tidak ada asumsi — semua dari file dibaca.
+  2. Ketidakpastian ditandai: `⚠️ Tidak dapat dipastikan / perlu verifikasi manual.`
+  3. Middleware default group `api` = hanya `SubstituteBindings`
+     (`vendor/laravel/framework/.../Middleware.php:495-499`).
+
+  ## Ringkasan Endpoint (19)
+  - System  : GET  /api/system/status                      (publik)
+  - Auth    : POST /api/auth/register                       (publik)
+  - Auth    : POST /api/auth/login                          (publik + throttle:5,1)
+  - Auth    : POST /api/auth/forgot-password                (publik)
+  - Auth    : POST /api/auth/verify-code                    (publik)
+  - Auth    : POST /api/auth/change-password                (publik)
+  - Auth    : POST /api/auth/send-verification              (publik)
+  - Auth    : POST /api/auth/verify-email                   (publik)
+  - Auth    : POST /api/auth/logout                         (auth:sanctum)
+  - Auth    : GET  /api/auth/me                             (auth:sanctum)
+  - Todo    : GET  /api/todos                               (publik)
+  - Todo    : POST /api/todos                               (publik)
+  - Todo    : PATCH /api/todos/{todo}                       (publik)
+  - Todo    : DELETE /api/todos/{todo}                      (publik)
+  - Dashboard: GET /api/dashboard/summary                   (publik)
+  - Team    : GET  /api/teams/me                            (auth:sanctum)
+  - Team    : PATCH /api/teams/me                           (auth:sanctum)
+  - File    : POST /api/files                               (auth:sanctum)
+  - File    : GET  /api/files/{file}  (name: files.show)    (auth:sanctum)
+
+  Detail tiap endpoint ada di blok `docs` masing-masing file koleksi.
+
+  ## Environment (variabel, agar mudah di-track)
+  URL & token tidak di-hardcode per-request, melainkan diambil dari environment
+  Bruno `Local` (`environments/local.bru`):
+  - `baseUrl`   : base URL API, default `http://127.0.0.1:8000`
+  - `apiToken`  : bearer token contoh (sanctum), `1|hOixlBJ3...`
+  Di tiap request: `url: "{{baseUrl}}/api/..."` dan `auth.token: "{{apiToken}}"`.
+  Ganti `baseUrl`/token di satu tempat (file environment) → berlaku ke semua
+  request. (Catatan: `.bru` environment tidak di-ignore git; file `.env*` lokal
+  di-ignore per `docs/API/.gitignore`.)
+
+  ## Lampiran B — Ketidakpastian & Bug (didokumentasikan, belum direpair)
+  1. [KRITIS] Tabel `todos` tidak punya migration — `Todo`/`TodoController`/
+     `DashboardController` akses `todos` tapi `grep database/migrations` kosong
+     → runtime error "no such table: todos".
+  2. OTP `verify-code` tidak filter `type` (`AuthRepository.php:41-47`) → kode
+     verifikasi email bisa dipakai dapat `resetToken` reset password.
+  3. `forgot-password` hapus OTP verifikasi email (`AuthRepository.php:34-37`).
+  4. Todo & Dashboard publik tanpa owner/otorisasi (`routes/api.php:26-31`).
+  5. Download file `GET /files/{file}` tanpa cek kepemilikan (`FileController.php:40`).
+  6. Inkonsistensi response envelope (Auth vs Todo).
+  7. `register` kirim mail di luar transaksi DB (`AuthService.php:38-40`).
+  8. Environment butuh `laravel/sanctum` ter-install (composer).
+  9. `verify-email` tidak cek status sebelum `ACTIVE` (`AuthService.php:188-191`).

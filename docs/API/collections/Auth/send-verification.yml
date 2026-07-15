@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://127.0.0.1:8000/api/auth/send-verification
+  url: "{{baseUrl}}/api/auth/send-verification"
   headers:
     - name: Accept
       value: application/json
@@ -24,3 +24,20 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |-
+  #### POST /api/auth/send-verification — AuthController@sendVerification
+  - **Deskripsi**: Kirim ulang OTP verifikasi email.
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:49`.
+  - **Request** (`SendVerificationRequest.php:14-19`): `email` required/email/
+    exists:teams,email.
+  - **Alur Proses** (`AuthService::sendVerificationCode`, `app/Services/AuthService.php:140-166`):
+    findByEmail (null → InvalidCredentialException) → cek status `EMAIL_UNVERIFIED`
+    (sudah diverifikasi → InvalidCredentialException) → deleteOldVerificationCodes
+    (filter type verify_email) → generate 6 digit → simpan type verify_email →
+    kirim `VerifyEmailMail`.
+  - **Database**: `password_reset_codes` DELETE (filter verify_email) + INSERT.
+  - **Efek Samping**: kirim `VerifyEmailMail`.
+  - **Response** (200): data null. (422) `VALIDATION_ERROR` (email tak terdaftar).
+  - **Catatan**: Tidak ada.
+

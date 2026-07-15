@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://127.0.0.1:8000/api/auth/verify-code
+  url: "{{baseUrl}}/api/auth/verify-code"
   headers:
     - name: Accept
       value: application/json
@@ -25,3 +25,21 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |-
+  #### POST /api/auth/verify-code — AuthController@verifyCode
+  - **Deskripsi**: Verifikasi OTP reset password → kembalikan `resetToken`.
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:47`.
+  - **Request** (`VerifyCodeRequest.php:15-21`): `email` required/email;
+    `code` required/digits:6.
+  - **Alur Proses** (`AuthService::verifyCode`, `app/Services/AuthService.php:94-107`):
+    findValidResetCode (where email, code, verified_at null, used_at null,
+    expired_at>now — **tanpa filter type**) → null → throw `INVALID_OTP`;
+    else `Str::random(64)` → markCodeAsVerified (reset_token, verified_at,
+    expired_at+10m).
+  - **Database**: `password_reset_codes` SELECT + UPDATE.
+  - **Response** (200): `{resetToken}`. (422) `INVALID_OTP` / `VALIDATION_ERROR`.
+  - **Catatan**: ⚠️ `findValidResetCode` tidak filter `type='reset_password'`
+    (`AuthRepository.php:41-47`) → kode `verify_email` bisa dipakai dapat
+    `resetToken` (Lampiran B #2).
+

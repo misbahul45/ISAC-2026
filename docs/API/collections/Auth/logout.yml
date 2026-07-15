@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://127.0.0.1:8000/api/auth/logout
+  url: "{{baseUrl}}/api/auth/logout"
   headers:
     - name: Accept
       value: application/json
@@ -13,10 +13,22 @@ http:
       value: ""
   auth:
     type: bearer
-    token: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+    token: "{{apiToken}}"
 
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+
+docs: |-
+  #### POST /api/auth/logout — AuthController@logout
+  - **Deskripsi**: Revoke Sanctum token yang sedang dipakai.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:53`.
+  - **Request**: Header `Authorization: Bearer <token>`.
+  - **Alur Proses** (`AuthService::logout`, `app/Services/AuthService.php:70-73`):
+    `$team->currentAccessToken()?->delete()` (hapus hanya token request ini).
+  - **Database**: `personal_access_tokens` DELETE (1 baris).
+  - **Response** (200): data null.
+  - **Catatan**: Tidak ada.
+
