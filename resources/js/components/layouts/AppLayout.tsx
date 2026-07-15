@@ -2,16 +2,13 @@ import type { ReactNode } from 'react'
 import Header from './Header'
 import Footer from './Footer'
 import { IMAGES } from '@/constants/general'
-import { usePage } from '@inertiajs/react'
 
 type AppLayoutProps = {
   children: ReactNode
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { url } = usePage()
 
-  console.log(url)
 
   return (
     <div>
