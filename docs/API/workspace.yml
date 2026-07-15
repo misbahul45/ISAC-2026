@@ -53,6 +53,16 @@ docs: |-
 
   Detail tiap endpoint ada di blok `docs` masing-masing file koleksi.
 
+  ## Environment (variabel, agar mudah di-track)
+  URL & token tidak di-hardcode per-request, melainkan diambil dari environment
+  Bruno `Local` (`environments/local.bru`):
+  - `baseUrl`   : base URL API, default `http://127.0.0.1:8000`
+  - `apiToken`  : bearer token contoh (sanctum), `1|hOixlBJ3...`
+  Di tiap request: `url: "{{baseUrl}}/api/..."` dan `auth.token: "{{apiToken}}"`.
+  Ganti `baseUrl`/token di satu tempat (file environment) → berlaku ke semua
+  request. (Catatan: `.bru` environment tidak di-ignore git; file `.env*` lokal
+  di-ignore per `docs/API/.gitignore`.)
+
   ## Lampiran B — Ketidakpastian & Bug (didokumentasikan, belum direpair)
   1. [KRITIS] Tabel `todos` tidak punya migration — `Todo`/`TodoController`/
      `DashboardController` akses `todos` tapi `grep database/migrations` kosong

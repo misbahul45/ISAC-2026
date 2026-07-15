@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: http://127.0.0.1:8000/api/teams/me
+  url: "{{baseUrl}}/api/teams/me"
   headers:
     - name: Accept
       value: application/json
@@ -24,7 +24,7 @@ http:
       }
   auth:
     type: bearer
-    token: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+    token: "{{apiToken}}"
 
 settings:
   encodeUrl: true

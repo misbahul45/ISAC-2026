@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://127.0.0.1:8000/api/auth/send-verification
+  url: "{{baseUrl}}/api/auth/send-verification"
   headers:
     - name: Accept
       value: application/json

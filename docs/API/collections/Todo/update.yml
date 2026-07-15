@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: http://127.0.0.1:8000/api/todos/{{todo_id}}
+  url: "{{baseUrl}}/api/todos/{{todo_id}}"
   headers:
     - name: Accept
       value: application/json

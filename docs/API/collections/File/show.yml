@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://127.0.0.1:8000/api/files/{{file_id}}
+  url: "{{baseUrl}}/api/files/{{file_id}}"
   headers:
     - name: Accept
       value: application/json
@@ -13,7 +13,7 @@ http:
       value: ""
   auth:
     type: bearer
-    token: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+    token: "{{apiToken}}"
 
 settings:
   encodeUrl: true
