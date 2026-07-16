@@ -3,8 +3,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -55,41 +53,6 @@
 }
  
 :root {
-    --background: #0F1329;
-    --foreground: #FEFEFE;
-    --card: #171B3B;
-    --card-foreground: #FEFEFE;
-    --popover: #171B3B;
-    --popover-foreground: #FEFEFE;
-    --primary: #8B5CFF;
-    --primary-foreground: #FEFEFE;
-    --secondary: #2DE2E6;
-    --secondary-foreground: #151A33;
-    --muted: #232A52;
-    --muted-foreground: #9BA3C9;
-    --accent: #9DFF4A;
-    --accent-foreground: #151A33;
-    --destructive: #FF5C5C;
-    --border: #2A3160;
-    --input: #2A3160;
-    --ring: #8B5CFF;
-    --chart-1: #8B5CFF;
-    --chart-2: #2DE2E6;
-    --chart-3: #9DFF4A;
-    --chart-4: #FEFEFE;
-    --chart-5: #5B3FBF;
-    --radius: 0.625rem;
-    --sidebar: #1D2347;
-    --sidebar-foreground: #FEFEFE;
-    --sidebar-primary: #8B5CFF;
-    --sidebar-primary-foreground: #FEFEFE;
-    --sidebar-accent: #232A52;
-    --sidebar-accent-foreground: #FEFEFE;
-    --sidebar-border: #2A3160;
-    --sidebar-ring: #8B5CFF;
-}
- 
-.dark {
     --background: #0F1329;
     --foreground: #FEFEFE;
     --card: #171B3B;

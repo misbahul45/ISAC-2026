@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Todos/Index', [
+    return Inertia::render('LandingPage/Index', [
         'title' => 'Todo List',
     ]);
-})->name('todos.index');
+})->name('landing.index');
 
 Route::get('/sitemap.xml', function () {
     $appUrl = rtrim(config('app.url'), '/');
