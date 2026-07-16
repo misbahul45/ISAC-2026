@@ -1,0 +1,43 @@
+info:
+  name: verify-email
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/auth/verify-email"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "email": "lkiokijoap@gmail.com",
+          "code": "559317"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/auth/verify-email — AuthController@verifyEmail
+  - **Deskripsi**: Verifikasi email → ubah status menjadi `ACTIVE`.
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:50`.
+  - **Request** (`VerifyEmailRequest.php:14-19`): `email` required/email/
+    exists:teams,email; `code` required/string/size:6.
+  - **Alur Proses** (`AuthService::verifyEmail`, `app/Services/AuthService.php:171-192`):
+    findValidVerificationCode (type verify_email, used_at null, expired_at>now) →
+    findByEmail → DB::transaction: markTokenAsUsed + updateTeamStatus(`ACTIVE`).
+  - **Database**: `password_reset_codes` SELECT+UPDATE; `teams` UPDATE status.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): data null. (401) `INVALID_CREDENTIALS`; (422) `VALIDATION_ERROR`.
+  - **Catatan**: ⚠️ Tidak cek ulang bahwa team masih `EMAIL_UNVERIFIED` sebelum
+    update `ACTIVE` (Lampiran B #9).
+

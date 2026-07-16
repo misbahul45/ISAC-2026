@@ -1,0 +1,45 @@
+info:
+  name: store
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/todos"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "title": "Beli kebutuhan lomba"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/todos — TodoController@store
+  - **Deskripsi**: Buat todo baru (default `is_completed=false`).
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:27`.
+  - **Request** (validasi `StoreTodoRequest`,
+    `app/Http/Requests/Todo/StoreTodoRequest.php:17-21`):
+    - `title`: required, string, min:1, max:255
+  - **Alur Proses**: `todoService->createTodo` →
+    `todoRepository->create(['title'=>..., 'is_completed'=>false])`
+    (`app/Services/TodoService.php:28-34`, `app/Repositories/TodoRepository.php:26-29`).
+    `Todo` model mem-trim `title` (`app/Models/Todo.php:19-24`).
+  - **Database yang Terkena**: `todos` — INSERT (`title`, `is_completed=0`)
+    (⚠️ Lampiran B #1).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (201): `{status:'success', message:'Todo created successfully.',
+    data: TodoResource}`.
+  - **Catatan**: ⚠️ Todo tidak terikat `team_id`/owner → semua user (publik)
+    membuat/melihat todo yang sama (Lampiran B #4).
