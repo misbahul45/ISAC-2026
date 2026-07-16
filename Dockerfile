@@ -12,7 +12,14 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    && docker-php-ext-install \
+    ca-certificates \
+    gnupg
+
+# Install Node 22
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+ && apt-get install -y nodejs
+
+RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
     mbstring \
@@ -20,12 +27,8 @@ RUN apt-get update && apt-get install -y \
     exif \
     pcntl \
     bcmath \
-    gd \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    gd
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-EXPOSE 9000
 
 CMD ["php-fpm"]

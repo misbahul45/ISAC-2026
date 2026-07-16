@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Todos/Index', [
+    return Inertia::render('LandingPage/Index', [
         'title' => 'Todo List',
     ]);
-})->name('todos.index');
+})->name('landing.index');
 
 Route::get('/sitemap.xml', function () {
     $appUrl = rtrim(config('app.url'), '/');
@@ -68,6 +68,38 @@ Route::get('/todos', function () {
         'title' => 'Todo List',
     ]);
 })->name('todos.page');
+
+Route::prefix('registration')->name('registration.')->group(function () {
+    Route::get('/', function () {
+        return Inertia::render('Registration/Index', [
+            'title' => 'Registration',
+        ]);
+    })->name('index');
+
+    Route::get('/team', function () {
+        return Inertia::render('Registration/Team', [
+            'title' => 'Registration',
+        ]);
+    })->name('team');
+
+    Route::get('/biodata', function () {
+        return Inertia::render('Registration/Biodata', [
+            'title' => 'Registration',
+        ]);
+    })->name('biodata');
+
+    Route::get('/documents', function () {
+        return Inertia::render('Registration/Documents', [
+            'title' => 'Registration',
+        ]);
+    })->name('documents');
+
+    Route::get('/payment', function () {
+        return Inertia::render('Registration/Payment', [
+            'title' => 'Registration',
+        ]);
+    })->name('payment');
+});
 
 Route::fallback(function () {
     return Inertia::render('Errors/NotFound')
