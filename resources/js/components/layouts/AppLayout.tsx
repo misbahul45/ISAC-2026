@@ -2,30 +2,28 @@ import type { ReactNode } from 'react'
 import Header from './Header'
 import Footer from './Footer'
 import { IMAGES } from '@/constants/general'
+import { Toaster } from '../ui/sonner'
+
 
 type AppLayoutProps = {
   children: ReactNode
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-
-
   return (
-    <div>
+    <div className="relative flex flex-col min-h-screen">
       <Header />
 
-      <div className="responsive relative min-h-screen">
+      <div className="relative flex-1">
         <div
-          className="absolute inset-0 z-0 opacity-30 bg-cover bg-no-repeat bg-center"
+          className="absolute inset-0 z-0 bg-cover bg-no-repeat bg-center"
           style={{
             backgroundImage: `url(${IMAGES.bg})`,
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
           }}
         />
+        <Toaster />
 
-        <div className="relative z-20">
+        <div className="relative z-10">
           {children}
         </div>
       </div>

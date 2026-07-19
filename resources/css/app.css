@@ -98,3 +98,154 @@
     @apply font-sans;
   }
 }
+
+@property --border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes border-angle-spin {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+@keyframes border-angle-spin-reverse {
+  to {
+    --border-angle: -360deg;
+  }
+}
+
+.button3d-spin {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--border-angle),
+    var(--primary),
+    var(--secondary),
+    var(--accent),
+    var(--primary)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: border-angle-spin 3s linear infinite;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.button3d-spin.is-ghost {
+  background: conic-gradient(
+    from var(--border-angle),
+    var(--secondary),
+    var(--muted),
+    var(--secondary)
+  );
+  animation: border-angle-spin-reverse 4.5s linear infinite;
+  opacity: 0.85;
+}
+
+.header-border-track {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    90deg,
+    var(--primary),
+    var(--secondary),
+    var(--accent),
+    var(--primary)
+  );
+  opacity: 0.12;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.header-border-spin {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--border-angle),
+    transparent 0%,
+    transparent 40%,
+    var(--primary) 45%,
+    var(--secondary) 47%,
+    var(--accent) 49%,
+    var(--primary) 50%,
+    var(--secondary) 51%,
+    var(--accent) 53%,
+    var(--primary) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: border-angle-spin 3s linear infinite;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.header-glow {
+  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.45);
+}
+
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  transition: transform 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease;
+}
+
+.nav-link-active::after {
+  transform: scaleX(1);
+  opacity: 1;
+  box-shadow: 0 0 10px var(--primary), 0 0 4px var(--secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button3d-spin,
+  .header-border-spin,
+  .header-border-track {
+    animation: none;
+  }
+  .nav-link::after {
+    transition: opacity 0.35s ease;
+  }
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+}

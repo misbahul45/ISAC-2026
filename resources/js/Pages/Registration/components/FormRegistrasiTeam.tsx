@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Building2, Map, MapPin, MapPinHouse, Users } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
+import { router } from '@inertiajs/react'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -58,7 +60,20 @@ const FormRegistrasiTeam = ({ competitionType }: Props) => {
       }),
     }
 
-    console.log(payload)
+    toast.loading('Menyimpan data tim...')
+
+    setTimeout(() => {
+      toast.dismiss()
+      toast.success('Registrasi tim berhasil!', {
+        description: 'Mengalihkan ke halaman biodata...',
+      })
+
+      console.log(payload)
+
+      setTimeout(() => {
+        router.visit('/registration/biodata')
+      }, 1500)
+    }, 2000)
   }
 
   return (

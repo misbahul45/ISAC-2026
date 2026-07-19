@@ -27,7 +27,7 @@ const Steps = () => {
       gsap.from(circleRefs.current, {
         scale: 0,
         opacity: 0,
-        duration: 0.5,
+        duration: 0.6,
         stagger: 0.15,
         ease: 'back.out(1.7)',
       })
@@ -35,9 +35,9 @@ const Steps = () => {
       gsap.from(lineRefs.current, {
         scaleX: 0,
         transformOrigin: 'left',
-        duration: 0.4,
+        duration: 0.5,
         stagger: 0.15,
-        delay: 0.15,
+        delay: 0.2,
         ease: 'power2.out',
         onComplete: () => {
           hasMounted.current = true
@@ -93,14 +93,30 @@ const Steps = () => {
                   circleRefs.current[index] = el
                 }}
                 className={cn(
-                  'p-2 sm:p-3 md:p-5 lg:p-7 border sm:border-2 md:border-4 border-gray-400 rounded-full transition-colors duration-300',
-                  currentStep >= index && 'border-primary-foreground bg-primary shadow-lg md:shadow-2xl shadow-white'
+                  'relative flex items-center justify-center p-2 sm:p-3 md:p-5 lg:p-7 border sm:border-2 md:border-4 border-gray-400 rounded-full transition-colors duration-300',
+                  currentStep >= index && 'border-primary-foreground bg-primary shadow-[0_0_30px_-5px_rgba(139,92,255,0.6)]'
                 )}
+                style={{
+                  transform: 'perspective(500px) rotateX(10deg)',
+                  boxShadow: currentStep >= index 
+                    ? '0 8px 20px rgba(139,92,255,0.4), 0 0 30px rgba(139,92,255,0.2), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.2)'
+                    : '0 4px 12px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.2)',
+                }}
               >
-                {step.icon && <step.icon className='size-2 sm:size-3 md:size-4 lg:size-5' />}
+                {step.icon && <step.icon className='size-2 sm:size-3 md:size-4 lg:size-5 relative z-10' />}
+                
+                <div 
+                  className='absolute inset-0 rounded-full'
+                  style={{
+                    background: currentStep >= index
+                      ? 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.2) 100%)'
+                      : 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.3) 100%)',
+                    pointerEvents: 'none',
+                  }}
+                />
               </div>
             </Link>
-            <div className='text-[10px] sm:text-sm md:text-base lg:text-xl font-font-semibold md:font-bold'>{step.name}</div>
+            <div className='text-[10px] sm:text-sm md:text-base lg:text-xl font-semibold md:font-bold'>{step.name}</div>
           </div>
 
           {index !== REGISTRATION_STEPS.length - 1 && (
@@ -109,10 +125,26 @@ const Steps = () => {
                 lineRefs.current[index] = el
               }}
               className={cn(
-                'w-5 sm:w-10 md:w-12 lg:w-16 h-0.5 sm:h-1 bg-gray-300 mb-4 sm:mb-6 md:mb-8 border-2 md:border-4 border-gray-400 rounded-full transition-colors duration-300',
-                currentStep > index && 'bg-secondary border-secondary'
+                'relative w-5 sm:w-10 md:w-12 lg:w-16 h-1.5 sm:h-2 md:h-3 bg-gray-400 rounded-full transition-colors duration-300',
+                currentStep > index && 'bg-secondary'
               )}
-            ></div>
+              style={{
+                transform: 'perspective(300px) rotateX(15deg)',
+                boxShadow: currentStep > index
+                  ? '0 4px 8px rgba(45,226,230,0.4), 0 0 15px rgba(45,226,230,0.2), inset 0 1px 2px rgba(255,255,255,0.4), inset 0 -1px 2px rgba(0,0,0,0.2)'
+                  : '0 2px 6px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -1px 2px rgba(0,0,0,0.2)',
+              }}
+            >
+              <div 
+                className='absolute inset-0 rounded-full'
+                style={{
+                  background: currentStep > index
+                    ? 'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.2) 100%)'
+                    : 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.3) 100%)',
+                  pointerEvents: 'none',
+                }}
+              />
+            </div>
           )}
         </div>
       ))}

@@ -16,8 +16,16 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
         type="website"
         noindex
       />
-      <div className="flex flex-col items-center justify-center pt-8 pb-6 sm:pt-10 sm:pb-8 md:pt-14 md:pb-10 min-h-screen mx-auto relative">
-        <div className="flex justify-center w-full gap-32 items-center relative">
+      <div className="flex flex-col items-center justify-center pt-8 pb-6 sm:pt-10 sm:pb-8 md:pt-14 md:pb-10 min-h-screen mx-auto relative overflow-hidden">
+        {url === '/registration' && (
+          <>
+            <div className="absolute top-0 left-0 right-0 h-[30%] bg-linear-to-b from-white/40 via-white/10 to-transparent rounded-b-[30%] z-[5] pointer-events-none" />
+            <div className="absolute top-0 left-0 h-full w-[20%] bg-linear-to-r from-white/15 via-white/5 to-transparent z-[5] pointer-events-none" />
+            <div className="absolute top-0 right-0 h-full w-[20%] bg-linear-to-l from-white/15 via-white/5 to-transparent z-[5] pointer-events-none" />
+          </>
+        )}
+
+        <div className="flex justify-center w-full max-w-7xl gap-32 items-center relative z-[6]">
           <img
             src={IMAGES.sound1}
             alt="sound1"
@@ -32,7 +40,7 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
           <img
             src={IMAGES.sound1}
             alt="sound1"
-            className=" top-12 right-8 size-12 absolute md:top-6 md:right-2 sm:size-14 md:size-20"
+            className="top-12 right-8 size-12 absolute md:top-6 md:right-2 sm:size-14 md:size-20"
           />
           <img
             src={IMAGES.sound2}
@@ -41,13 +49,8 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
           />
         </div>
 
-        {url === '/registration' && <div className="bg-linear-to-b z- from-white/10 via-white/5 to-transparent h-[30%] rounded-b-[20%] w-full absolute top-0 left-0" />}
-
-        {url === '/registration' &&<div className='bg-linear-to-l z- from-white/10 via-white/5 to-transparent absolute h-full w-[10%] right-0 rounded-l-sm top-02' />}
-        {url === '/registration' &&<div className='bg-linear-to-r z- from-white/10 via-white/5 to-transparent absolute h-full w-[10%] left-0 rounded-l-sm top-02' />}
-
-
-        <div className="w-full max-w-7xl px-4 responsive overflow-y-hidden z-20 backdrop-blur[10px]">
+        {/* Content */}
+        <div className="w-full max-w-7xl px-4 responsive z-10 ">
           {children}
         </div>
       </div>
