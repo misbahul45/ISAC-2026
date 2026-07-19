@@ -28,7 +28,7 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
         noindex
       />
       <div className="flex flex-col items-center justify-center overflow-y-hidden pt-12 pb-6 sm:pt-10 sm:pb-8 md:pt-14 md:pb-10 md:min-h-screen mx-auto relative overflow-hidden">
-        {url === '/registration' && (
+        {url && (
           <>
             <div
               className="
@@ -36,12 +36,12 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
                 -top-40
                 left-1/2
                 -translate-x-1/2
-                w-[1200px]
+                w-[1000px]
                 h-[500px]
                 rounded-full
                 bg-white/20
                 blur-[150px]
-                opacity-70
+                opacity-30
                 pointer-events-none
                 z-[5]
               "
@@ -52,7 +52,7 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
                 absolute
                 top-0
                 -left-40
-                w-[350px]
+                w-[150px]
                 h-full
                 bg-white/10
                 blur-[120px]
@@ -66,7 +66,7 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
                 absolute
                 top-0
                 -right-40
-                w-[350px]
+                w-[150px]
                 h-full
                 bg-white/10
                 blur-[120px]

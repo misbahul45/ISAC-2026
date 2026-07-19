@@ -168,7 +168,6 @@ const Biodata = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 text-center text-primary-foreground">
-      {/* Desktop: 3D Carousel */}
       <div className="hidden md:flex items-center justify-center gap-4">
         <button
           onClick={goPrev}
@@ -214,7 +213,6 @@ const Biodata = () => {
         </button>
       </div>
 
-      {/* Mobile: Vertical Stack */}
       <div ref={mobileRef} className="md:hidden space-y-6">
         {members.map((member) => (
           <div

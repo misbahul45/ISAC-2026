@@ -80,7 +80,6 @@ const Index = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
-      {/* Desktop: 3D Carousel */}
       <div className="hidden md:block">
         <div className="relative flex items-center justify-center gap-4 min-h-[500px] perspective-[1200px]">
           <button
@@ -101,7 +100,7 @@ const Index = () => {
               return (
                 <div
                   key={competition.id}
-                  className="absolute w-full max-w-sm cursor-pointer shadow-2xl shadow-primary/20"
+                  className="absolute w-full max-w-sm cursor-pointer shadow-2xl shadow-primary/20 bg-background/40"
                   style={getCardStyle(index)}
                   onClick={() => isActive && handleSelect(competition.name)}
                 >
@@ -153,7 +152,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Mobile: Vertical Stack */}
       <div ref={mobileRef} className="md:hidden space-y-6">
         {COMPETITIONS.map((competition) => (
           <div

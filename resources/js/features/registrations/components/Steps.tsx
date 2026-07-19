@@ -67,7 +67,7 @@ const Steps = () => {
   )
 
   return (
-    <div ref={containerRef} className='flex gap-2 sm:gap-3 md:gap-4 lg:gap-6 items-center justify-center z-50 backdrop-blur-sm'>
+    <div ref={containerRef} className='flex gap-2 sm:gap-3 md:gap-4 lg:gap-6 items-center justify-center z-50'>
       {REGISTRATION_STEPS.map((step, index) => (
         <div key={index} className='flex items-center gap-2 sm:gap-3 md:gap-4'>
           <div

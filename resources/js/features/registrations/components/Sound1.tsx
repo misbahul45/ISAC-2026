@@ -2,22 +2,31 @@ import React, { useRef } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 
-const Sound1 = ({ className }: { className?: string }) => {
+type Sound1Props = {
+  className?: string
+}
+
+const Sound1 = ({ className }: Sound1Props) => {
   const svgRef = useRef<SVGSVGElement>(null)
 
-  useGSAP(() => {
-    if (!svgRef.current) return
-    const group = svgRef.current.querySelector('.sound-group')
+  useGSAP(
+    () => {
+      const group = gsap.utils.toArray<SVGGElement>('.sound-group')[0]
 
-    gsap.to(group, {
-      y: -8,
-      rotation: 5,
-      duration: 2.2,
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-    })
-  }, { scope: svgRef })
+      if (!group) return
+
+      gsap.to(group, {
+        y: -8,
+        rotation: 5,
+        duration: 2.2,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        transformOrigin: 'center center',
+      })
+    },
+    { scope: svgRef }
+  )
 
   return (
     <svg
