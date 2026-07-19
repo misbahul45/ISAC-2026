@@ -28,7 +28,7 @@ const NavLink = ({ nav, isActive, onNavigate, mobile = false }: NavLinkProps) =>
     ? 'nav-link inline-block py-2 px-4 rounded-lg text-base font-medium transition-all'
     : 'nav-link px-4 py-1.5 rounded-lg text-base font-medium transition-all'
   const stateClass = isActive
-    ? 'bg-secondary text-white shadow-[0_0_12px_-2px_var(--secondary)]'
+    ? 'bg-primary/60 text-white shadow-[0_0_12px_-2px_var(--primary)]'
     : 'text-white hover:text-primary hover:bg-white/5'
   const fullClass = baseClass + ' ' + stateClass
 
@@ -146,14 +146,14 @@ const Header = () => {
           <div className='flex items-center justify-between'>
             <Link
               href='/'
-              className='flex items-center gap-2 text-white hover:text-primary transition-colors'
+              className='flex items-center gap-2 p-2 bg-background/10 backdrop-blur-md rounded-full px-4 border-2 border-white/20 text-white hover:text-primary transition-colors'
             >
               <ArrowLeft className='w-5 h-5' />
               <span className='text-base font-medium'>Back</span>
             </Link>
 
             <Link href='/'>
-              <Image src={IMAGES.logo} height={32} width={32} className='w-12 md:w-16' />
+              <Image src={IMAGES.logo} height={32} width={32} className='w-16 md:w-32' />
             </Link>
           </div>
         </div>

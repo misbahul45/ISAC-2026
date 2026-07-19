@@ -2,8 +2,8 @@ import React from 'react'
 import Steps from './Steps'
 import { Seo } from '@/components/seo/Seo'
 import { usePage } from '@inertiajs/react'
-import Sound1 from './Sound1'
-import Sound2 from './Sound2'
+import Sound1 from '../../../components/shared/Sound1'
+import Sound2 from '../../../components/shared/Sound2'
 
 const SOUND_POSITIONS_TOP = [
   { component: 'sound1' as const, className: 'absolute -top-10 left-2 md:-top-8 md:left-0 w-10 h-10 sm:w-14 sm:h-14 md:w-20 md:h-20' },

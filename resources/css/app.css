@@ -51,7 +51,7 @@
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
 }
- 
+
 :root {
     --background: #0F1329;
     --foreground: #FEFEFE;
@@ -86,7 +86,7 @@
     --sidebar-border: rgba(254, 254, 254, 0.1);
     --sidebar-ring: #8B5CFF;
 }
- 
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -99,22 +99,36 @@
   }
 }
 
+/* ============================================
+   CSS CUSTOM PROPERTIES FOR ANIMATIONS
+   ============================================ */
 @property --border-angle {
   syntax: '<angle>';
   inherits: false;
   initial-value: 0deg;
 }
 
+@property --border-progress {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --glow-intensity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+/* ============================================
+   BUTTON 3D SPIN
+   ============================================ */
 @keyframes border-angle-spin {
-  to {
-    --border-angle: 360deg;
-  }
+  to { --border-angle: 360deg; }
 }
 
 @keyframes border-angle-spin-reverse {
-  to {
-    --border-angle: -360deg;
-  }
+  to { --border-angle: -360deg; }
 }
 
 .button3d-spin {
@@ -149,6 +163,9 @@
   opacity: 0.85;
 }
 
+/* ============================================
+   HEADER BORDERS
+   ============================================ */
 .header-border-track {
   position: absolute;
   inset: 0;
@@ -202,6 +219,9 @@
   box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.45);
 }
 
+/* ============================================
+   NAV LINK
+   ============================================ */
 .nav-link {
   position: relative;
   padding-bottom: 2px;
@@ -228,6 +248,721 @@
   box-shadow: 0 0 10px var(--primary), 0 0 4px var(--secondary);
 }
 
+/* ============================================
+   AUTH BORDER TRACK & SHIMMER (Base)
+   ============================================ */
+.auth-border-track {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius) * 1.4);
+  padding: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--primary),
+    var(--secondary),
+    var(--accent),
+    var(--primary)
+  );
+  opacity: 0.12;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.auth-border-shimmer {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius) * 1.4);
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 20%,
+    var(--primary) 40%,
+    var(--secondary) 50%,
+    var(--accent) 60%,
+    transparent 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: borderShimmer 3s ease-in-out infinite;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@keyframes borderShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   ═══════════════════════════════════════════
+   AUTH BORDER SYSTEM — COMPETITION EDITION
+   Formal, Cool, Competition-ready
+   ═══════════════════════════════════════════
+   ============================================ */
+
+/* ── BORDER 1: COMPETITION ARENA ── */
+.auth-border-arena {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-border-arena::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--primary),
+    var(--secondary),
+    var(--accent),
+    var(--secondary),
+    var(--primary)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: arenaPulse 3s ease-in-out infinite;
+}
+
+.auth-border-arena::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    var(--primary),
+    transparent 35%,
+    transparent 65%,
+    var(--accent)
+  );
+  opacity: 0;
+  filter: blur(16px);
+  animation: arenaGlow 3s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes arenaPulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+@keyframes arenaGlow {
+  0%, 100% { opacity: 0; transform: scale(0.92); }
+  50% { opacity: 0.55; transform: scale(1.04); }
+}
+
+/* ── BORDER 2: CORNER STRIKE ── */
+.auth-border-strike {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.auth-border-strike::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--secondary) 25%,
+    var(--accent) 50%,
+    var(--secondary) 75%,
+    var(--primary) 100%
+  );
+  background-size: 300% 100%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: strikeSweep 4s ease-in-out infinite;
+}
+
+.auth-border-strike::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1.5px solid transparent;
+  border-radius: calc(var(--radius) * 1.3);
+  animation: strikeCorners 4s ease-in-out infinite;
+}
+
+@keyframes strikeSweep {
+  0% { background-position: 0% 0; opacity: 0.25; }
+  50% { background-position: 100% 0; opacity: 1; }
+  100% { background-position: 0% 0; opacity: 0.25; }
+}
+
+@keyframes strikeCorners {
+  0%, 100% {
+    border-color: transparent;
+    box-shadow: inset 0 0 0 0 var(--primary);
+  }
+  25% {
+    border-top-color: var(--primary);
+    border-right-color: var(--secondary);
+    box-shadow: inset 0 0 24px -12px var(--primary);
+  }
+  50% {
+    border-color: var(--secondary);
+    box-shadow: inset 0 0 36px -6px var(--accent);
+  }
+  75% {
+    border-bottom-color: var(--accent);
+    border-left-color: var(--primary);
+    box-shadow: inset 0 0 24px -12px var(--secondary);
+  }
+}
+
+/* ── BORDER 3: ELECTRIC SURGE ── */
+.auth-border-surge {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-border-surge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    transparent 58deg,
+    var(--primary) 68deg,
+    var(--secondary) 78deg,
+    var(--accent) 88deg,
+    var(--secondary) 98deg,
+    var(--primary) 108deg,
+    transparent 118deg,
+    transparent 178deg,
+    transparent 238deg,
+    var(--accent) 248deg,
+    var(--secondary) 258deg,
+    var(--primary) 268deg,
+    var(--secondary) 278deg,
+    var(--accent) 288deg,
+    transparent 298deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: surgeSpin 2s linear infinite;
+}
+
+.auth-border-surge::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    transparent 0deg,
+    var(--primary) 8deg,
+    transparent 18deg,
+    transparent 168deg,
+    var(--accent) 178deg,
+    transparent 188deg,
+    transparent 348deg,
+    var(--secondary) 358deg
+  );
+  filter: blur(10px);
+  opacity: 0.35;
+  animation: surgeSpin 2s linear infinite reverse;
+  z-index: -1;
+}
+
+@keyframes surgeSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ── BORDER 4: AURORA WAVE ── */
+.auth-border-aurora {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-border-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: 
+    radial-gradient(ellipse at 20% 50%, var(--primary) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, var(--secondary) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 20%, var(--accent) 0%, transparent 50%);
+  background-size: 200% 200%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: auroraFlow 6s ease-in-out infinite;
+}
+
+.auth-border-aurora::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: 
+    radial-gradient(ellipse at 30% 50%, var(--primary) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 50%, var(--secondary) 0%, transparent 60%);
+  filter: blur(18px);
+  opacity: 0.25;
+  animation: auroraFlow 6s ease-in-out infinite reverse;
+  z-index: -1;
+}
+
+@keyframes auroraFlow {
+  0%, 100% {
+    background-position: 0% 50%, 100% 50%, 50% 0%;
+    opacity: 0.4;
+  }
+  33% {
+    background-position: 100% 50%, 0% 50%, 50% 100%;
+    opacity: 1;
+  }
+  66% {
+    background-position: 50% 100%, 50% 0%, 0% 50%;
+    opacity: 0.65;
+  }
+}
+
+.auth-card-glass {
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
+
+/* ── BORDER 5: DIAMOND SHIMMER ── */
+.auth-border-diamond {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-border-diamond::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 28%,
+    var(--primary) 33%,
+    var(--secondary) 38%,
+    var(--accent) 43%,
+    var(--secondary) 48%,
+    var(--primary) 53%,
+    transparent 58%
+  );
+  background-size: 200% 200%;
+  animation: diamondShine 5s ease-in-out infinite;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 3px;
+  border-radius: inherit;
+}
+
+@keyframes diamondShine {
+  0% {
+    transform: translate(-30%, -30%) rotate(0deg);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate(10%, 10%) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-30%, -30%) rotate(360deg);
+    opacity: 0.25;
+  }
+}
+
+/* ── BORDER 6: CHAMPION CROWN (NEW) ── */
+.auth-border-crown {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-border-crown::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: conic-gradient(
+    from var(--border-angle),
+    var(--primary) 0deg,
+    var(--secondary) 60deg,
+    var(--accent) 120deg,
+    var(--secondary) 180deg,
+    var(--primary) 240deg,
+    var(--secondary) 300deg,
+    var(--primary) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: crownSpin 5s linear infinite;
+}
+
+.auth-border-crown::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from calc(var(--border-angle) + 180deg),
+    transparent 0deg,
+    var(--primary) 30deg,
+    transparent 60deg,
+    transparent 180deg,
+    var(--accent) 210deg,
+    transparent 240deg,
+    transparent 360deg
+  );
+  filter: blur(12px);
+  opacity: 0.4;
+  animation: crownSpin 5s linear infinite reverse;
+  z-index: -1;
+}
+
+@keyframes crownSpin {
+  0% { --border-angle: 0deg; }
+  100% { --border-angle: 360deg; }
+}
+
+/* ── BORDER 7: VICTORY RIBBON (NEW) ── */
+.auth-border-ribbon {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-border-ribbon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      var(--primary) 0px,
+      var(--primary) 10px,
+      var(--secondary) 10px,
+      var(--secondary) 20px,
+      var(--accent) 20px,
+      var(--accent) 30px,
+      var(--secondary) 30px,
+      var(--secondary) 40px
+    );
+  background-size: 200% 200%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: ribbonWave 4s ease-in-out infinite;
+}
+
+.auth-border-ribbon::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: 
+    repeating-linear-gradient(
+      -45deg,
+      var(--primary) 0px,
+      var(--primary) 15px,
+      transparent 15px,
+      transparent 30px
+    );
+  background-size: 200% 200%;
+  filter: blur(8px);
+  opacity: 0.2;
+  animation: ribbonWave 4s ease-in-out infinite reverse;
+  z-index: -1;
+}
+
+@keyframes ribbonWave {
+  0%, 100% {
+    background-position: 0% 0%;
+    opacity: 0.5;
+  }
+  50% {
+    background-position: 100% 100%;
+    opacity: 1;
+  }
+}
+
+/* ── BORDER 8: TROPHY HALO (NEW) ── */
+.auth-border-halo {
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--radius) * 1.6);
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-border-halo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--accent) 0%,
+    var(--secondary) 30%,
+    var(--primary) 60%,
+    transparent 100%
+  );
+  background-size: 150% 150%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: haloPulse 4s ease-in-out infinite;
+}
+
+.auth-border-halo::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--accent) 0%,
+    transparent 50%
+  );
+  filter: blur(20px);
+  opacity: 0.3;
+  animation: haloPulse 4s ease-in-out infinite reverse;
+  z-index: -1;
+}
+
+@keyframes haloPulse {
+  0%, 100% {
+    background-position: 50% 50%;
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    background-position: 55% 45%;
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* ============================================
+   SOUND ANIMATIONS — IMPROVED & FIXED
+   Tampil-hilang + gerak terus-menerus
+   ============================================ */
+
+/* Orbit movement — icon bergerak mengelilingi posisi dasar */
+@keyframes soundOrbit {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(15px, -10px) rotate(3deg); }
+  50% { transform: translate(0, -20px) rotate(0deg); }
+  75% { transform: translate(-15px, -10px) rotate(-3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Visibility cycle — tampil-hilang dengan transisi smooth */
+@keyframes soundVisibility {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+    filter: blur(4px);
+  }
+  15% {
+    opacity: 0.6;
+    transform: scale(1.05);
+    filter: blur(0px);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.95);
+    filter: blur(0px);
+  }
+  70% {
+    opacity: 0.3;
+    transform: scale(0.85);
+    filter: blur(2px);
+  }
+  85% {
+    opacity: 0;
+    transform: scale(0.7);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+    filter: blur(4px);
+  }
+}
+
+/* Float note — gerakan naik-turun dengan rotasi */
+@keyframes floatNote {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-12px) rotate(3deg) scale(1.05); }
+  50% { transform: translateY(-20px) rotate(5deg) scale(1); }
+  75% { transform: translateY(-12px) rotate(2deg) scale(0.95); }
+}
+
+/* Music pulse — denyut musik */
+@keyframes musicPulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(0.8);
+  }
+  25% {
+    opacity: 0.8;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(1.05);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(0.9);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(1.1);
+  }
+}
+
+/* Sound wave — gelombang suara */
+@keyframes soundWave {
+  0%, 100% { transform: scaleY(0.5); opacity: 0.3; }
+  50% { transform: scaleY(1.3); opacity: 0.9; }
+}
+
+/* Sound bounce — pantulan */
+@keyframes soundBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-16px) scale(1.1); }
+  60% { transform: translateY(-8px) scale(0.95); }
+}
+
+/* Sound glow — cahaya berdenyut */
+@keyframes soundGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 4px var(--secondary));
+    opacity: 0.6;
+  }
+  50% {
+    filter: drop-shadow(0 0 8px var(--primary)) drop-shadow(0 0 16px var(--accent));
+    opacity: 1;
+  }
+}
+
+/* Sound drift — melayang bebas */
+@keyframes soundDrift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(10px, -15px) rotate(5deg); }
+  40% { transform: translate(-5px, -25px) rotate(-3deg); }
+  60% { transform: translate(-15px, -10px) rotate(2deg); }
+  80% { transform: translate(5px, -5px) rotate(-4deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* ============================================
+   LEGACY ANIMATIONS (kept for compatibility)
+   ============================================ */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes waveDance {
+  0%, 100% { transform: scaleY(0.6); }
+  50% { transform: scaleY(1.4); }
+}
+
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(234, 179, 8, 0.4); }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
 @media (prefers-reduced-motion: reduce) {
   .button3d-spin,
   .header-border-spin,
@@ -237,15 +972,4 @@
   .nav-link::after {
     transition: opacity 0.35s ease;
   }
-@keyframes float {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
 }

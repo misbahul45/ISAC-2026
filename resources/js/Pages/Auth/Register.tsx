@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { AuthLayout } from '@/components/layouts/AuthLayout';
+import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { AuthShell } from '@/features/auth/components/AuthShell';
 import { RegisterForm } from '@/features/auth/components/RegisterForm';
 import type { InertiaPageProps } from '@/types/inertia';
