@@ -27,7 +27,7 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
         type="website"
         noindex
       />
-      <div className="flex flex-col items-center justify-center pt-8 pb-6 sm:pt-10 sm:pb-8 md:pt-14 md:pb-10 min-h-screen mx-auto relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center pt-12 pb-6 sm:pt-10 sm:pb-8 md:pt-14 md:pb-10 md:min-h-screen mx-auto relative overflow-hidden">
         {url === '/registration' && (
           <>
             <div

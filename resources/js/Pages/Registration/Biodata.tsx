@@ -5,6 +5,8 @@ import { MemberFormData } from '../../features/registrations/schemas/createTeamM
 import { toast } from 'sonner'
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { router } from '@inertiajs/react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
 interface MemberData {
   id: number
@@ -32,6 +34,19 @@ const Biodata = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const submitButtonRef = useRef<HTMLButtonElement>(null)
+  const mobileRef = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    if (!mobileRef.current) return
+    const cards = mobileRef.current.querySelectorAll('.mobile-card')
+    gsap.from(cards, {
+      y: 40,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: 'power3.out',
+    })
+  }, { scope: mobileRef })
 
   const handleFocus = (index: number) => {
     if (allCompleted) return
@@ -153,7 +168,8 @@ const Biodata = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 text-center text-primary-foreground">
-      <div className="flex items-center justify-center gap-4">
+      {/* Desktop: 3D Carousel */}
+      <div className="hidden md:flex items-center justify-center gap-4">
         <button
           onClick={goPrev}
           disabled={allCompleted || members.length <= 1}
@@ -196,6 +212,27 @@ const Biodata = () => {
         >
           <ChevronRight className="w-6 h-6" />
         </button>
+      </div>
+
+      {/* Mobile: Vertical Stack */}
+      <div ref={mobileRef} className="md:hidden space-y-6">
+        {members.map((member) => (
+          <div
+            key={member.id}
+            className="mobile-card relative bg-background/80 backdrop-blur-md rounded-2xl p-6 border border-border/50 shadow-lg shadow-secondary/20"
+          >
+            <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
+            <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
+
+            <h3 className="text-lg font-semibold mb-4 relative z-10">{member.role}</h3>
+            <FormMember
+              memberId={member.id}
+              onSave={handleSave(member.id)}
+              onValidationChange={(isValid) => handleValidationChange(member.id, isValid)}
+              showSubmit={!allCompleted}
+            />
+          </div>
+        ))}
       </div>
 
       <div className="mt-12 pb-8">

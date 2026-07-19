@@ -3,12 +3,27 @@ import RegistrationLayout from '../../features/registrations/components/Registra
 import { COMPETITIONS } from '@/constants/registration'
 import { Button } from '@/components/ui/button'
 import { router } from '@inertiajs/react'
-import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
 const Index = () => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const mobileRef = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    if (!mobileRef.current) return
+    const cards = mobileRef.current.querySelectorAll('.mobile-card')
+    gsap.from(cards, {
+      y: 40,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: 'power3.out',
+    })
+  }, { scope: mobileRef })
 
   const goNext = () => {
     if (isAnimating) return
@@ -65,73 +80,106 @@ const Index = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
-      <div className="relative flex items-center justify-center gap-4 min-h-[500px] perspective-[1200px]">
-        <button
-          onClick={goPrev}
-          className="relative z-50 p-3 rounded-full bg-card/80 backdrop-blur-md border-2 border-border text-white hover:bg-card hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 hover:scale-110"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
+      {/* Desktop: 3D Carousel */}
+      <div className="hidden md:block">
+        <div className="relative flex items-center justify-center gap-4 min-h-[500px] perspective-[1200px]">
+          <button
+            onClick={goPrev}
+            className="relative z-50 p-3 rounded-full bg-card/80 backdrop-blur-md border-2 border-border text-white hover:bg-card hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 hover:scale-110"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
 
-        <div
-          ref={containerRef}
-          className="relative flex justify-center items-center w-full max-w-4xl h-[450px]"
-          style={{ transformStyle: 'preserve-3d' }}
-        >
-          {COMPETITIONS.map((competition, index) => {
-            const isActive = index === activeIndex
+          <div
+            ref={containerRef}
+            className="relative flex justify-center items-center w-full max-w-4xl h-[450px]"
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            {COMPETITIONS.map((competition, index) => {
+              const isActive = index === activeIndex
 
-            return (
-              <div
-                key={competition.id}
-                className="absolute w-full max-w-sm cursor-pointer shadow-2xl shadow-primary/20"
-                style={getCardStyle(index)}
-                onClick={() => isActive && handleSelect(competition.name)}
-              >
-                <div className={`relative flex h-full flex-col rounded-2xl border-2 p-6 text-center text-primary-foreground transition-all duration-300 ${isActive ? 'border-primary bg-card/60 backdrop-blur-md shadow-[0_0_40px_-10px_rgba(139,92,255,0.4)]' : 'border-border/50 bg-card/30 backdrop-blur-sm'}`}>
-                  <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
-                  <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
+              return (
+                <div
+                  key={competition.id}
+                  className="absolute w-full max-w-sm cursor-pointer shadow-2xl shadow-primary/20"
+                  style={getCardStyle(index)}
+                  onClick={() => isActive && handleSelect(competition.name)}
+                >
+                  <div className={`relative flex h-full flex-col rounded-2xl border-2 p-6 text-center text-primary-foreground transition-all duration-300 ${isActive ? 'border-primary bg-card/60 backdrop-blur-md shadow-[0_0_40px_-10px_rgba(139,92,255,0.4)]' : 'border-border/50 bg-card/30 backdrop-blur-sm'}`}>
+                    <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
+                    <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
 
-                  <div className="relative z-10 flex flex-col h-full">
-                    <h2 className="mb-4 text-2xl font-bold lg:text-3xl">
-                      {competition.name}
-                    </h2>
+                    <div className="relative z-10 flex flex-col h-full">
+                      <h2 className="mb-4 text-2xl font-bold lg:text-3xl">
+                        {competition.name}
+                      </h2>
 
-                    <p className="flex-1 text-sm md:text-base text-primary-foreground/80">
-                      {competition.description}
-                    </p>
+                      <p className="flex-1 text-sm md:text-base text-primary-foreground/80">
+                        {competition.description}
+                      </p>
 
-                    <Button
-                      className="mt-6 w-full rounded-xl font-semibold bg-primary hover:bg-primary/80 text-white"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleSelect(competition.name)
-                      }}
-                    >
-                      Register
-                    </Button>
+                      <Button
+                        className="mt-6 w-full rounded-xl font-semibold bg-primary hover:bg-primary/80 text-white"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSelect(competition.name)
+                        }}
+                      >
+                        Register
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
+
+          <button
+            onClick={goNext}
+            className="relative z-50 p-3 rounded-full bg-card/80 backdrop-blur-md border-2 border-border text-white hover:bg-card hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 hover:scale-110"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
         </div>
 
-        <button
-          onClick={goNext}
-          className="relative z-50 p-3 rounded-full bg-card/80 backdrop-blur-md border-2 border-border text-white hover:bg-card hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 hover:scale-110"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
+        <div className="flex justify-center gap-2 mt-6">
+          {COMPETITIONS.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveIndex(index)}
+              className={`w-3 h-3 rounded-full transition-all cursor-pointer ${index === activeIndex ? 'bg-primary w-8' : 'bg-border hover:bg-primary/50'}`}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="flex justify-center gap-2 mt-6">
-        {COMPETITIONS.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setActiveIndex(index)}
-            className={`w-3 h-3 rounded-full transition-all cursor-pointer ${index === activeIndex ? 'bg-primary w-8' : 'bg-border hover:bg-primary/50'}`}
-          />
+      {/* Mobile: Vertical Stack */}
+      <div ref={mobileRef} className="md:hidden space-y-6">
+        {COMPETITIONS.map((competition) => (
+          <div
+            key={competition.id}
+            className="mobile-card relative flex flex-col rounded-2xl border-2 border-border/50 bg-card/60 backdrop-blur-md p-6 text-center text-primary-foreground shadow-lg shadow-primary/10"
+          >
+            <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
+            <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col">
+              <h2 className="mb-3 text-xl font-bold">
+                {competition.name}
+              </h2>
+
+              <p className="text-sm text-primary-foreground/80 mb-6">
+                {competition.description}
+              </p>
+
+              <Button
+                className="w-full rounded-xl font-semibold bg-primary hover:bg-primary/80 text-white py-3"
+                onClick={() => handleSelect(competition.name)}
+              >
+                Register
+              </Button>
+            </div>
+          </div>
         ))}
       </div>
     </div>
