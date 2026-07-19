@@ -14,16 +14,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     <div className="relative flex flex-col">
       <Header />
 
-      <div className="relative flex-1 min-h-0">
-        <div
-          className="fixed inset-0 z-0 bg-cover bg-no-repeat bg-center"
-          style={{
-            backgroundImage: `url(${IMAGES.bg})`,
-          }}
-        />
+      <div className="flex-1 min-h-0">
         <Toaster position='top-right' />
         <MusicCursor />
-        <div className="relative z-10">
+        <div className="relative overflow-y-hidden">
+          <div
+            className="fixed top-0 left-0 w-full h-full max-h-full z-0 bg-cover bg-no-repeat bg-center"
+            style={{
+              backgroundImage: `url(${IMAGES.bg})`,
+            }}
+          /> 
           {children}
         </div>
       </div>

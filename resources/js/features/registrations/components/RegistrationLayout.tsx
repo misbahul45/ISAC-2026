@@ -99,7 +99,7 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
           ))}
         </div>
 
-        <div className="w-full max-w-7xl px-4 responsive z-10">
+        <div className="w-full max-w-7xl responsive z-10">
           {children}
         </div>
       </div>
