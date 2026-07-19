@@ -1,19 +1,26 @@
-import { Head } from '@inertiajs/react';
+import React from 'react';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { AuthShell } from '@/features/auth/components/AuthShell';
 import { LoginForm } from '@/features/auth/components/LoginForm';
-import type { InertiaPageProps } from '@/types/inertia';
 
-export default function Login({ title = 'Login' }: InertiaPageProps) {
+const Login = () => {
     return (
-        <AuthLayout>
-            <Head title={title} />
-            <AuthShell
-                title="Login"
-                description="Masuk ke dashboard ISAC 2026."
-            >
-                <LoginForm />
-            </AuthShell>
-        </AuthLayout>
+        <AuthShell
+            title="Login"
+            description="Masuk ke dashboard ISAC 2026."
+        >
+            <LoginForm />
+        </AuthShell>
     );
-}
+};
+
+Login.layout = (page: React.ReactNode) => (
+    <AuthLayout
+        title="Login - ISAC 2026"
+        description="Masuk ke dashboard ISAC 2026."
+    >
+        {page}
+    </AuthLayout>
+);
+
+export default Login;

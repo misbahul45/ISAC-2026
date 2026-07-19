@@ -41,13 +41,13 @@ Route::prefix('files')->middleware('auth:sanctum')->group(function (): void {
 });
 
 Route::prefix('auth')->group(function (): void {
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/verify-code', [AuthController::class, 'verifyCode']);
-    Route::post('/change-password', [AuthController::class, 'changePassword']);
-    Route::post('/send-verification', [AuthController::class, 'sendVerification']);
-    Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+    Route::post('/verify-code', [AuthController::class, 'verifyCode'])->middleware('throttle:5,1');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
+    Route::post('/send-verification', [AuthController::class, 'sendVerification'])->middleware('throttle:3,1');
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout']);

@@ -43,18 +43,36 @@ Route::get('/register', function () {
     ]);
 })->name('register');
 
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->name('auth.')->group(function () {
     Route::get('/login', function () {
         return Inertia::render('Auth/Login', [
             'title' => 'Login',
         ]);
-    })->name('auth.login');
+    })->name('login');
 
     Route::get('/register', function () {
         return Inertia::render('Auth/Register', [
             'title' => 'Register',
         ]);
-    })->name('auth.register');
+    })->name('register');
+
+    Route::get('/forgot-email', function () {
+        return Inertia::render('Auth/ForgotEmail', [
+            'title' => 'Lupa Password',
+        ]);
+    })->name('forgot-email');
+
+    Route::get('/verify-email', function () {
+        return Inertia::render('Auth/VerifyEmail', [
+            'title' => 'Verifikasi Email',
+        ]);
+    })->name('verify-email');
+
+    Route::get('/change-password', function () {
+        return Inertia::render('Auth/ChangePassword', [
+            'title' => 'Ubah Password',
+        ]);
+    })->name('change-password');
 });
 
 Route::get('/dashboard', function () {
@@ -69,7 +87,7 @@ Route::get('/todos', function () {
     ]);
 })->name('todos.page');
 
-Route::prefix('registration')->name('registration.')->group(function () {
+Route::prefix('registration')->name('registration.')->middleware('auth')->group(function () {
     Route::get('/', function () {
         return Inertia::render('Registration/Index', [
             'title' => 'Registration',

@@ -1,19 +1,26 @@
-import { Head } from '@inertiajs/react';
+import React from 'react';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { AuthShell } from '@/features/auth/components/AuthShell';
 import { RegisterForm } from '@/features/auth/components/RegisterForm';
-import type { InertiaPageProps } from '@/types/inertia';
 
-export default function Register({ title = 'Register' }: InertiaPageProps) {
+const Register = () => {
     return (
-        <AuthLayout>
-            <Head title={title} />
-            <AuthShell
-                title="Register"
-                description="Daftar akun untuk mengakses sistem ISAC 2026."
-            >
-                <RegisterForm />
-            </AuthShell>
-        </AuthLayout>
+        <AuthShell
+            title="Register"
+            description="Daftar akun untuk mengakses sistem ISAC 2026."
+        >
+            <RegisterForm />
+        </AuthShell>
     );
-}
+};
+
+Register.layout = (page: React.ReactNode) => (
+    <AuthLayout
+        title="Register - ISAC 2026"
+        description="Daftar akun untuk mengakses sistem ISAC 2026."
+    >
+        {page}
+    </AuthLayout>
+);
+
+export default Register;
