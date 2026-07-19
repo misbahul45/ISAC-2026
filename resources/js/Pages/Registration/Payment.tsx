@@ -1,6 +1,6 @@
 import React from 'react'
-import RegistrationLayout from './components/RegistrationLayout'
-import FormPayment from './components/FormPayment'
+import RegistrationLayout from '../../features/registrations/components/RegistrationLayout'
+import FormPayment from '../../features/registrations/components/FormPayment'
 
 const Payment = () => {
   return (

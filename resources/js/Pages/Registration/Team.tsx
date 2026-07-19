@@ -1,6 +1,6 @@
 import React from 'react'
-import RegistrationLayout from './components/RegistrationLayout'
-import FormRegistrasiTeam from './components/FormRegistrasiTeam'
+import RegistrationLayout from '../../features/registrations/components/RegistrationLayout'
+import FormRegistrasiTeam from '../../features/registrations/components/FormRegistrasiTeam'
 
 const Team = () => {
   return (

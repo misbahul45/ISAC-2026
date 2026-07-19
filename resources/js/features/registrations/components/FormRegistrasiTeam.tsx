@@ -24,7 +24,7 @@ import {
   registrasiTeamFormSchema,
   type RegisterInput,
   type RegisterTeamFormInput,
-} from '../schema/RegistrasiTeam'
+} from '../schemas/RegistrasiTeam'
 
 type Props = {
   competitionType: 'OLIMPIADE' | 'BUSINESS_PLAN' | 'BUSINESS_IT_CASE'

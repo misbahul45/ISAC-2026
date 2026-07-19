@@ -1,5 +1,5 @@
 import React from 'react'
-import RegistrationLayout from './components/RegistrationLayout'
+import RegistrationLayout from '../../features/registrations/components/RegistrationLayout'
 
 const Documents = () => {
   return (

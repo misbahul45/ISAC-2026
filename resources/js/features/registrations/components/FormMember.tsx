@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-import { memberSchema, type MemberFormData } from '@/Pages/Registration/schema/createTeamMember'
+import { memberSchema, type MemberFormData } from '@/features/registrations/schemas/createTeamMember'
 import React, { useEffect, useState } from 'react'
 
 interface FormMemberProps {

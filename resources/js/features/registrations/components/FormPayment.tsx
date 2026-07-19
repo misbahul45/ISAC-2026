@@ -1,5 +1,5 @@
 import React from 'react'
-import { uploadPaymentSchema, type UploadPayemnetInput } from '../schema/uploadPayment'
+import { uploadPaymentSchema, type UploadPayemnetInput } from '../schemas/uploadPayment'
 
 const FormPayment = () => {
   return (

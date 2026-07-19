@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import RegistrationLayout from './components/RegistrationLayout'
+import RegistrationLayout from '../../features/registrations/components/RegistrationLayout'
 import { COMPETITIONS } from '@/constants/registration'
 import { Button } from '@/components/ui/button'
 import { router } from '@inertiajs/react'
