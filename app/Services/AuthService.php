@@ -56,6 +56,10 @@ class AuthService
             throw new InvalidCredentialException("Email belum diverifikasi. Silakan cek email kamu.");
         }
 
+        if ($team->isBlocked()) {
+            throw new InvalidCredentialException("Akun team kamu sedang diblokir. Silakan hubungi panitia.");
+        }
+
         $team->tokens()->delete();
 
         $token = $team->createToken('auth-token');
@@ -83,6 +87,7 @@ class AuthService
         $this->authRepository->createResetCode([
             'email'      => $email,
             'code'       => $code,
+            'type'       => 'reset_password',
             'expired_at' => now()->addMinutes(5),
         ]);
 
