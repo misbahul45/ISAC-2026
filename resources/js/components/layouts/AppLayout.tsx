@@ -5,25 +5,24 @@ import { IMAGES } from '@/constants/general'
 import { Toaster } from '../ui/sonner'
 import MusicCursor from '../shared/MusicCursor'
 
-
 type AppLayoutProps = {
   children: ReactNode
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="relative flex flex-col min-h-screen">
+    <div className="relative flex flex-col">
       <Header />
 
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-h-0">
         <div
-          className="absolute inset-0 z-0 bg-cover bg-no-repeat bg-center"
+          className="fixed inset-0 z-0 bg-cover bg-no-repeat bg-center"
           style={{
             backgroundImage: `url(${IMAGES.bg})`,
           }}
         />
-        <Toaster />
-          <MusicCursor />
+        <Toaster position='top-right' />
+        <MusicCursor />
         <div className="relative z-10">
           {children}
         </div>
