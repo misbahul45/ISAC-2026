@@ -5,7 +5,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "vercel-build": "npm install && npm run build"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
