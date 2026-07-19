@@ -84,7 +84,7 @@ const Index = () => {
             return (
               <div
                 key={competition.id}
-                className="absolute w-full max-w-sm cursor-pointer"
+                className="absolute w-full max-w-sm cursor-pointer shadow-2xl shadow-primary/20"
                 style={getCardStyle(index)}
                 onClick={() => isActive && handleSelect(competition.name)}
               >

@@ -31,6 +31,7 @@ const Biodata = () => {
   const [allCompleted, setAllCompleted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const submitButtonRef = useRef<HTMLButtonElement>(null)
 
   const handleFocus = (index: number) => {
     if (allCompleted) return
@@ -52,14 +53,23 @@ const Biodata = () => {
     setMembers(prevMembers => prevMembers.map((m, i) => ({ ...m, isActive: i === prevIndex })))
   }
 
+  const scrollToSubmitButton = () => {
+    setTimeout(() => {
+      submitButtonRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    }, 300)
+  }
+
   const handleSave = (memberId: number) => (data: MemberFormData) => {
     setSavedData(prev => ({ ...prev, [memberId]: data }))
     setValidState(prev => ({ ...prev, [memberId]: true }))
     toast.success(`${members.find(m => m.id === memberId)?.role} berhasil disimpan!`)
-    
+
     const currentIndex = members.findIndex(m => m.id === memberId)
     const nextIndex = members.findIndex((m, i) => i > currentIndex && !savedData[m.id])
-    
+
     if (nextIndex !== -1) {
       setActiveIndex(nextIndex)
       setMembers(prev => prev.map((m, i) => ({ ...m, isActive: i === nextIndex })))
@@ -68,6 +78,8 @@ const Biodata = () => {
       if (firstEmpty !== -1) {
         setActiveIndex(firstEmpty)
         setMembers(prev => prev.map((m, i) => ({ ...m, isActive: i === firstEmpty })))
+      } else {
+        scrollToSubmitButton()
       }
     }
   }
@@ -94,7 +106,7 @@ const Biodata = () => {
       setIsSubmitting(false)
       toast.dismiss()
       toast.success('Semua data berhasil disimpan ke database!')
-      
+
       setTimeout(() => {
         router.visit('/registration/documents')
       }, 1500)
@@ -140,7 +152,7 @@ const Biodata = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
+    <div className="w-full max-w-7xl mx-auto px-4 text-center text-primary-foreground">
       <div className="flex items-center justify-center gap-4">
         <button
           onClick={goPrev}
@@ -160,7 +172,7 @@ const Biodata = () => {
               className="absolute w-full max-w-lg transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] will-change-transform"
               style={getLayoutTransform(index)}
             >
-              <div className="relative bg-background/80 backdrop-blur-md rounded-2xl p-6 border border-border/50">
+              <div className="relative bg-background/80 backdrop-blur-md rounded-2xl p-6 border border-border/50 shadow-2xl shadow-secondary/30">
                 <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
                 <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
 
@@ -189,9 +201,10 @@ const Biodata = () => {
       <div className="mt-12 pb-8">
         {!allCompleted ? (
           <button
+            ref={submitButtonRef}
             onClick={handleComplete}
             disabled={!allMembersValid || isSubmitting}
-            className="px-10 py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary/80 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-xl hover:scale-105"
+            className="px-10 py-4 rounded-xl cursor-pointer bg-primary text-white font-bold text-lg hover:bg-primary/80 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-xl hover:scale-105"
           >
             {isSubmitting ? (
               <span className="flex items-center gap-3">
@@ -199,17 +212,19 @@ const Biodata = () => {
                 Menyimpan...
               </span>
             ) : (
-              'Simpan Semua ke Database'
+              'Simpan Semua Anggota ke Tim'
             )}
           </button>
         ) : (
           <div className="flex flex-col items-center gap-4 animate-fade-in">
-            <div className="p-4 rounded-full bg-green-500/20 border border-green-500/50">
-              <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+            <div className="flex gap-4 items-center">
+              <div className="p-4 rounded-full bg-green-500/20 border border-green-500/50">
+                <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-green-400 font-medium">Data berhasil disimpan!</p>
             </div>
-            <p className="text-green-400 font-medium">Data berhasil disimpan!</p>
             <p className="text-muted-foreground text-sm">Mengalihkan ke halaman dokumen...</p>
           </div>
         )}

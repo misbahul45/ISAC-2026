@@ -3,6 +3,7 @@ import Header from './Header'
 import Footer from './Footer'
 import { IMAGES } from '@/constants/general'
 import { Toaster } from '../ui/sonner'
+import MusicCursor from '../shared/MusicCursor'
 
 
 type AppLayoutProps = {
@@ -22,7 +23,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           }}
         />
         <Toaster />
-
+          <MusicCursor />
         <div className="relative z-10">
           {children}
         </div>
