@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
-import TeamDetail from '../ui/TeamDetail'
+import TeamDetail from './TeamDetail'
 import MemberCard from './MemberCard'
 import EditTeamForm from './EditTeamForm'
 import EditMemberForm from './EditMemberForm'
@@ -11,17 +11,32 @@ const STORAGE_KEY = 'team-account-data'
 
 const defaultData: TeamAccountData = {
   team: {
-    name: 'Lorem Ipsum',
-    school_name: 'Lorem Ipsum',
-    province: 'Lorem Ipsum',
-    city: 'Lorem Ipsum',
-    address: 'Lorem Ipsum',
+    name: 'TechVision UNAIR',
+    school_name: 'Universitas Airlangga',
+    province: 'Jawa Timur',
+    city: 'Surabaya',
+    address: 'Jl. Mulyorejo, Kecamatan Mulyorejo, Kota Surabaya, Jawa Timur 60115',
     competition_type: 'BUSINESS_IT_CASE',
   },
   members: [
-    { id: 1, namaLengkap: 'Lorem Ipsum', nomorTelepon: 'Lorem Ipsum', jenjangPendidikan: 'Lorem Ipsum' },
-    { id: 2, namaLengkap: 'Lorem Ipsum', nomorTelepon: 'Lorem Ipsum', jenjangPendidikan: 'Lorem Ipsum' },
-    { id: 3, namaLengkap: 'Lorem Ipsum', nomorTelepon: 'Lorem Ipsum', jenjangPendidikan: 'Lorem Ipsum' },
+    {
+      id: 1,
+      namaLengkap: 'Muhammad Fajar Pratama',
+      nomorTelepon: '081234567890',
+      jenjangPendidikan: 'S1',
+    },
+    {
+      id: 2,
+      namaLengkap: 'Nabila Putri Ramadhani',
+      nomorTelepon: '081298765432',
+      jenjangPendidikan: 'S1',
+    },
+    {
+      id: 3,
+      namaLengkap: 'Rizky Aditya Saputra',
+      nomorTelepon: '082112345678',
+      jenjangPendidikan: 'S1',
+    },
   ],
   approvedAt: null,
 }
@@ -90,9 +105,8 @@ const TeamAccount = () => {
     { bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.3)', glow: 'rgba(16, 185, 129, 0.4)' },
   ]
 
-
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 p-4 ">
+    <div className="w-full max-w-6xl mx-auto space-y-6 p-4 ">
       {editMode === 'team' ? (
         <div className="relative">
           <EditTeamForm
@@ -102,26 +116,40 @@ const TeamAccount = () => {
           />
         </div>
       ) : (
-        <div className="bg-background/20 rounded-2xl backdrop-blur-sm p-6" >
-          <TeamDetail data={data.team} onEdit={handleEditTeam} accent={accentColors[0]} />
+        <div className="relative isolate overflow-hidden rounded-2xl">
+          {/* Border gradient — sama seperti Header: track statis + spin conic-gradient */}
+          <span aria-hidden="true" className="header-border-track" />
+          <span aria-hidden="true" className="header-border-spin" />
+
+          <div className="relative z-10 rounded-[inherit] bg-background/20 backdrop-blur-sm p-6">
+            <TeamDetail data={data.team} onEdit={handleEditTeam} accent={accentColors[0]} />
+          </div>
         </div>
       )}
 
       {data.members.map((member, idx) => (
-        <div key={member.id}>
-          {editMode === 'member' && editingMemberId === member.id ? (
-            <div className="bg-background/20 rounded-2xl backdrop-blur-sm p-6">
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-15" style={{ background: `radial-gradient(circle, ${accentColors[idx].glow} 0%, transparent 70%)`, transform: 'translate(40%, -40%)' }} />
+        <div key={member.id} className="relative isolate overflow-hidden rounded-2xl">
+          {/* Border gradient — sama seperti Header: track statis + spin conic-gradient */}
+          <span aria-hidden="true" className="header-border-track" />
+          <span aria-hidden="true" className="header-border-spin" />
+
+          <div className="relative z-10 rounded-[inherit] bg-background/20 backdrop-blur-sm p-6">
+            <div
+              className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-15 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle, ${accentColors[idx].glow} 0%, transparent 70%)`,
+                transform: 'translate(40%, -40%)',
+              }}
+            />
+
+            {editMode === 'member' && editingMemberId === member.id ? (
               <EditMemberForm
                 defaultValues={member}
                 title={memberTitles[idx]}
                 onSave={handleSaveMember}
                 onCancel={handleCancelEdit}
               />
-            </div>
-          ) : (
-            <div className="bg-background/20 rounded-2xl backdrop-blur-sm p-6">
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-15" style={{ background: `radial-gradient(circle, ${accentColors[idx].glow} 0%, transparent 70%)`, transform: 'translate(40%, -40%)' }} />
+            ) : (
               <MemberCard
                 member={member}
                 title={memberTitles[idx]}
@@ -129,12 +157,12 @@ const TeamAccount = () => {
                 onEdit={() => handleEditMember(member.id)}
                 accent={accentColors[idx]}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ))}
 
-      <div className="relative overflow-hidden rounded-2xl p-6">
+      <div className="relative z-10 rounded-[inherit] p-6">
         <ApproveButton
           isApproved={!!data.approvedAt}
           hasChanges={hasChanges}

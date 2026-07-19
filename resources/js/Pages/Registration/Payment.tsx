@@ -55,7 +55,7 @@ const Payment = () => {
 
       {step === 'payment' && (
         <div className="space-y-8">
-          <FormPayment />
+          <FormPayment amount={50000} qrImageUrl='/qris.png' />
           <div className="flex justify-center">
             <button
               onClick={handleBack}

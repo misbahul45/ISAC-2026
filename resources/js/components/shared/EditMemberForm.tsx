@@ -78,18 +78,20 @@ const EditMemberForm = ({ defaultValues, title, onSave, onCancel }: EditMemberFo
           onSubmit={form.handleSubmit((data) => onSave({ ...data, id: defaultValues.id }))}
           className="w-full"
         >
-          <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 px-6 py-6 sm:px-8">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Edit {title}</h2>
-              <p className="mt-1 text-sm text-[#8891BB]">Perbarui data anggota tim</p>
+          <CardHeader>
+            <div className="flex flex-row items-center justify-between border-b border-white/5 px-6 py-6 sm:px-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Edit {title}</h2>
+                  <p className="mt-1 text-sm text-[#8891BB]">Perbarui data anggota tim</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#8891BB] backdrop-blur-md transition-all duration-300 hover:border-[#FF5C5C]/40 hover:bg-[#FF5C5C]/10 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
             </div>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#8891BB] backdrop-blur-md transition-all duration-300 hover:border-[#FF5C5C]/40 hover:bg-[#FF5C5C]/10 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </button>
           </CardHeader>
 
           <CardContent className="px-6 py-8 sm:px-8">
