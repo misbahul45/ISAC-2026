@@ -65,13 +65,6 @@ const Index = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
-      <div className="flex items-center justify-center gap-4 mb-8">
-        <h1 className="text-4xl font-bold flex items-center gap-3">
-          <Trophy className="w-8 h-8 text-primary" />
-          Pilih Kompetisi
-        </h1>
-      </div>
-
       <div className="relative flex items-center justify-center gap-4 min-h-[500px] perspective-[1200px]">
         <button
           onClick={goPrev}
