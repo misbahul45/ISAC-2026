@@ -23,10 +23,6 @@ Route::get('/system/status', function () {
     ]);
 });
 
-Route::get('/todos', [TodoController::class, 'index']);
-Route::post('/todos', [TodoController::class, 'store']);
-Route::patch('/todos/{todo}', [TodoController::class, 'update']);
-Route::delete('/todos/{todo}', [TodoController::class, 'destroy']);
 
 Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
