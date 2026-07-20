@@ -142,7 +142,13 @@ const FloatingIcon = ({ config }: { config: FloatingIconConfig }) => {
 
 export function AuthLayout({ children, title, description, noindex = true }: AuthLayoutProps) {
     const { url } = usePage();
-    const floatingIcons = AUTH_PAGE_CONFIGS[url] || AUTH_PAGE_CONFIGS['/auth/login'];
+    const path = url.split('?')[0];
+    const configPath = path === '/auth/forgot-password'
+        ? '/auth/forgot-email'
+        : path.startsWith('/auth/reset-password')
+            ? '/auth/change-password'
+            : path;
+    const floatingIcons = AUTH_PAGE_CONFIGS[configPath] || AUTH_PAGE_CONFIGS['/auth/login'];
 
     return (
         <>

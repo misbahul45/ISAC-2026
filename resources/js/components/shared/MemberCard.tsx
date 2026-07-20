@@ -1,15 +1,11 @@
 import React from 'react'
+import type { MemberFormValues } from '@/features/registrations/types/registrationTypes'
 
 interface MemberCardProps {
-  member: {
-    id: number
-    namaLengkap: string
-    nomorTelepon: string
-    jenjangPendidikan: string
-  }
+  member: MemberFormValues
   title: string
   number: number
-  onEdit: () => void
+  onEdit?: () => void
   accent: {
     bg: string
     border: string
@@ -18,6 +14,17 @@ interface MemberCardProps {
 }
 
 const MemberCard: React.FC<MemberCardProps> = ({ member, title, number, onEdit, accent }) => {
+  const fields = [
+    { label: 'Nama Lengkap', value: member.name },
+    { label: 'Email', value: member.email },
+    { label: 'Nomor Telepon', value: member.phone },
+    { label: 'Jenjang', value: member.education_level },
+    { label: 'Jurusan', value: member.major || '-' },
+    { label: 'Fakultas', value: member.faculty || '-' },
+    { label: 'NISN/NIM', value: member.student_id },
+    { label: 'Tanggal Lahir', value: member.birth_date },
+  ]
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -30,27 +37,23 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, title, number, onEdit, 
           </div>
           <h2 className="text-xl font-bold text-white">{title}</h2>
         </div>
-        <button
-          onClick={onEdit}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-white border border-white/10 hover:bg-white/10 transition-all"
-          style={{ background: accent.bg }}
-        >
-          Edit
-        </button>
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-white border border-white/10 hover:bg-white/10 transition-all"
+            style={{ background: accent.bg }}
+          >
+            Edit
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-1">
-          <p className="text-xs text-white/40 uppercase tracking-wider">Nama Lengkap</p>
-          <p className="text-white font-medium">{member.namaLengkap}</p>
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs text-white/40 uppercase tracking-wider">Nomor Telepon</p>
-          <p className="text-white font-medium">{member.nomorTelepon}</p>
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs text-white/40 uppercase tracking-wider">Jenjang</p>
-          <p className="text-white font-medium">{member.jenjangPendidikan}</p>
-        </div>
+        {fields.map((field) => (
+          <div key={field.label} className="space-y-1">
+            <p className="text-xs text-white/40 uppercase tracking-wider">{field.label}</p>
+            <p className="text-white font-medium">{field.value}</p>
+          </div>
+        ))}
       </div>
     </>
   )

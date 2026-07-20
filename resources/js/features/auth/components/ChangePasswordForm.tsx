@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { useState } from 'react';
+import { Link, router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { Eye, EyeOff, KeyRound, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -19,39 +19,34 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { changePasswordSchema, type ChangePasswordInput } from '../schemas';
+import { useChangePassword } from '../hooks/useAuth';
 
 export function ChangePasswordForm() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [otpFromQuery, setOtpFromQuery] = useState<string | null>(null);
-    const [email, setEmail] = useState<string | null>(null);
+    const changePasswordMutation = useChangePassword();
 
     const form = useForm<ChangePasswordInput>({
         resolver: zodResolver(changePasswordSchema),
         defaultValues: {
-            otp: '',
             password: '',
-            confirmPassword: '',
+            password_confirmation: '',
         },
     });
 
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const queryOtp = params.get('otp');
-        const queryEmail = params.get('email');
-
-        setEmail(queryEmail);
-
-        if (queryOtp) {
-            setOtpFromQuery(queryOtp);
-            form.setValue('otp', queryOtp);
+    async function handleSubmit(data: ChangePasswordInput) {
+        setSuccessMessage(null);
+        try {
+            const response = await changePasswordMutation.mutateAsync({
+                password: data.password,
+                password_confirmation: data.password_confirmation,
+            });
+            setSuccessMessage(response.message);
+            router.visit(response.data.redirectTo);
+        } catch {
+            return;
         }
-    }, [form]);
-
-    function handleSubmit(data: ChangePasswordInput) {
-        console.log(data);
-        setSuccessMessage('Password berhasil diubah. Silakan masuk kembali.');
     }
 
     return (
@@ -69,48 +64,13 @@ export function ChangePasswordForm() {
                         <div className="h-1.5 w-10 rounded-full bg-gradient-to-l from-primary to-secondary" />
                     </div>
                     <CardDescription className="text-center text-sm text-muted-foreground">
-                        {email
-                            ? `Buat password baru untuk ${email}`
-                            : 'Buat password baru untuk akun Anda'}
+                        Buat password baru untuk akun Anda
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent>
                     <form onSubmit={form.handleSubmit(handleSubmit)} noValidate>
                         <FieldGroup className="space-y-5">
-                            {!otpFromQuery && (
-                                <Controller
-                                    name="otp"
-                                    control={form.control}
-                                    render={({ field, fieldState }) => (
-                                        <Field data-invalid={fieldState.invalid}>
-                                            <FieldLabel htmlFor={field.name} className="text-xs font-semibold uppercase tracking-wider text-white">
-                                                Kode OTP
-                                            </FieldLabel>
-
-                                            <div className="relative">
-                                                <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" />
-                                                <Input
-                                                    {...field}
-                                                    id={field.name}
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    maxLength={6}
-                                                    aria-invalid={fieldState.invalid}
-                                                    placeholder="123456"
-                                                    autoComplete="one-time-code"
-                                                    className="h-12 rounded-xl border-border/50 bg-background/60 pl-10 text-center text-lg tracking-[0.5em] text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
-                                                />
-                                            </div>
-
-                                            {fieldState.invalid && (
-                                                <FieldError errors={[fieldState.error]} />
-                                            )}
-                                        </Field>
-                                    )}
-                                />
-                            )}
-
                             <Controller
                                 name="password"
                                 control={form.control}
@@ -153,7 +113,7 @@ export function ChangePasswordForm() {
                             />
 
                             <Controller
-                                name="confirmPassword"
+                                name="password_confirmation"
                                 control={form.control}
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid}>
@@ -199,11 +159,22 @@ export function ChangePasswordForm() {
                                 </p>
                             )}
 
+                            {changePasswordMutation.error && (
+                                <p className="text-sm font-medium text-red-400" role="alert">
+                                    {changePasswordMutation.error.message}
+                                </p>
+                            )}
+
                             <Button
                                 type="submit"
+                                disabled={
+                                    changePasswordMutation.isPending
+                                }
                                 className="h-12 w-full rounded-xl bg-primary font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                SIMPAN PASSWORD
+                                {changePasswordMutation.isPending
+                                    ? 'MENYIMPAN...'
+                                    : 'SIMPAN PASSWORD'}
                             </Button>
 
                             <div className="flex items-center justify-center gap-2 pt-2">

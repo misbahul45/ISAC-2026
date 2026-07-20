@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TodoController;
+use App\Http\Controllers\ImageKitAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/system/status', function () {
@@ -35,6 +36,9 @@ Route::prefix('files')->middleware('auth:sanctum')->group(function (): void {
     Route::post('/', [FileController::class, 'store']);
     Route::get('/{file}', [FileController::class, 'show'])->name('files.show');
 });
+
+Route::get('/imagekit-auth', [ImageKitAuthController::class, 'auth'])
+    ->middleware('auth:sanctum');
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');

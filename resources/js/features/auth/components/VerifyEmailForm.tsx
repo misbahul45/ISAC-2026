@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ClipboardEvent, KeyboardEvent } from 'react';
-import { Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { Link, router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -18,92 +17,25 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { verifyEmailSchema, type VerifyEmailInput } from '../schemas';
+import {
+    useResendVerification,
+    useVerifyEmail,
+} from '../hooks/useAuth';
+import { OtpInput } from './OtpInput';
 
 const RESEND_COOLDOWN_SECONDS = 60;
-const OTP_LENGTH = 6;
-
-type OtpInputProps = {
-    value: string;
-    onChange: (value: string) => void;
-    invalid?: boolean;
-};
-
-function OtpInput({ value, onChange, invalid }: OtpInputProps) {
-    const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
-
-    function setDigit(index: number, digit: string) {
-        const digits = value.padEnd(OTP_LENGTH, ' ').split('');
-        digits[index] = digit || ' ';
-        onChange(digits.join('').replace(/\s/g, ''));
-    }
-
-    function handleChange(index: number, rawValue: string) {
-        const digit = rawValue.replace(/\D/g, '').slice(-1);
-        setDigit(index, digit);
-
-        if (digit && index < OTP_LENGTH - 1) {
-            inputsRef.current[index + 1]?.focus();
-        }
-    }
-
-    function handleKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
-        if (event.key === 'Backspace' && !value[index] && index > 0) {
-            inputsRef.current[index - 1]?.focus();
-        }
-    }
-
-    function handlePaste(event: ClipboardEvent<HTMLInputElement>) {
-        event.preventDefault();
-        const pasted = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
-
-        if (!pasted) {
-            return;
-        }
-
-        onChange(pasted);
-        const focusIndex = Math.min(pasted.length, OTP_LENGTH - 1);
-        inputsRef.current[focusIndex]?.focus();
-    }
-
-    return (
-        <div className="flex items-center justify-center gap-2">
-            {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                <input
-                    key={index}
-                    ref={(el) => {
-                        inputsRef.current[index] = el;
-                    }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={value[index] ?? ''}
-                    onChange={(event) => handleChange(index, event.target.value)}
-                    onKeyDown={(event) => handleKeyDown(index, event)}
-                    onPaste={handlePaste}
-                    aria-invalid={invalid}
-                    className="h-14 w-12 rounded-xl border border-border/50 bg-background/60 text-center text-xl font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-            ))}
-        </div>
-    );
-}
-
 export function VerifyEmailForm() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    const [email, setEmail] = useState<string | null>(null);
     const [cooldown, setCooldown] = useState(0);
+    const verifyEmailMutation = useVerifyEmail();
+    const resendVerificationMutation = useResendVerification();
 
     const form = useForm<VerifyEmailInput>({
         resolver: zodResolver(verifyEmailSchema),
         defaultValues: {
-            otp: '',
+            code: '',
         },
     });
-
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        setEmail(params.get('email'));
-    }, []);
 
     useEffect(() => {
         if (cooldown <= 0) {
@@ -117,18 +49,29 @@ export function VerifyEmailForm() {
         return () => clearInterval(timer);
     }, [cooldown]);
 
-    function handleSubmit(data: VerifyEmailInput) {
-        console.log(data);
-        setSuccessMessage('Email berhasil diverifikasi.');
+    async function handleSubmit(data: VerifyEmailInput) {
+        setSuccessMessage(null);
+        try {
+            const response = await verifyEmailMutation.mutateAsync({ code: data.code });
+            setSuccessMessage(response.message);
+            router.visit(response.data.redirectTo);
+        } catch {
+            return;
+        }
     }
 
-    function handleResend() {
+    async function handleResend() {
         if (cooldown > 0) {
             return;
         }
 
-        console.log('resend otp to', email);
-        setCooldown(RESEND_COOLDOWN_SECONDS);
+        try {
+            const response = await resendVerificationMutation.mutateAsync();
+            setSuccessMessage(response.message);
+            setCooldown(RESEND_COOLDOWN_SECONDS);
+        } catch {
+            return;
+        }
     }
 
     return (
@@ -146,9 +89,7 @@ export function VerifyEmailForm() {
                         <div className="h-1.5 w-10 rounded-full bg-gradient-to-l from-secondary to-primary" />
                     </div>
                     <CardDescription className="text-center text-sm text-muted-foreground">
-                        {email
-                            ? `Masukkan kode OTP yang dikirim ke ${email}`
-                            : 'Masukkan kode OTP yang dikirim ke email Anda'}
+                        Masukkan kode OTP yang dikirim ke email akun Anda
                     </CardDescription>
                 </CardHeader>
 
@@ -156,7 +97,7 @@ export function VerifyEmailForm() {
                     <form onSubmit={form.handleSubmit(handleSubmit)} noValidate>
                         <FieldGroup className="space-y-5">
                             <Controller
-                                name="otp"
+                                name="code"
                                 control={form.control}
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid}>
@@ -183,11 +124,20 @@ export function VerifyEmailForm() {
                                 </p>
                             )}
 
+                            {(verifyEmailMutation.error ||
+                                resendVerificationMutation.error) && (
+                                <p className="text-sm font-medium text-red-400" role="alert">
+                                    {verifyEmailMutation.error?.message ??
+                                        resendVerificationMutation.error?.message}
+                                </p>
+                            )}
+
                             <Button
                                 type="submit"
+                                disabled={verifyEmailMutation.isPending}
                                 className="h-12 w-full rounded-xl bg-primary font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                VERIFIKASI
+                                {verifyEmailMutation.isPending ? 'MEMVERIFIKASI...' : 'VERIFIKASI'}
                             </Button>
 
                             <div className="flex items-center justify-center gap-2 pt-2">
@@ -195,7 +145,10 @@ export function VerifyEmailForm() {
                                 <button
                                     type="button"
                                     onClick={handleResend}
-                                    disabled={cooldown > 0}
+                                    disabled={
+                                        cooldown > 0 ||
+                                        resendVerificationMutation.isPending
+                                    }
                                     className="text-sm font-semibold text-secondary transition-colors hover:text-secondary/80 hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
                                 >
                                     {cooldown > 0 ? `Kirim ulang (${cooldown}s)` : 'Kirim Ulang'}

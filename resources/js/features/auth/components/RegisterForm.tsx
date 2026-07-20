@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -19,25 +19,32 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { registerSchema, type RegisterInput } from '../schemas';
+import { useRegister } from '../hooks/useAuth';
 
 export function RegisterForm() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const registerMutation = useRegister();
 
     const form = useForm<RegisterInput>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
-            name: '',
             email: '',
             password: '',
-            confirmPassword: '',
+            password_confirmation: '',
         },
     });
 
-    function handleSubmit(data: RegisterInput) {
-        console.log(data);
-        setSuccessMessage('Register form submitted locally.');
+    async function handleSubmit(data: RegisterInput) {
+        setSuccessMessage(null);
+        try {
+            const response = await registerMutation.mutateAsync(data);
+            setSuccessMessage(response.message);
+            router.visit(response.data.redirectTo ?? '/auth/verify-email');
+        } catch {
+            return;
+        }
     }
 
     return (
@@ -62,35 +69,6 @@ export function RegisterForm() {
                 <CardContent>
                     <form onSubmit={form.handleSubmit(handleSubmit)} noValidate>
                         <FieldGroup className="space-y-5">
-                            <Controller
-                                name="name"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid}>
-                                        <FieldLabel htmlFor={field.name} className="text-xs font-semibold uppercase tracking-wider text-white">
-                                            Nama Lengkap
-                                        </FieldLabel>
-
-                                        <div className="relative">
-                                            <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" />
-                                            <Input
-                                                {...field}
-                                                id={field.name}
-                                                type="text"
-                                                aria-invalid={fieldState.invalid}
-                                                placeholder="Nama tim atau panggilan"
-                                                autoComplete="name"
-                                                className="h-12 rounded-xl border-border/50 bg-background/60 pl-10 text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
-                                            />
-                                        </div>
-
-                                        {fieldState.invalid && (
-                                            <FieldError errors={[fieldState.error]} />
-                                        )}
-                                    </Field>
-                                )}
-                            />
-
                             <Controller
                                 name="email"
                                 control={form.control}
@@ -162,7 +140,7 @@ export function RegisterForm() {
                             />
 
                             <Controller
-                                name="confirmPassword"
+                                name="password_confirmation"
                                 control={form.control}
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid}>
@@ -208,11 +186,18 @@ export function RegisterForm() {
                                 </p>
                             )}
 
+                            {registerMutation.error && (
+                                <p className="text-sm font-medium text-red-400" role="alert">
+                                    {registerMutation.error.message}
+                                </p>
+                            )}
+
                             <Button
                                 type="submit"
+                                disabled={registerMutation.isPending}
                                 className="h-12 w-full rounded-xl bg-primary font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                DAFTAR
+                                {registerMutation.isPending ? 'MEMPROSES...' : 'DAFTAR'}
                             </Button>
 
                             <div className="flex items-center justify-center gap-2 pt-2">

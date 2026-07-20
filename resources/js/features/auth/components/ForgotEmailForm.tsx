@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { Mail } from 'lucide-react';
@@ -19,9 +19,11 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { forgotEmailSchema, type ForgotEmailInput } from '../schemas';
+import { useForgotPassword } from '../hooks/useAuth';
 
 export function ForgotEmailForm() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const forgotPasswordMutation = useForgotPassword();
 
     const form = useForm<ForgotEmailInput>({
         resolver: zodResolver(forgotEmailSchema),
@@ -30,9 +32,15 @@ export function ForgotEmailForm() {
         },
     });
 
-    function handleSubmit(data: ForgotEmailInput) {
-        console.log(data);
-        setSuccessMessage('Kode verifikasi telah dikirim ke email Anda.');
+    async function handleSubmit(data: ForgotEmailInput) {
+        setSuccessMessage(null);
+        try {
+            const response = await forgotPasswordMutation.mutateAsync(data);
+            setSuccessMessage(response.message);
+            router.visit(response.data.redirectTo ?? '/auth/reset-password/verify');
+        } catch {
+            return;
+        }
     }
 
     return (
@@ -92,11 +100,18 @@ export function ForgotEmailForm() {
                                 </p>
                             )}
 
+                            {forgotPasswordMutation.error && (
+                                <p className="text-sm font-medium text-red-400" role="alert">
+                                    {forgotPasswordMutation.error.message}
+                                </p>
+                            )}
+
                             <Button
                                 type="submit"
+                                disabled={forgotPasswordMutation.isPending}
                                 className="h-12 w-full rounded-xl bg-primary font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                KIRIM KODE
+                                {forgotPasswordMutation.isPending ? 'MENGIRIM...' : 'KIRIM KODE'}
                             </Button>
 
                             <div className="flex items-center justify-center gap-2 pt-2">

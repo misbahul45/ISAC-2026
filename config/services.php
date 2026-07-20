@@ -41,4 +41,8 @@ return [
         'sender_name'  => env('BREVO_SENDER_NAME'),
     ],
 
+    'imagekit' => [
+        'private_key' => env('IMAGEKIT_PRIVATE_KEY'),
+    ],
+
 ];

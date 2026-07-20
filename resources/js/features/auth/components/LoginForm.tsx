@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
@@ -18,23 +18,37 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { loginSchema, type LoginInput } from '../schemas';
+import { useLogin } from '../hooks/useAuth';
 
 export function LoginForm() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const loginMutation = useLogin();
 
     const form = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
             email: '',
             password: '',
+            remember: false,
         },
     });
 
-    function handleSubmit(data: LoginInput) {
-        console.log(data);
-        setSuccessMessage('Login form submitted locally.');
+    async function handleSubmit(data: LoginInput) {
+        setSuccessMessage(null);
+        try {
+            const response = await loginMutation.mutateAsync(data);
+            setSuccessMessage(response.message);
+            router.visit(
+                response.data.redirectTo ??
+                    response.data.team.nextRedirect ??
+                    '/dashboard',
+            );
+        } catch {
+            return;
+        }
     }
 
     return (
@@ -98,7 +112,7 @@ export function LoginForm() {
                                                 Password
                                             </FieldLabel>
                                             <Link
-                                                href="/auth/forgot-email"
+                                                href="/auth/forgot-password"
                                                 className="text-xs text-primary transition-colors hover:text-primary/80 hover:underline"
                                             >
                                                 Lupa Password?
@@ -137,17 +151,40 @@ export function LoginForm() {
                                 )}
                             />
 
+                            <Controller
+                                name="remember"
+                                control={form.control}
+                                render={({ field }) => (
+                                    <Field orientation="horizontal" className="items-center gap-3">
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                        <FieldLabel className="text-sm text-muted-foreground">
+                                            Ingat sesi login
+                                        </FieldLabel>
+                                    </Field>
+                                )}
+                            />
+
                             {successMessage && (
                                 <p className="text-sm font-medium text-emerald-400" role="status">
                                     {successMessage}
                                 </p>
                             )}
 
+                            {loginMutation.error && (
+                                <p className="text-sm font-medium text-red-400" role="alert">
+                                    {loginMutation.error.message}
+                                </p>
+                            )}
+
                             <Button
                                 type="submit"
+                                disabled={loginMutation.isPending}
                                 className="h-12 w-full rounded-xl bg-primary font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                MASUK
+                                {loginMutation.isPending ? 'MEMPROSES...' : 'MASUK'}
                             </Button>
 
                             <div className="flex items-center justify-center gap-2 pt-2">

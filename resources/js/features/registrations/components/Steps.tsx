@@ -1,9 +1,10 @@
-import { REGISTRATION_STEPS } from '@/constants/registration'
+import { getRegistrationSteps } from '@/constants/registration'
 import { cn } from '@/lib/utils'
 import React, { useRef } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { Link, usePage } from '@inertiajs/react'
+import { useRegistrationContext } from '../hooks/useRegistration'
 
 gsap.registerPlugin(useGSAP)
 
@@ -12,9 +13,13 @@ const getStepPath = (index: number, name: string) =>
 
 const Steps = () => {
   const { url } = usePage()
+  const contextQuery = useRegistrationContext()
+  const isOlympiad =
+    contextQuery.data?.data.competition?.type === 'OLIMPIADE'
+  const registrationSteps = getRegistrationSteps(isOlympiad)
   const pathname = url.split('?')[0]
 
-  const rawStep = REGISTRATION_STEPS.findIndex((step, index) => pathname === getStepPath(index, step.name))
+  const rawStep = registrationSteps.findIndex((step, index) => pathname === getStepPath(index, step.name))
   const currentStep = rawStep === -1 ? 0 : rawStep
 
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -51,7 +56,7 @@ const Steps = () => {
     () => {
       if (!hasMounted.current) return
 
-      REGISTRATION_STEPS.forEach((step, index) => {
+      registrationSteps.forEach((step, index) => {
         const circle = circleRefs.current[index]
         if (circle) {
           gsap.to(circle, {
@@ -63,12 +68,12 @@ const Steps = () => {
         }
       })
     },
-    { scope: containerRef, dependencies: [currentStep] }
+    { scope: containerRef, dependencies: [currentStep, isOlympiad] }
   )
 
   return (
     <div ref={containerRef} className='flex gap-2 sm:gap-3 md:gap-4 lg:gap-6 items-center justify-center z-50'>
-      {REGISTRATION_STEPS.map((step, index) => (
+      {registrationSteps.map((step, index) => (
         <div key={index} className='flex items-center gap-2 sm:gap-3 md:gap-4'>
           <div
             className={cn(
@@ -119,7 +124,7 @@ const Steps = () => {
             <div className='text-[10px] sm:text-sm md:text-base lg:text-xl font-semibold md:font-bold'>{step.name}</div>
           </div>
 
-          {index !== REGISTRATION_STEPS.length - 1 && (
+          {index !== registrationSteps.length - 1 && (
             <div
               ref={(el) => {
                 lineRefs.current[index] = el

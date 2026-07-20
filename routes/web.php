@@ -56,11 +56,11 @@ Route::prefix('auth')->name('auth.')->group(function () {
         ]);
     })->name('register');
 
-    Route::get('/forgot-email', function () {
+    Route::get('/forgot-password', function () {
         return Inertia::render('Auth/ForgotEmail', [
             'title' => 'Lupa Password',
         ]);
-    })->name('forgot-email');
+    })->name('forgot-password');
 
     Route::get('/verify-email', function () {
         return Inertia::render('Auth/VerifyEmail', [
@@ -68,11 +68,17 @@ Route::prefix('auth')->name('auth.')->group(function () {
         ]);
     })->name('verify-email');
 
-    Route::get('/change-password', function () {
+    Route::get('/reset-password/verify', function () {
+        return Inertia::render('Auth/VerifyResetPassword', [
+            'title' => 'Verifikasi Reset Password',
+        ]);
+    })->name('reset-password.verify');
+
+    Route::get('/reset-password', function () {
         return Inertia::render('Auth/ChangePassword', [
             'title' => 'Ubah Password',
         ]);
-    })->name('change-password');
+    })->name('reset-password');
 });
 
 Route::get('/dashboard', function () {
@@ -120,6 +126,12 @@ Route::prefix('registration')
             'title' => 'Registration',
         ]);
     })->name('payment');
+
+    Route::get('/validation', function () {
+        return Inertia::render('Registration/Validation', [
+            'title' => 'Registration',
+        ]);
+    })->name('validation');
 });
 
 Route::fallback(function () {

@@ -1,16 +1,18 @@
 import React from 'react'
-import type { CompetitionType } from '@/schemas/teamAccount'
+import type { CompetitionType } from '@/features/registrations/types/registrationTypes'
 
 interface TeamDetailProps {
   data: {
     name: string
-    school_name: string
+    phone: string
+    schoolName: string
     province: string
     city: string
     address: string
-    competition_type: CompetitionType
+    competitionType: CompetitionType
+    batchName: string
   }
-  onEdit: () => void
+  onEdit?: () => void
   accent: {
     bg: string
     border: string
@@ -33,10 +35,12 @@ const competitionBadgeStyles: Record<CompetitionType, string> = {
 const TeamDetail: React.FC<TeamDetailProps> = ({ data, onEdit, accent }) => {
   const fields = [
     { label: 'Nama Tim', value: data.name },
-    { label: 'Sekolah', value: data.school_name },
+    { label: 'Nomor Telepon', value: data.phone },
+    { label: 'Sekolah', value: data.schoolName },
     { label: 'Provinsi', value: data.province },
     { label: 'Kota', value: data.city },
     { label: 'Alamat', value: data.address },
+    { label: 'Batch', value: data.batchName },
   ]
 
   return (
@@ -44,21 +48,23 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ data, onEdit, accent }) => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-white">Detail Tim</h2>
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${competitionBadgeStyles[data.competition_type]}`}>
-            {competitionLabels[data.competition_type]}
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${competitionBadgeStyles[data.competitionType]}`}>
+            {competitionLabels[data.competitionType]}
           </span>
         </div>
-        <button
-          onClick={onEdit}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-white border border-white/10 hover:bg-white/10 transition-all"
-          style={{ background: accent.bg }}
-        >
-          Edit Tim
-        </button>
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-white border border-white/10 hover:bg-white/10 transition-all"
+            style={{ background: accent.bg }}
+          >
+            Edit Tim
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {fields.map((field, idx) => (
-          <div key={idx} className={`space-y-1 ${field.label === 'Alamat' ? 'sm:col-span-2' : ''}`}>
+        {fields.map((field) => (
+          <div key={field.label} className={`space-y-1 ${field.label === 'Alamat' ? 'sm:col-span-2' : ''}`}>
             <p className="text-xs text-white/40 uppercase tracking-wider">{field.label}</p>
             <p className="text-white font-medium">{field.value}</p>
           </div>

@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Building2, Map, MapPin, MapPinHouse, Users } from 'lucide-react'
+import { Building2, Map, MapPin, MapPinHouse, Phone, Users } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 import { router } from '@inertiajs/react'
 import { toast } from 'sonner'
 
@@ -22,58 +23,75 @@ import { cn } from '@/lib/utils'
 
 import {
   registrasiTeamFormSchema,
-  type RegisterInput,
   type RegisterTeamFormInput,
+  validateInstitution,
 } from '../schemas/RegistrasiTeam'
+import { useUpdateTeam } from '../hooks/useRegistration'
+import type { CompetitionType } from '../types/registrationTypes'
 
 type Props = {
-  competitionType: 'OLIMPIADE' | 'BUSINESS_PLAN' | 'BUSINESS_IT_CASE'
+  competitionType: CompetitionType
+  defaultValues?: Partial<RegisterTeamFormInput>
 }
 
 const inputClassName = 'py-5 pl-10 sm:py-6 sm:pl-11 md:py-7 md:pl-12 lg:py-8'
 const iconClassName =
   'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-4 sm:h-5 sm:w-5'
 
-const FormRegistrasiTeam = ({ competitionType }: Props) => {
+const FormRegistrasiTeam = ({ competitionType, defaultValues }: Props) => {
+  const updateTeamMutation = useUpdateTeam()
   const form = useForm<RegisterTeamFormInput>({
     mode: 'onSubmit',
     resolver: zodResolver(registrasiTeamFormSchema),
     defaultValues: {
       name: '',
+      phone: '',
       school_name: '',
-      province: '',
-      city: '',
-      address: '',
-      competition_type: competitionType,
+      school_province: '',
+      school_city: '',
+      school_address: '',
+      ...defaultValues,
     },
   })
 
-  const onSubmit = (data: RegisterTeamFormInput) => {
-    const payload: RegisterInput = {
-      name: data.name,
-      school_name: data.school_name,
-      competition_type: data.competition_type,
-      school_address: JSON.stringify({
-        province: data.province,
-        city: data.city,
-        address: data.address,
-      }),
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        name: defaultValues.name ?? '',
+        phone: defaultValues.phone ?? '',
+        school_name: defaultValues.school_name ?? '',
+        school_province: defaultValues.school_province ?? '',
+        school_city: defaultValues.school_city ?? '',
+        school_address: defaultValues.school_address ?? '',
+      })
+    }
+  }, [defaultValues, form])
+
+  const onSubmit = async (data: RegisterTeamFormInput) => {
+    const institutionError = validateInstitution(
+      data.school_name,
+      competitionType,
+    )
+
+    if (institutionError) {
+      form.setError('school_name', { message: institutionError })
+      return
     }
 
     toast.loading('Menyimpan data tim...')
-
-    setTimeout(() => {
+    try {
+      const response = await updateTeamMutation.mutateAsync(data)
       toast.dismiss()
       toast.success('Registrasi tim berhasil!', {
         description: 'Mengalihkan ke halaman biodata...',
       })
-
-      console.log(payload)
-
-      setTimeout(() => {
-        router.visit('/registration/biodata')
-      }, 1500)
-    }, 2000)
+      router.visit(response.data.redirectTo)
+    } catch (error) {
+      toast.dismiss()
+      toast.error(
+        error instanceof Error ? error.message : 'Gagal menyimpan data tim.',
+      )
+    }
   }
 
   return (
@@ -139,18 +157,18 @@ const FormRegistrasiTeam = ({ competitionType }: Props) => {
                 />
 
                 <Controller
-                  name="city"
+                  name="phone"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel className="text-xl">Kota / Kabupaten</FieldLabel>
+                      <FieldLabel className="text-xl">Nomor Telepon</FieldLabel>
 
                       <div className="relative">
-                        <MapPin className={iconClassName} />
+                        <Phone className={iconClassName} />
 
                         <Input
                           {...field}
-                          placeholder="Masukkan kota / kabupaten"
+                          placeholder="Masukkan nomor telepon"
                           autoComplete="off"
                           aria-invalid={fieldState.invalid}
                           className={inputClassName}
@@ -167,7 +185,7 @@ const FormRegistrasiTeam = ({ competitionType }: Props) => {
 
               <div className="flex flex-1 flex-col gap-4 sm:gap-5">
                 <Controller
-                  name="province"
+                  name="school_province"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
@@ -193,7 +211,33 @@ const FormRegistrasiTeam = ({ competitionType }: Props) => {
                 />
 
                 <Controller
-                  name="address"
+                  name="school_city"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel className="text-xl">Kota / Kabupaten</FieldLabel>
+
+                      <div className="relative">
+                        <MapPin className={iconClassName} />
+
+                        <Input
+                          {...field}
+                          placeholder="Masukkan kota / kabupaten"
+                          autoComplete="off"
+                          aria-invalid={fieldState.invalid}
+                          className={inputClassName}
+                        />
+                      </div>
+
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="school_address"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field
@@ -234,9 +278,9 @@ const FormRegistrasiTeam = ({ competitionType }: Props) => {
           type="submit"
           form="registrasi-team-form"
           className="flex-1 sm:w-auto py-6 max-w-[80%] mx-auto cursor-pointer"
-          disabled={form.formState.isSubmitting}
+          disabled={form.formState.isSubmitting || updateTeamMutation.isPending}
         >
-          Lanjut
+          {updateTeamMutation.isPending ? 'Menyimpan...' : 'Lanjut'}
         </Button>
       </CardFooter>
     </Card>

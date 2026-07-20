@@ -3,36 +3,19 @@ import { FileCheck2, FileText, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { IKContext, IKUpload } from 'imagekitio-react'
-import { postJson } from '@/lib/api'
+import { useFileUpload } from '@/features/files/hooks/useFileUpload'
+import type { FileReference } from '@/features/files/types/fileTypes'
 
-export type UploadedFile = {
-  id: string
-  fileId: string
-  url: string
-  name?: string
-} | null
-
-type FileApiResponse = {
-  status: 'success'
-  message: string
-  data: {
-    id: string
-    fileId: string
-    url: string
-  }
-}
+export type UploadedFile = FileReference | null
 
 interface FileUploadProps {
   value: UploadedFile
   onChange: (value: UploadedFile) => void
   disabled?: boolean
-  /** Folder tujuan di ImageKit, mis. "/payment-proofs" */
   folder?: string
   accept?: string
   maxSizeMB?: number
-  /** Teks utama di dalam box, mis. "Bukti Upload Twibbon" */
   label?: string
-  /** Teks kecil di bawah label, mis. "File PDF, Max File 10mb" */
   subLabel?: string
 }
 
@@ -46,6 +29,7 @@ export function FileUpload({
   label = 'Bukti Upload',
   subLabel,
 }: FileUploadProps) {
+  const { authenticate, registerFile, isRegistering } = useFileUpload()
   const inputRef = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<'idle' | 'uploading' | 'error'>('idle')
   const [progress, setProgress] = useState(0)
@@ -89,11 +73,7 @@ export function FileUpload({
     <IKContext
       urlEndpoint={import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}
       publicKey={import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY}
-      authenticator={async () => {
-        const res = await fetch('/api/imagekit-auth')
-        if (!res.ok) throw new Error('Gagal mengambil auth ImageKit')
-        return res.json()
-      }}
+      authenticator={authenticate}
     >
       <div
         role="button"
@@ -104,7 +84,7 @@ export function FileUpload({
         }}
         className={cn(
           'flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-white/20 bg-white/5 px-4 py-6 text-center transition-colors hover:bg-white/10',
-          (status === 'uploading' || disabled) && 'pointer-events-none opacity-70',
+          (status === 'uploading' || isRegistering || disabled) && 'pointer-events-none opacity-70',
         )}
       >
         {status === 'uploading' ? (
@@ -150,7 +130,7 @@ export function FileUpload({
         }}
         onSuccess={async (res:any) => {
           try {
-            const response = await postJson<FileApiResponse>('/api/files', {
+            const response = await registerFile({
               fileId: res.fileId,
               url: res.url,
             })

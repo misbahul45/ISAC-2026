@@ -1,22 +1,20 @@
-import React, { useState, useCallback, useRef } from 'react'
-import RegistrationLayout from '../../features/registrations/components/RegistrationLayout'
-import FormDocuments from '../../features/registrations/components/FormDocuments'
-import { DocumentFormData } from '../../features/registrations/schemas/uploadDocument'
-import { toast } from 'sonner'
-import { Loader2, FileText } from 'lucide-react'
+import React, { useCallback, useRef } from 'react'
 import { router } from '@inertiajs/react'
+import { toast } from 'sonner'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
+import RegistrationLayout from '@/features/registrations/components/RegistrationLayout'
+import FormDocuments from '@/features/registrations/components/FormDocuments'
+import type { DocumentFormData } from '@/features/registrations/schemas/uploadDocument'
+import { useDocuments, useUpdateDocuments } from '@/features/registrations/hooks/useRegistration'
 
 const Documents = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [allCompleted, setAllCompleted] = useState(false)
+  const documentsQuery = useDocuments()
+  const updateDocuments = useUpdateDocuments()
   const cardRef = useRef<HTMLDivElement>(null)
-  const successRef = useRef<HTMLDivElement>(null)
 
   useGSAP(() => {
     if (!cardRef.current) return
-
     gsap.from(cardRef.current, {
       y: 60,
       opacity: 0,
@@ -24,80 +22,53 @@ const Documents = () => {
       duration: 0.8,
       ease: 'power3.out',
     })
-
-    const header = cardRef.current.querySelector('.gsap-header')
-    if (header) {
-      gsap.from(header, {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        delay: 0.2,
-        ease: 'power3.out',
-      })
-    }
-  }, { scope: cardRef })
-
-  useGSAP(() => {
-    if (!successRef.current || !allCompleted) return
-
-    gsap.from(successRef.current.children, {
-      y: 30,
+    gsap.from(cardRef.current.querySelector('.gsap-header'), {
+      y: 20,
       opacity: 0,
       duration: 0.6,
-      stagger: 0.12,
-      ease: 'back.out(1.7)',
+      delay: 0.2,
+      ease: 'power3.out',
     })
-  }, { scope: successRef, dependencies: [allCompleted] })
+  }, { scope: cardRef })
 
-  const handleSave = useCallback((data: DocumentFormData) => {
-    setIsSubmitting(true)
-    toast.loading('Menyimpan dokumen ke database...')
+  const handleSave = useCallback(async (data: DocumentFormData) => {
+    try {
+      const response = await updateDocuments.mutateAsync(data)
+      toast.success(response.message)
+      router.visit(response.data.redirectTo)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Gagal menyimpan dokumen')
+    }
+  }, [updateDocuments])
 
-    setTimeout(() => {
-      localStorage.removeItem('documents-form-data')
-      setAllCompleted(true)
-      setIsSubmitting(false)
-      toast.dismiss()
-      toast.success('Semua dokumen berhasil disimpan ke database!')
+  if (documentsQuery.isLoading) {
+    return <div className="py-24 text-center text-muted-foreground">Memuat dokumen registrasi...</div>
+  }
 
-      setTimeout(() => {
-        router.visit('/registration/payment')
-      }, 1500)
-    }, 2500)
-  }, [])
+  if (documentsQuery.error || !documentsQuery.data) {
+    return <div className="py-24 text-center text-red-400">{documentsQuery.error?.message ?? 'Data dokumen tidak tersedia.'}</div>
+  }
+
+  const data = documentsQuery.data.data
 
   return (
     <div className="w-full max-w-7xl mx-auto text-center text-primary-foreground">
       <div className="flex justify-center items-center min-h-[600px] perspective-[1000px]">
         <div className="w-full max-w-6xl">
-          <div
-            ref={cardRef}
-            className="relative bg-background/80 backdrop-blur-md rounded-2xl p-8 border border-border/50"
-          >
+          <div ref={cardRef} className="relative bg-background/80 backdrop-blur-md rounded-2xl p-8 border border-border/50">
             <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
             <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
-
             <div className="mb-8 relative z-10 gsap-header">
               <p className="text-muted-foreground text-sm">
-                Upload dokumen persyaratan setiap anggota.{' '}
-                <span className="text-primary font-medium">Maksimal ukuran setiap file : 10 MB</span>
+                Pastikan kedua folder Google Drive dapat dibuka oleh panitia melalui tautan yang diberikan.
               </p>
+              {data.revisionNote && <p className="mt-3 text-sm text-amber-400">Catatan revisi: {data.revisionNote}</p>}
             </div>
-
-            {!allCompleted ? (
-              <FormDocuments onSave={handleSave} />
-            ) : (
-              <div ref={successRef} className="flex flex-col items-center gap-4 py-12">
-                <div className="p-4 rounded-full bg-green-500/20 border border-green-500/50">
-                  <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <p className="text-green-400 font-medium text-lg">Dokumen berhasil disimpan!</p>
-                <p className="text-muted-foreground text-sm">Mengalihkan ke halaman pembayaran...</p>
-                <Loader2 className="w-6 h-6 animate-spin text-primary mt-2" />
-              </div>
-            )}
+            <FormDocuments
+              defaultValues={{ document_url: data.document_url, twibbon_url: data.twibbon_url }}
+              onSave={handleSave}
+              isSubmitting={updateDocuments.isPending}
+            />
           </div>
         </div>
       </div>
@@ -106,10 +77,7 @@ const Documents = () => {
 }
 
 Documents.layout = (page: React.ReactNode) => (
-  <RegistrationLayout
-    title="Registrasi - Documents"
-    description="Unggah dokumen yang diperlukan untuk melanjutkan proses pendaftaran."
-  >
+  <RegistrationLayout title="Registrasi - Documents" description="Masukkan tautan dokumen yang diperlukan untuk melanjutkan proses pendaftaran.">
     {page}
   </RegistrationLayout>
 )
