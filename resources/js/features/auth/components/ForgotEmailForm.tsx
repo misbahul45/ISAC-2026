@@ -40,14 +40,14 @@ export function ForgotEmailForm() {
             <span aria-hidden="true" className="auth-border-arena" />
             <span aria-hidden="true" className="auth-border-strike" />
 
-            <Card className="relative z-10 w-full rounded-2xl border-0 bg-background/40 backdrop-blur-sm shadow-2xl">
+            <Card className="relative z-10 w-full rounded-xl border-0 bg-background/20 backdrop-blur-sm shadow-2xl">
                 <CardHeader className="space-y-3 pb-6">
                     <div className="flex items-center justify-center gap-3">
-                        <div className="h-[2px] w-10 rounded-full bg-gradient-to-r from-primary to-secondary" />
+                        <div className="h-1.5 w-10 rounded-full bg-gradient-to-r from-primary to-secondary" />
                         <CardTitle className="text-center text-2xl font-bold tracking-tight text-foreground">
                             LUPA PASSWORD
                         </CardTitle>
-                        <div className="h-[2px] w-10 rounded-full bg-gradient-to-l from-primary to-secondary" />
+                        <div className="h-1.5 w-10 rounded-full bg-gradient-to-l from-primary to-secondary" />
                     </div>
                     <CardDescription className="text-center text-sm text-muted-foreground">
                         Masukkan email terdaftar untuk menerima kode verifikasi

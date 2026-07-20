@@ -136,14 +136,14 @@ export function VerifyEmailForm() {
             <span aria-hidden="true" className="auth-border-ribbon" />
             <span aria-hidden="true" className="auth-border-diamond" />
 
-            <Card className="relative z-10 w-full rounded-2xl border-0 bg-background/40 backdrop-blur-sm shadow-2xl">
+            <Card className="relative z-10 w-full rounded-xl border-0 bg-background/20 backdrop-blur-sm shadow-2xl">
                 <CardHeader className="space-y-3 pb-6">
                     <div className="flex items-center justify-center gap-3">
-                        <div className="h-[2px] w-10 rounded-full bg-gradient-to-r from-secondary to-primary" />
+                        <div className="h-1.5 w-10 rounded-full bg-gradient-to-r from-secondary to-primary" />
                         <CardTitle className="text-center text-2xl font-bold tracking-tight text-foreground">
                             VERIFIKASI EMAIL
                         </CardTitle>
-                        <div className="h-[2px] w-10 rounded-full bg-gradient-to-l from-secondary to-primary" />
+                        <div className="h-1.5 w-10 rounded-full bg-gradient-to-l from-secondary to-primary" />
                     </div>
                     <CardDescription className="text-center text-sm text-muted-foreground">
                         {email
