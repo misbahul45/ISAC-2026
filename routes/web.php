@@ -87,7 +87,7 @@ Route::get('/todos', function () {
     ]);
 })->name('todos.page');
 
-Route::prefix('registration')->name('registration.')->middleware('auth')->group(function () {
+// Route::prefix('registration')->name('registration.')->middleware('auth')->group(function () {
     Route::get('/', function () {
         return Inertia::render('Registration/Index', [
             'title' => 'Registration',
