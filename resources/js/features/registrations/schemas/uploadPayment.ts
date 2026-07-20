@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Hasil upload yang disimpan di form (dari response uploadFiles UploadThing)
 export const paymentProofSchema = z.object({
+  id: z.string().uuid(),
   fileId: z.string().min(1),
   url: z.string().url(),
   name: z.string().optional(),

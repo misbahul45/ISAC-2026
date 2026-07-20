@@ -17,8 +17,8 @@ class StoreFileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'max:5120', 'mimes:pdf,jpg,jpeg,png'],
-            'collection' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'fileId' => ['required', 'string', 'max:255', 'unique:files,file_id'],
+            'url' => ['required', 'url', 'max:2048'],
         ];
     }
 
@@ -28,11 +28,12 @@ class StoreFileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'file.required' => 'File wajib diunggah.',
-            'file.file' => 'File tidak valid.',
-            'file.max' => 'Ukuran file maksimal 5 MB.',
-            'file.mimes' => 'Tipe file harus pdf, jpg, jpeg, atau png.',
-            'collection.max' => 'Nama collection maksimal 100 karakter.',
+            'fileId.required' => 'File ID wajib diisi.',
+            'fileId.max' => 'File ID maksimal 255 karakter.',
+            'fileId.unique' => 'File sudah tercatat.',
+            'url.required' => 'URL file wajib diisi.',
+            'url.url' => 'URL file tidak valid.',
+            'url.max' => 'URL file maksimal 2048 karakter.',
         ];
     }
 }

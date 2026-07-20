@@ -3,12 +3,24 @@ import { FileCheck2, FileText, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { IKContext, IKUpload } from 'imagekitio-react'
+import { postJson } from '@/lib/api'
 
 export type UploadedFile = {
+  id: string
   fileId: string
   url: string
   name?: string
 } | null
+
+type FileApiResponse = {
+  status: 'success'
+  message: string
+  data: {
+    id: string
+    fileId: string
+    url: string
+  }
+}
 
 interface FileUploadProps {
   value: UploadedFile
@@ -136,9 +148,25 @@ export function FileUpload({
           setStatus('error')
           reset()
         }}
-        onSuccess={(res:any) => {
-          onChange({ fileId: res.fileId, url: res.url, name: res.name })
-          setStatus('idle')
+        onSuccess={async (res:any) => {
+          try {
+            const response = await postJson<FileApiResponse>('/api/files', {
+              fileId: res.fileId,
+              url: res.url,
+            })
+
+            onChange({
+              id: response.data.id,
+              fileId: response.data.fileId,
+              url: response.data.url,
+              name: res.name,
+            })
+            setStatus('idle')
+          } catch {
+            setErrorMsg('File terupload, tetapi gagal dicatat ke database')
+            setStatus('error')
+            reset()
+          }
         }}
       />
       {errorMsg && <p className="mt-1 text-sm text-red-400">{errorMsg}</p>}

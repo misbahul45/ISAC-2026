@@ -10,19 +10,8 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('original_name');
-            $table->string('stored_name');
-            $table->string('path');
-            $table->string('disk')->default('local');
-            $table->string('mime_type');
-            $table->unsignedBigInteger('size');
-            $table->string('collection')->nullable();
-            $table->json('metadata')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-
-            $table->index('collection');
-            $table->index('mime_type');
+            $table->string('file_id')->unique();
+            $table->text('url');
         });
     }
 

@@ -21,6 +21,7 @@ class AuthResource extends JsonResource
             'code' => $this->code,
             'email' => $this->email,
             'status' => strtoupper((string) $this->status),
+            'emailVerifiedAt' => $this->email_verified_at?->toISOString(),
         ];
     }
 }

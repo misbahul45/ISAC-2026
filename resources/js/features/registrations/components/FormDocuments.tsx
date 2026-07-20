@@ -63,8 +63,8 @@ const FormDocuments = ({ onSave, onValidationChange }: FormDocumentsProps) => {
     mode: 'onChange',
     resolver: zodResolver(documentSchema),
     defaultValues: {
-      kelengkapanPendaftaran: '',
-      twibbonPeserta: '',
+      documentUrl: '',
+      twibbonUrl: '',
       ...getSavedData(),
     },
   })
@@ -108,7 +108,7 @@ const FormDocuments = ({ onSave, onValidationChange }: FormDocumentsProps) => {
     >
       <FieldGroup className="gap-6 sm:gap-8">
         <Controller
-          name="kelengkapanPendaftaran"
+          name="documentUrl"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid} className="gsap-field">
@@ -140,7 +140,7 @@ const FormDocuments = ({ onSave, onValidationChange }: FormDocumentsProps) => {
         />
 
         <Controller
-          name="twibbonPeserta"
+          name="twibbonUrl"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid} className="gsap-field">

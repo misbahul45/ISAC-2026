@@ -32,5 +32,5 @@ interface AuthRepositoryInterface
 
     public function findValidVerificationCode(string $email, string $code): ?PasswordResetCode;
 
-    public function updateTeamStatus(Team $team, string $status): void;
+    public function markTeamEmailAsVerified(Team $team): void;
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,10 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 enum RegistrationStatus: string
 {
-    case DRAFT = 'DRAFT';
-    case PROFILE_INCOMPLETE = 'PROFILE_INCOMPLETE';
-    case MEMBER_INCOMPLETE = 'MEMBER_INCOMPLETE';
-    case REQUIREMENT_INCOMPLETE = 'REQUIREMENT_INCOMPLETE';
+    case NOT_REQUIRED = 'NOT_REQUIRED';
     case WAITING_PAYMENT = 'WAITING_PAYMENT';
     case WAITING_VERIFICATION = 'WAITING_VERIFICATION';
     case VERIFIED = 'VERIFIED';
@@ -29,7 +27,7 @@ enum PaymentMethod: string
 
 class Registration extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes;
 
     protected $table = 'registrations';
 
@@ -48,9 +46,6 @@ class Registration extends Model
         'payment_method',
         'transaction_id',
         'paid_at',
-        'data_validated_at',
-        'payment_initiated_at',
-        'auto_verified_at',
         'verified_by',
         'verified_at',
         'rejection_reason',
@@ -65,9 +60,6 @@ class Registration extends Model
 
             'amount_paid' => 'decimal:2',
             'paid_at' => 'datetime',
-            'data_validated_at' => 'datetime',
-            'payment_initiated_at' => 'datetime',
-            'auto_verified_at' => 'datetime',
             'verified_at' => 'datetime',
             'metadata' => 'array',
         ];
