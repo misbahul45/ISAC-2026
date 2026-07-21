@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\AccountType;
+use App\Enums\AuthChallengePurpose;
 use App\Exceptions\InvalidCredentialException;
 use App\Exceptions\InvalidResetPasswordException;
 use App\Mail\ResetPasswordMail;
@@ -9,7 +11,6 @@ use App\Mail\VerifyEmailMail;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -17,13 +18,8 @@ class AuthService
 {
     public function __construct(
         private readonly AuthRepositoryInterface $authRepository,
-    ) {
-        //
-    }
+    ) {}
 
-    /**
-     * @param  array{email: string, password: string}  $data
-     */
     public function register(array $data): Team
     {
         $team = DB::transaction(function () use ($data): Team {
@@ -35,100 +31,139 @@ class AuthService
             ]);
         });
 
-        $this->sendVerificationCode(['email' => $team->email]);
+        $this->sendVerificationCode(['account_id' => $team->id]);
 
         return $team;
     }
 
-    /**
-     * @param  array{email: string, password: string}  $credentials
-     * @return array{token: string, tokenType: string, team: Team}|null
-     */
-    public function login(array $credentials): ?array
-    {
-        $team = $this->authRepository->findByEmail($credentials['email']);
-
-        if ($team === null || ! Hash::check($credentials['password'], (string) $team->password)) {
-            throw new InvalidCredentialException('Email atau password salah');
-        }
-
-        if (! $team->isEmailVerified()) {
-            throw new InvalidCredentialException('Email belum diverifikasi. Silakan cek email kamu.');
-        }
-
-        if ($team->isBlocked()) {
-            throw new InvalidCredentialException('Akun team kamu sedang diblokir. Silakan hubungi panitia.');
-        }
-
-        $team->tokens()->delete();
-
-        $token = $team->createToken('auth-token');
-
-        return [
-            'token' => $token->plainTextToken,
-            'tokenType' => 'Bearer',
-            'team' => $team,
-        ];
-    }
-
-    public function logout(Team $team): void
-    {
-        $team->currentAccessToken()?->delete();
-    }
-
-    public function forgotPassword(array $data): array
+    public function forgotPassword(array $data): void
     {
         $email = $data['email'];
+        $team = $this->authRepository->findByEmail($email);
 
-        $this->authRepository->deleteOldResetCodes($email);
+        if ($team === null) {
+            return;
+        }
+
+        $this->authRepository->invalidateChallenges(
+            $team->id,
+            AccountType::TEAM->value,
+            AuthChallengePurpose::RESET_PASSWORD,
+        );
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        $this->authRepository->createResetCode([
-            'email' => $email,
-            'code' => $code,
-            'type' => 'reset_password',
+        $this->authRepository->createChallenge([
+            'account_type' => AccountType::TEAM,
+            'account_id' => $team->id,
+            'purpose' => AuthChallengePurpose::RESET_PASSWORD,
+            'code_hash' => bcrypt($code),
             'expired_at' => now()->addMinutes(5),
         ]);
 
         Mail::to($email)->send(new ResetPasswordMail($code));
-
-        return ['email' => $email];
     }
 
     public function verifyCode(array $data): array
     {
-        $resetCode = $this->authRepository->findValidResetCode($data['email'], $data['code']);
+        $challenge = $this->authRepository->findValidChallenge(
+            $data['account_id'],
+            AccountType::TEAM->value,
+            AuthChallengePurpose::RESET_PASSWORD,
+            $data['code'],
+        );
 
-        if ($resetCode === null) {
+        if ($challenge === null) {
             throw new InvalidResetPasswordException('Kode OTP tidak valid atau sudah kadaluarsa.', 'INVALID_OTP');
         }
 
         $resetToken = Str::random(64);
 
-        $this->authRepository->markCodeAsVerified($resetCode, $resetToken);
+        $challenge->update([
+            'verified_at' => now(),
+            'expired_at' => now()->addMinutes(10),
+        ]);
 
         return ['resetToken' => $resetToken];
     }
 
     public function changePassword(array $data): void
     {
-        $resetCode = $this->authRepository->findValidResetToken($data['resetToken']);
+        $challenge = $this->authRepository->findValidResetToken($data['resetToken']);
 
-        if ($resetCode === null) {
+        if ($challenge === null) {
             throw new InvalidResetPasswordException('Sesi tidak valid atau sudah kadaluarsa.', 'INVALID_RESET_TOKEN');
         }
 
-        $team = $this->authRepository->findByEmail($resetCode->email);
+        $team = $this->authRepository->findByEmail($challenge->account_id);
 
-        if ($team === null) {
+        $teamFromId = Team::query()->find($challenge->account_id);
+
+        if ($teamFromId === null) {
             throw new InvalidResetPasswordException('Team tidak ditemukan.', 'INVALID_RESET_TOKEN');
         }
 
-        DB::transaction(function () use ($team, $resetCode, $data): void {
-            $this->authRepository->updateTeamPassword($team, $data['password']);
-            $this->authRepository->markTokenAsUsed($resetCode);
-            $team->tokens()->delete();
+        DB::transaction(function () use ($teamFromId, $challenge, $data): void {
+            $this->authRepository->updateTeamPassword($teamFromId, $data['password']);
+            $this->authRepository->markChallengeUsed($challenge);
+        });
+    }
+
+    public function sendVerificationCode(array $data): void
+    {
+        $accountId = $data['account_id'];
+
+        $team = Team::query()->find($accountId);
+
+        if ($team === null) {
+            throw new InvalidCredentialException('Team tidak ditemukan.');
+        }
+
+        if ($team->isEmailVerified()) {
+            throw new InvalidCredentialException('Email sudah diverifikasi.');
+        }
+
+        $this->authRepository->invalidateChallenges(
+            $team->id,
+            AccountType::TEAM->value,
+            AuthChallengePurpose::VERIFY_EMAIL,
+        );
+
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $this->authRepository->createChallenge([
+            'account_type' => AccountType::TEAM,
+            'account_id' => $team->id,
+            'purpose' => AuthChallengePurpose::VERIFY_EMAIL,
+            'code_hash' => bcrypt($code),
+            'expired_at' => now()->addMinutes(5),
+        ]);
+
+        Mail::to($team->email)->send(new VerifyEmailMail($code));
+    }
+
+    public function verifyEmail(array $data): void
+    {
+        $challenge = $this->authRepository->findValidChallenge(
+            $data['account_id'],
+            AccountType::TEAM->value,
+            AuthChallengePurpose::VERIFY_EMAIL,
+            $data['code'],
+        );
+
+        if ($challenge === null) {
+            throw new InvalidCredentialException('Kode verifikasi tidak valid atau sudah kadaluarsa.');
+        }
+
+        $team = Team::query()->find($data['account_id']);
+
+        if ($team === null) {
+            throw new InvalidCredentialException('Team tidak ditemukan.');
+        }
+
+        DB::transaction(function () use ($team, $challenge): void {
+            $this->authRepository->markChallengeUsed($challenge);
+            $this->authRepository->markTeamEmailAsVerified($team);
         });
     }
 
@@ -137,62 +172,5 @@ class AuthService
         $count = Team::withTrashed()->count() + 1;
 
         return 'ISAC-TM-'.str_pad((string) $count, 3, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * @param  array{email: string}  $data
-     */
-    public function sendVerificationCode(array $data): void
-    {
-        $email = $data['email'];
-
-        $team = $this->authRepository->findByEmail($email);
-
-        if ($team === null) {
-            throw new InvalidCredentialException('Email tidak ditemukan.');
-        }
-
-        if ($team->isEmailVerified()) {
-            throw new InvalidCredentialException('Email sudah diverifikasi.');
-        }
-
-        $this->authRepository->deleteOldVerificationCodes($email);
-
-        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        $this->authRepository->createResetCode([
-            'email' => $email,
-            'code' => $code,
-            'type' => 'verify_email',
-            'expired_at' => now()->addMinutes(5),
-        ]);
-
-        Mail::to($email)->send(new VerifyEmailMail($code));
-    }
-
-    /**
-     * @param  array{email: string, code: string}  $data
-     */
-    public function verifyEmail(array $data): void
-    {
-        $resetCode = $this->authRepository->findValidVerificationCode(
-            $data['email'],
-            $data['code'],
-        );
-
-        if ($resetCode === null) {
-            throw new InvalidCredentialException('Kode verifikasi tidak valid atau sudah kadaluarsa.');
-        }
-
-        $team = $this->authRepository->findByEmail($data['email']);
-
-        if ($team === null) {
-            throw new InvalidCredentialException('Team tidak ditemukan.');
-        }
-
-        DB::transaction(function () use ($team, $resetCode): void {
-            $this->authRepository->markTokenAsUsed($resetCode);
-            $this->authRepository->markTeamEmailAsVerified($team);
-        });
     }
 }

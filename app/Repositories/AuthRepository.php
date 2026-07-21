@@ -2,15 +2,14 @@
 
 namespace App\Repositories;
 
-use App\Models\PasswordResetCode;
+use App\Enums\AuthChallengePurpose;
+use App\Models\Admin;
+use App\Models\AuthChallenge;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 
 class AuthRepository implements AuthRepositoryInterface
 {
-    /**
-     * @param  array{email: string, password: string, code: string, status: string}  $data
-     */
     public function createTeam(array $data): Team
     {
         return Team::query()->create([
@@ -26,77 +25,66 @@ class AuthRepository implements AuthRepositoryInterface
         return Team::query()->where('email', $email)->first();
     }
 
-    public function createResetCode(array $data): PasswordResetCode
+    public function findAdminByEmail(string $email): ?Admin
     {
-        return PasswordResetCode::query()->create($data);
+        return Admin::query()->where('email', $email)->first();
     }
 
-    public function deleteOldResetCodes(string $email): void
+    public function invalidateChallenges(string $accountId, string $accountType, AuthChallengePurpose $purpose): void
     {
-        PasswordResetCode::query()
-            ->where('email', $email)
-            ->where('type', 'reset_password')
+        AuthChallenge::query()
+            ->where('account_id', $accountId)
+            ->where('account_type', $accountType)
+            ->where('purpose', $purpose)
             ->delete();
     }
 
-    public function findValidResetCode(string $email, string $code): ?PasswordResetCode
+    public function createChallenge(array $data): AuthChallenge
     {
-        return PasswordResetCode::query()
-            ->where('email', $email)
-            ->where('code', $code)
-            ->where('type', 'reset_password')
-            ->whereNull('verified_at')
+        return AuthChallenge::query()->create($data);
+    }
+
+    public function findValidChallenge(string $accountId, string $accountType, AuthChallengePurpose $purpose, string $code): ?AuthChallenge
+    {
+        $challenge = AuthChallenge::query()
+            ->where('account_id', $accountId)
+            ->where('account_type', $accountType)
+            ->where('purpose', $purpose)
             ->whereNull('used_at')
             ->where('expired_at', '>', now())
             ->first();
+
+        if ($challenge === null) {
+            return null;
+        }
+
+        if (! hash_equals($challenge->code_hash, bcrypt($code))) {
+            return null;
+        }
+
+        $challenge->update(['verified_at' => now()]);
+
+        return $challenge->fresh();
     }
 
-    public function markCodeAsVerified(PasswordResetCode $resetCode, string $resetToken): void
+    public function findValidResetToken(string $resetToken): ?AuthChallenge
     {
-        $resetCode->update([
-            'reset_token' => $resetToken,
-            'verified_at' => now(),
-            'expired_at' => now()->addMinutes(10),
-        ]);
-    }
-
-    public function findValidResetToken(string $resetToken): ?PasswordResetCode
-    {
-        return PasswordResetCode::query()
-            ->where('reset_token', $resetToken)
+        return AuthChallenge::query()
+            ->where('purpose', AuthChallengePurpose::RESET_PASSWORD)
             ->whereNotNull('verified_at')
             ->whereNull('used_at')
             ->where('expired_at', '>', now())
             ->first();
     }
 
-    public function markTokenAsUsed(PasswordResetCode $resetCode): void
+    public function markChallengeUsed(AuthChallenge $challenge): void
     {
-        $resetCode->update(['used_at' => now()]);
+        $challenge->markUsed();
     }
 
     public function updateTeamPassword(Team $team, string $password): void
     {
         $team->update(['password' => $password]);
-    }
-
-    public function deleteOldVerificationCodes(string $email): void
-    {
-        PasswordResetCode::query()
-            ->where('email', $email)
-            ->where('type', 'verify_email')
-            ->delete();
-    }
-
-    public function findValidVerificationCode(string $email, string $code): ?PasswordResetCode
-    {
-        return PasswordResetCode::query()
-            ->where('email', $email)
-            ->where('code', $code)
-            ->where('type', 'verify_email')
-            ->whereNull('used_at')
-            ->where('expired_at', '>', now())
-            ->first();
     }
 
     public function markTeamEmailAsVerified(Team $team): void
