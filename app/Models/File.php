@@ -6,50 +6,21 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class File extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids;
 
     protected $keyType = 'string';
 
     public $incrementing = false;
 
+    public $timestamps = false;
+
     protected $fillable = [
-        'id',
-        'original_name',
-        'stored_name',
-        'path',
-        'disk',
-        'mime_type',
-        'size',
-        'collection',
-        'metadata',
+        'file_id',
+        'url',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'size' => 'integer',
-            'metadata' => 'array',
-        ];
-    }
-
-    public function teamDocuments(): HasMany
-    {
-        return $this->hasMany(Team::class, 'document_file_id');
-    }
-
-    public function teamTwibbons(): HasMany
-    {
-        return $this->hasMany(Team::class, 'twibbon_file_id');
-    }
-
-    public function memberPhotos(): HasMany
-    {
-        return $this->hasMany(Member::class, 'photo_file_id');
-    }
 
     public function registrationPaymentProofs(): HasMany
     {
@@ -59,5 +30,15 @@ class File extends Model
     public function submissions(): HasMany
     {
         return $this->hasMany(Submission::class, 'file_id');
+    }
+
+    public function batchModules(): HasMany
+    {
+        return $this->hasMany(Batch::class, 'module_file_id');
+    }
+
+    public function memberPhotos(): HasMany
+    {
+        return $this->hasMany(Member::class, 'photo_file_id');
     }
 }

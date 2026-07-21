@@ -1,0 +1,39 @@
+info:
+  name: show
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/files/{{file_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/files/{file} — FileController@show
+  - **Deskripsi**: Download file (stream). Route name `files.show`.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:40`.
+  - **Request**: path `{file}` (UUID).
+  - **Alur Proses** (`FileController.php:38-42`):
+    `Storage::disk($file->disk)->download($file->path, $file->original_name)`.
+    Disk `local` → `storage/app/private/{path}`.
+  - **Database yang Terkena**: `files` — SELECT (route model binding `File`).
+  - **Efek Samping**: Tidak ada.
+  - **Response**: `Symfony StreamedResponse` (download binary, header
+    `Content-Disposition: attachment`) — **bukan** JSON.
+  - **Catatan**: ⚠️ Komentar kode (`FileController.php:40`): "any authed team can
+    fetch any file id — scope by uploader when ownership matters". Tidak ada cek
+    kepemilikan → team A bisa unduh file milik team B asalkan tahu UUID
+    (Lampiran B #5).

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TodoController;
+use App\Http\Controllers\ImageKitAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/system/status', function () {
@@ -23,10 +24,6 @@ Route::get('/system/status', function () {
     ]);
 });
 
-Route::get('/todos', [TodoController::class, 'index']);
-Route::post('/todos', [TodoController::class, 'store']);
-Route::patch('/todos/{todo}', [TodoController::class, 'update']);
-Route::delete('/todos/{todo}', [TodoController::class, 'destroy']);
 
 Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
@@ -40,14 +37,17 @@ Route::prefix('files')->middleware('auth:sanctum')->group(function (): void {
     Route::get('/{file}', [FileController::class, 'show'])->name('files.show');
 });
 
+Route::get('/imagekit-auth', [ImageKitAuthController::class, 'auth'])
+    ->middleware('auth:sanctum');
+
 Route::prefix('auth')->group(function (): void {
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/verify-code', [AuthController::class, 'verifyCode']);
-    Route::post('/change-password', [AuthController::class, 'changePassword']);
-    Route::post('/send-verification', [AuthController::class, 'sendVerification']);
-    Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+    Route::post('/verify-code', [AuthController::class, 'verifyCode'])->middleware('throttle:5,1');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
+    Route::post('/send-verification', [AuthController::class, 'sendVerification'])->middleware('throttle:3,1');
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout']);

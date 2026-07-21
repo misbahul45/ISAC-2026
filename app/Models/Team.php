@@ -21,43 +21,7 @@ class Team extends Model
 
     public $incrementing = false;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Team Status
-    |--------------------------------------------------------------------------
-    |
-    | Status ini mengikuti flow:
-    | Register Team
-    | -> Verify Email
-    | -> Login
-    | -> Pilih Competition
-    | -> Pilih Batch
-    | -> Complete Data Team
-    | -> Input Member
-    | -> Input Requirement Pendaftaran
-    | -> Validasi Sistem
-    | -> Jika OLIMPIADE: Pembayaran
-    | -> Waiting Verified
-    | -> Admin Verification / Auto Verified
-    | -> Dashboard Verified
-    |
-    */
-
-    public const STATUS_EMAIL_UNVERIFIED = 'EMAIL_UNVERIFIED';
-
-    public const STATUS_ACTIVE = 'ACTIVE';
-
-    public const STATUS_COMPETITION_NOT_SELECTED = 'COMPETITION_NOT_SELECTED';
-
-    public const STATUS_BATCH_NOT_SELECTED = 'BATCH_NOT_SELECTED';
-
-    public const STATUS_PROFILE_INCOMPLETE = 'PROFILE_INCOMPLETE';
-
-    public const STATUS_MEMBER_INCOMPLETE = 'MEMBER_INCOMPLETE';
-
-    public const STATUS_REQUIREMENT_INCOMPLETE = 'REQUIREMENT_INCOMPLETE';
-
-    public const STATUS_WAITING_PAYMENT = 'WAITING_PAYMENT';
+    public const STATUS_INCOMPLETE = 'INCOMPLETE';
 
     public const STATUS_WAITING_VERIFICATION = 'WAITING_VERIFICATION';
 
@@ -67,25 +31,12 @@ class Team extends Model
 
     public const STATUS_REJECTED = 'REJECTED';
 
-    public const STATUS_SUSPENDED = 'SUSPENDED';
-
-    public const STATUS_DISQUALIFIED = 'DISQUALIFIED';
-
     public const STATUSES = [
-        self::STATUS_EMAIL_UNVERIFIED,
-        self::STATUS_ACTIVE,
-        self::STATUS_COMPETITION_NOT_SELECTED,
-        self::STATUS_BATCH_NOT_SELECTED,
-        self::STATUS_PROFILE_INCOMPLETE,
-        self::STATUS_MEMBER_INCOMPLETE,
-        self::STATUS_REQUIREMENT_INCOMPLETE,
-        self::STATUS_WAITING_PAYMENT,
+        self::STATUS_INCOMPLETE,
         self::STATUS_WAITING_VERIFICATION,
         self::STATUS_VERIFIED,
         self::STATUS_REVISION_REQUIRED,
         self::STATUS_REJECTED,
-        self::STATUS_SUSPENDED,
-        self::STATUS_DISQUALIFIED,
     ];
 
     protected $fillable = [
@@ -96,10 +47,11 @@ class Team extends Model
         'phone',
         'school_name',
         'school_address',
-        'document_file_id',
-        'twibbon_file_id',
+        'document_url',
+        'twibbon_url',
         'current_stage_id',
         'status',
+        'email_verified_at',
         'verified_at',
         'verified_by',
     ];
@@ -107,6 +59,7 @@ class Team extends Model
     protected function casts(): array
     {
         return [
+            'email_verified_at' => 'datetime',
             'verified_at' => 'datetime',
         ];
     }
@@ -120,7 +73,7 @@ class Team extends Model
 
     public function isEmailVerified(): bool
     {
-        return $this->status !== self::STATUS_EMAIL_UNVERIFIED;
+        return $this->email_verified_at !== null;
     }
 
     public function isVerified(): bool
@@ -135,29 +88,21 @@ class Team extends Model
 
     public function isBlocked(): bool
     {
-        return in_array($this->status, [
-            self::STATUS_SUSPENDED,
-            self::STATUS_DISQUALIFIED,
-        ], true);
+        return $this->status === self::STATUS_REJECTED;
     }
 
     public function getNextRedirectAttribute(): string
     {
+        if (! $this->isEmailVerified()) {
+            return '/auth/verify-email';
+        }
+
         return match ($this->status) {
-            self::STATUS_EMAIL_UNVERIFIED => '/verify-email',
-            self::STATUS_ACTIVE,
-            self::STATUS_COMPETITION_NOT_SELECTED => '/dashboard/select-competition',
-            self::STATUS_BATCH_NOT_SELECTED => '/dashboard/select-batch',
-            self::STATUS_PROFILE_INCOMPLETE => '/dashboard/complete-team',
-            self::STATUS_MEMBER_INCOMPLETE => '/dashboard/members',
-            self::STATUS_REQUIREMENT_INCOMPLETE => '/dashboard/requirements',
-            self::STATUS_WAITING_PAYMENT => '/dashboard/payment',
+            self::STATUS_INCOMPLETE => '/registration',
             self::STATUS_WAITING_VERIFICATION => '/dashboard/waiting-verification',
             self::STATUS_REVISION_REQUIRED => '/dashboard/revision',
             self::STATUS_REJECTED => '/dashboard/rejected',
             self::STATUS_VERIFIED => '/dashboard',
-            self::STATUS_SUSPENDED => '/suspended',
-            self::STATUS_DISQUALIFIED => '/disqualified',
             default => '/dashboard',
         };
     }
@@ -180,16 +125,6 @@ class Team extends Model
     public function examAttempts(): HasMany
     {
         return $this->hasMany(ExamAttempt::class);
-    }
-
-    public function documentFile(): BelongsTo
-    {
-        return $this->belongsTo(File::class, 'document_file_id');
-    }
-
-    public function twibbonFile(): BelongsTo
-    {
-        return $this->belongsTo(File::class, 'twibbon_file_id');
     }
 
     public function currentStage(): BelongsTo

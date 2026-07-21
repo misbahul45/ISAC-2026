@@ -24,12 +24,13 @@ test('me returns authenticated team data', function (): void {
         ->assertJsonPath('data.name', 'Alpha Team')
         ->assertJsonPath('data.phone', '081234567890')
         ->assertJsonPath('data.schoolName', 'SMA Negeri 1')
-        ->assertJsonPath('data.status', 'ACTIVE')
+        ->assertJsonPath('data.status', 'INCOMPLETE')
+        ->assertJsonPath('data.emailVerifiedAt', $team->email_verified_at?->toISOString())
         ->assertJsonPath('error', null)
         ->assertJsonStructure([
             'status',
             'message',
-            'data' => ['id', 'code', 'email', 'name', 'phone', 'schoolName', 'status'],
+            'data' => ['id', 'code', 'email', 'name', 'phone', 'schoolName', 'status', 'emailVerifiedAt'],
             'metadata',
             'error',
         ]);

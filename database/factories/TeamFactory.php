@@ -26,21 +26,22 @@ class TeamFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => bcrypt('Password123!'),
             'code' => 'ISAC-TM-'.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT),
-            'status' => Team::STATUS_ACTIVE,
+            'status' => Team::STATUS_INCOMPLETE,
+            'email_verified_at' => now(),
         ];
     }
 
     public function unverified(): static
     {
         return $this->state(fn (): array => [
-            'status' => Team::STATUS_EMAIL_UNVERIFIED,
+            'email_verified_at' => null,
         ]);
     }
 
-    public function suspended(): static
+    public function rejected(): static
     {
         return $this->state(fn (): array => [
-            'status' => Team::STATUS_SUSPENDED,
+            'status' => Team::STATUS_REJECTED,
         ]);
     }
 }

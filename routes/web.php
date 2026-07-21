@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Todos/Index', [
+    return Inertia::render('LandingPage/Index', [
         'title' => 'Todo List',
     ]);
-})->name('todos.index');
+})->name('landing.index');
 
 Route::get('/sitemap.xml', function () {
     $appUrl = rtrim(config('app.url'), '/');
@@ -43,18 +43,42 @@ Route::get('/register', function () {
     ]);
 })->name('register');
 
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->name('auth.')->group(function () {
     Route::get('/login', function () {
         return Inertia::render('Auth/Login', [
             'title' => 'Login',
         ]);
-    })->name('auth.login');
+    })->name('login');
 
     Route::get('/register', function () {
         return Inertia::render('Auth/Register', [
             'title' => 'Register',
         ]);
-    })->name('auth.register');
+    })->name('register');
+
+    Route::get('/forgot-password', function () {
+        return Inertia::render('Auth/ForgotEmail', [
+            'title' => 'Lupa Password',
+        ]);
+    })->name('forgot-password');
+
+    Route::get('/verify-email', function () {
+        return Inertia::render('Auth/VerifyEmail', [
+            'title' => 'Verifikasi Email',
+        ]);
+    })->name('verify-email');
+
+    Route::get('/reset-password/verify', function () {
+        return Inertia::render('Auth/VerifyResetPassword', [
+            'title' => 'Verifikasi Reset Password',
+        ]);
+    })->name('reset-password.verify');
+
+    Route::get('/reset-password', function () {
+        return Inertia::render('Auth/ChangePassword', [
+            'title' => 'Ubah Password',
+        ]);
+    })->name('reset-password');
 });
 
 Route::get('/dashboard', function () {
@@ -68,6 +92,47 @@ Route::get('/todos', function () {
         'title' => 'Todo List',
     ]);
 })->name('todos.page');
+
+Route::prefix('registration')
+->name('registration.')
+// ->middleware('auth')
+->group(function () {
+    Route::get('/', function () {
+        return Inertia::render('Registration/Index', [
+            'title' => 'Registration',
+        ]);
+    })->name('index');
+
+    Route::get('/team', function () {
+        return Inertia::render('Registration/Team', [
+            'title' => 'Registration',
+        ]);
+    })->name('team');
+
+    Route::get('/biodata', function () {
+        return Inertia::render('Registration/Biodata', [
+            'title' => 'Registration',
+        ]);
+    })->name('biodata');
+
+    Route::get('/documents', function () {
+        return Inertia::render('Registration/Documents', [
+            'title' => 'Registration',
+        ]);
+    })->name('documents');
+
+    Route::get('/payment', function () {
+        return Inertia::render('Registration/Payment', [
+            'title' => 'Registration',
+        ]);
+    })->name('payment');
+
+    Route::get('/validation', function () {
+        return Inertia::render('Registration/Validation', [
+            'title' => 'Registration',
+        ]);
+    })->name('validation');
+});
 
 Route::fallback(function () {
     return Inertia::render('Errors/NotFound')

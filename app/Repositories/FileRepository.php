@@ -8,7 +8,7 @@ use App\Repositories\Contracts\FileRepositoryInterface;
 class FileRepository implements FileRepositoryInterface
 {
     /**
-     * @param array{original_name: string, stored_name: string, path: string, disk: string, mime_type: string, size: int, collection?: string|null} $data
+     * @param array{file_id: string, url: string} $data
      */
     public function create(array $data): File
     {

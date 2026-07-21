@@ -18,14 +18,16 @@ test('register creates a team on valid payload', function (): void {
         ->assertJsonPath('status', 'success')
         ->assertJsonPath('message', 'Akun team berhasil dibuat. Silakan cek email kamu untuk kode verifikasi.')
         ->assertJsonPath('data.email', 'team.alpha@gmail.com')
-        ->assertJsonPath('data.status', 'EMAIL_UNVERIFIED')
-        ->assertJsonStructure(['data' => ['id', 'code', 'email', 'status']]);
+        ->assertJsonPath('data.status', 'INCOMPLETE')
+        ->assertJsonPath('data.emailVerifiedAt', null)
+        ->assertJsonStructure(['data' => ['id', 'code', 'email', 'status', 'emailVerifiedAt']]);
 
     $this->assertDatabaseHas('teams', ['email' => 'team.alpha@gmail.com']);
 
     $team = Team::query()->where('email', 'team.alpha@gmail.com')->firstOrFail();
     expect($team->code)->toMatch('/^ISAC-TM-\d{3}$/');
     expect($team->password)->not->toBe('Password123!');
+    expect($team->email_verified_at)->toBeNull();
 });
 
 test('register rejects duplicate email', function (): void {

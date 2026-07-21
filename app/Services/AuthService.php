@@ -31,7 +31,7 @@ class AuthService
                 'email' => $data['email'],
                 'password' => $data['password'],
                 'code' => $this->generateTeamCode(),
-                'status' => Team::STATUS_EMAIL_UNVERIFIED,
+                'status' => Team::STATUS_INCOMPLETE,
             ]);
         });
 
@@ -52,7 +52,7 @@ class AuthService
             throw new InvalidCredentialException("Email atau password salah");
         }
 
-        if ($team->status === Team::STATUS_EMAIL_UNVERIFIED) {
+        if (! $team->isEmailVerified()) {
             throw new InvalidCredentialException("Email belum diverifikasi. Silakan cek email kamu.");
         }
 
@@ -152,7 +152,7 @@ class AuthService
             throw new InvalidCredentialException('Email tidak ditemukan.');
         }
 
-        if ($team->status !== Team::STATUS_EMAIL_UNVERIFIED) {
+        if ($team->isEmailVerified()) {
             throw new InvalidCredentialException('Email sudah diverifikasi.');
         }
 
@@ -192,7 +192,7 @@ class AuthService
 
         DB::transaction(function () use ($team, $resetCode): void {
             $this->authRepository->markTokenAsUsed($resetCode);
-            $this->authRepository->updateTeamStatus($team, Team::STATUS_ACTIVE);
+            $this->authRepository->markTeamEmailAsVerified($team);
         });
     }
 }

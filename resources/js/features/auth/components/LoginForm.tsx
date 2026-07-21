@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link, router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -16,95 +18,188 @@ import {
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { loginSchema, type LoginInput } from '../schemas';
+import { useLogin } from '../hooks/useAuth';
 
 export function LoginForm() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const loginMutation = useLogin();
+
     const form = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
             email: '',
             password: '',
+            remember: false,
         },
     });
 
-    function handleSubmit(data: LoginInput) {
-        console.log(data);
-        setSuccessMessage('Login form submitted locally.');
+    async function handleSubmit(data: LoginInput) {
+        setSuccessMessage(null);
+        try {
+            const response = await loginMutation.mutateAsync(data);
+            setSuccessMessage(response.message);
+            router.visit(
+                response.data.redirectTo ??
+                    response.data.team.nextRedirect ??
+                    '/dashboard',
+            );
+        } catch {
+            return;
+        }
     }
 
     return (
-        <Card className="w-full rounded-lg">
-            <CardHeader>
-                <CardTitle>Login</CardTitle>
-                <CardDescription>Masukkan email dan password akun.</CardDescription>
-            </CardHeader>
+        <div className="relative w-lg">
+            <span aria-hidden="true" className="auth-border-crown" />
+            <span aria-hidden="true" className="auth-border-halo" />
 
-            <CardContent>
-                <form onSubmit={form.handleSubmit(handleSubmit)} noValidate>
-                    <FieldGroup>
-                        <Controller
-                            name="email"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor={field.name}>
-                                        Email
-                                    </FieldLabel>
+            <Card className="relative z-10 w-full rounded-xl border-0 bg-background/20 backdrop-blur-sm shadow-2xl">
+                <CardHeader className="space-y-3 pb-6">
+                    <div className="flex items-center justify-center gap-3">
+                        <div className="h-1.5 w-10 rounded-full bg-gradient-to-r from-primary to-secondary" />
+                        <CardTitle className="text-center text-2xl font-bold tracking-tight text-foreground">
+                            LOGIN
+                        </CardTitle>
+                        <div className="h-1.5 w-10 rounded-full bg-gradient-to-l from-primary to-secondary" />
+                    </div>
+                    <CardDescription className="text-center text-sm text-muted-foreground">
+                        Masukkan kredensial untuk memulai sesi
+                    </CardDescription>
+                </CardHeader>
 
-                                    <Input
-                                        {...field}
-                                        id={field.name}
-                                        type="email"
-                                        aria-invalid={fieldState.invalid}
-                                        placeholder="name@example.com"
-                                        autoComplete="email"
-                                    />
+                <CardContent>
+                    <form onSubmit={form.handleSubmit(handleSubmit)} noValidate>
+                        <FieldGroup className="space-y-5">
+                            <Controller
+                                name="email"
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <FieldLabel htmlFor={field.name} className="text-xs font-semibold uppercase tracking-wider text-white">
+                                            Email
+                                        </FieldLabel>
 
-                                    {fieldState.invalid && (
-                                        <FieldError errors={[fieldState.error]} />
-                                    )}
-                                </Field>
+                                        <div className="relative">
+                                            <Mail className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" />
+                                            <Input
+                                                {...field}
+                                                id={field.name}
+                                                type="email"
+                                                aria-invalid={fieldState.invalid}
+                                                placeholder="player@game.com"
+                                                autoComplete="email"
+                                                className="h-12 rounded-xl border-border/50 bg-background/60 pl-10 text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
+                                            />
+                                        </div>
+
+                                        {fieldState.invalid && (
+                                            <FieldError errors={[fieldState.error]} />
+                                        )}
+                                    </Field>
+                                )}
+                            />
+
+                            <Controller
+                                name="password"
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <div className="flex items-center justify-between">
+                                            <FieldLabel htmlFor={field.name} className="text-xs font-semibold uppercase tracking-wider text-white">
+                                                Password
+                                            </FieldLabel>
+                                            <Link
+                                                href="/auth/forgot-password"
+                                                className="text-xs text-primary transition-colors hover:text-primary/80 hover:underline"
+                                            >
+                                                Lupa Password?
+                                            </Link>
+                                        </div>
+
+                                        <div className="relative">
+                                            <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" />
+                                            <Input
+                                                {...field}
+                                                id={field.name}
+                                                type={showPassword ? 'text' : 'password'}
+                                                aria-invalid={fieldState.invalid}
+                                                placeholder="••••••••"
+                                                autoComplete="current-password"
+                                                className="h-12 rounded-xl border-border/50 bg-background/60 pl-10 pr-10 text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
+                                            />
+                                            <button
+                                                type="button"
+                                                tabIndex={-1}
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground"
+                                            >
+                                                {showPassword ? (
+                                                    <EyeOff className="h-5 w-5" />
+                                                ) : (
+                                                    <Eye className="h-5 w-5" />
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        {fieldState.invalid && (
+                                            <FieldError errors={[fieldState.error]} />
+                                        )}
+                                    </Field>
+                                )}
+                            />
+
+                            <Controller
+                                name="remember"
+                                control={form.control}
+                                render={({ field }) => (
+                                    <Field orientation="horizontal" className="items-center gap-3">
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                        <FieldLabel className="text-sm text-muted-foreground">
+                                            Ingat sesi login
+                                        </FieldLabel>
+                                    </Field>
+                                )}
+                            />
+
+                            {successMessage && (
+                                <p className="text-sm font-medium text-emerald-400" role="status">
+                                    {successMessage}
+                                </p>
                             )}
-                        />
 
-                        <Controller
-                            name="password"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor={field.name}>
-                                        Password
-                                    </FieldLabel>
-
-                                    <Input
-                                        {...field}
-                                        id={field.name}
-                                        type="password"
-                                        aria-invalid={fieldState.invalid}
-                                        placeholder="Masukkan password"
-                                        autoComplete="current-password"
-                                    />
-
-                                    {fieldState.invalid && (
-                                        <FieldError errors={[fieldState.error]} />
-                                    )}
-                                </Field>
+                            {loginMutation.error && (
+                                <p className="text-sm font-medium text-red-400" role="alert">
+                                    {loginMutation.error.message}
+                                </p>
                             )}
-                        />
 
-                        {successMessage && (
-                            <p className="text-sm text-emerald-600" role="status">
-                                {successMessage}
-                            </p>
-                        )}
+                            <Button
+                                type="submit"
+                                disabled={loginMutation.isPending}
+                                className="h-12 w-full rounded-xl bg-primary font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                {loginMutation.isPending ? 'MEMPROSES...' : 'MASUK'}
+                            </Button>
 
-                        <Button type="submit" className="w-full">
-                            Login
-                        </Button>
-                    </FieldGroup>
-                </form>
-            </CardContent>
-        </Card>
+                            <div className="flex items-center justify-center gap-2 pt-2">
+                                <span className="text-sm text-muted-foreground">Belum punya akun?</span>
+                                <Link
+                                    href="/auth/register"
+                                    className="text-sm font-semibold text-secondary transition-colors hover:text-secondary/80 hover:underline"
+                                >
+                                    Daftar Sekarang
+                                </Link>
+                            </div>
+                        </FieldGroup>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

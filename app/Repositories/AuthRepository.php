@@ -99,8 +99,8 @@ class AuthRepository implements AuthRepositoryInterface
             ->first();
     }
 
-    public function updateTeamStatus(Team $team, string $status): void
+    public function markTeamEmailAsVerified(Team $team): void
     {
-        $team->update(['status' => $status]);
+        $team->update(['email_verified_at' => now()]);
     }
 }

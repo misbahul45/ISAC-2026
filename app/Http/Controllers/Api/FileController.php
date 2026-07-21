@@ -8,8 +8,7 @@ use App\Http\Resources\FileResource;
 use App\Models\File;
 use App\Services\FileService;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse;
 
 class FileController extends Controller
 {
@@ -21,10 +20,7 @@ class FileController extends Controller
 
     public function store(StoreFileRequest $request): JsonResponse
     {
-        $file = $this->fileService->upload(
-            $request->file('file'),
-            $request->input('collection'),
-        );
+        $file = $this->fileService->register($request->validated());
 
         return response()->json([
             'status' => 'success',
@@ -35,9 +31,8 @@ class FileController extends Controller
         ], 201);
     }
 
-    public function show(File $file): StreamedResponse
+    public function show(File $file): RedirectResponse
     {
-        // ponytail: any authed team can fetch any file id — scope by uploader when ownership matters
-        return Storage::disk($file->disk)->download($file->path, $file->original_name);
+        return redirect()->away($file->url);
     }
 }

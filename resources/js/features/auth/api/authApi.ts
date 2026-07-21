@@ -1,13 +1,39 @@
-import type { LoginPayload, RegisterPayload } from '../types/authTypes';
+import { postJson } from '@/lib/api'
+import type {
+  ChangePasswordPayload,
+  ChangePasswordResponse,
+  ForgotPasswordPayload,
+  ForgotPasswordResponse,
+  LoginPayload,
+  LoginResponse,
+  LogoutResponse,
+  RegisterPayload,
+  RegisterResponse,
+  ResendVerificationResponse,
+  VerifyEmailPayload,
+  VerifyEmailResponse,
+  VerifyResetCodePayload,
+  VerifyResetCodeResponse,
+} from '../types/authTypes'
 
-export function login(payload: LoginPayload): Promise<never> {
-    void payload;
+const AUTH_API = '/api/auth'
 
-    return Promise.reject(new Error('Auth API is not configured.'));
-}
-
-export function register(payload: RegisterPayload): Promise<never> {
-    void payload;
-
-    return Promise.reject(new Error('Auth API is not configured.'));
+export const authApi = {
+  login: (payload: LoginPayload) =>
+    postJson<LoginResponse>(`${AUTH_API}/login`, payload),
+  register: (payload: RegisterPayload) =>
+    postJson<RegisterResponse>(`${AUTH_API}/register`, payload),
+  verifyEmail: (payload: VerifyEmailPayload) =>
+    postJson<VerifyEmailResponse>(`${AUTH_API}/verify-email`, payload),
+  resendVerification: () =>
+    postJson<ResendVerificationResponse>(
+      `${AUTH_API}/verify-email/resend`,
+    ),
+  forgotPassword: (payload: ForgotPasswordPayload) =>
+    postJson<ForgotPasswordResponse>(`${AUTH_API}/forgot-password`, payload),
+  verifyResetCode: (payload: VerifyResetCodePayload) =>
+    postJson<VerifyResetCodeResponse>(`${AUTH_API}/reset-password/verify`, payload),
+  changePassword: (payload: ChangePasswordPayload) =>
+    postJson<ChangePasswordResponse>(`${AUTH_API}/reset-password`, payload),
+  logout: () => postJson<LogoutResponse>(`${AUTH_API}/logout`),
 }

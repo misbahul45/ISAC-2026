@@ -24,6 +24,7 @@ class TeamAuthResource extends JsonResource
             'phone' => $this->phone,
             'schoolName' => $this->school_name,
             'status' => strtoupper((string) $this->status),
+            'emailVerifiedAt' => $this->email_verified_at?->toISOString(),
         ];
     }
 }

@@ -18,12 +18,8 @@ class FileResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'originalName' => $this->original_name,
-            'mimeType' => $this->mime_type,
-            'size' => $this->size,
-            'collection' => $this->collection,
-            'url' => route('files.show', $this->id),
-            'createdAt' => $this->created_at?->toISOString(),
+            'fileId' => $this->file_id,
+            'url' => $this->url,
         ];
     }
 }
