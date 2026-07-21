@@ -30,4 +30,18 @@ class TeamFactory extends Factory
             'email_verified_at' => now(),
         ];
     }
+
+    public function unverified(): static
+    {
+        return $this->state(fn (): array => [
+            'email_verified_at' => null,
+        ]);
+    }
+
+    public function rejected(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => Team::STATUS_REJECTED,
+        ]);
+    }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PasswordResetCode extends Model
 {
-    use HasUuids, HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'email',
@@ -23,9 +23,9 @@ class PasswordResetCode extends Model
     protected function casts(): array
     {
         return [
-            'expired_at'  => 'datetime',
+            'expired_at' => 'datetime',
             'verified_at' => 'datetime',
-            'used_at'     => 'datetime',
+            'used_at' => 'datetime',
         ];
     }
 }

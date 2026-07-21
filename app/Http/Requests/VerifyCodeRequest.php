@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VerifyCodeRequest extends FormRequest
@@ -16,7 +15,7 @@ class VerifyCodeRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
-            'code'  => ['required', 'digits:6'],
+            'code' => ['required', 'digits:6'],
         ];
     }
 
@@ -24,9 +23,9 @@ class VerifyCodeRequest extends FormRequest
     {
         return [
             'email.required' => 'Email wajib diisi.',
-            'email.email'    => 'Format email tidak valid.',
-            'code.required'  => 'Kode OTP wajib diisi.',
-            'code.digits'    => 'Kode OTP harus 6 digit angka.',
+            'email.email' => 'Format email tidak valid.',
+            'code.required' => 'Kode OTP wajib diisi.',
+            'code.digits' => 'Kode OTP harus 6 digit angka.',
         ];
     }
 }

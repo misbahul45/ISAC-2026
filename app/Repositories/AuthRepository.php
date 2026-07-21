@@ -33,7 +33,10 @@ class AuthRepository implements AuthRepositoryInterface
 
     public function deleteOldResetCodes(string $email): void
     {
-        PasswordResetCode::query()->where('email', $email)->delete();
+        PasswordResetCode::query()
+            ->where('email', $email)
+            ->where('type', 'reset_password')
+            ->delete();
     }
 
     public function findValidResetCode(string $email, string $code): ?PasswordResetCode
@@ -41,6 +44,7 @@ class AuthRepository implements AuthRepositoryInterface
         return PasswordResetCode::query()
             ->where('email', $email)
             ->where('code', $code)
+            ->where('type', 'reset_password')
             ->whereNull('verified_at')
             ->whereNull('used_at')
             ->where('expired_at', '>', now())
@@ -52,7 +56,7 @@ class AuthRepository implements AuthRepositoryInterface
         $resetCode->update([
             'reset_token' => $resetToken,
             'verified_at' => now(),
-            'expired_at'  => now()->addMinutes(10),
+            'expired_at' => now()->addMinutes(10),
         ]);
     }
 

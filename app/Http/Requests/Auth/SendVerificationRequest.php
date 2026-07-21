@@ -22,8 +22,8 @@ class SendVerificationRequest extends FormRequest
     {
         return [
             'email.required' => 'Email wajib diisi.',
-            'email.email'    => 'Format email tidak valid.',
-            'email.exists'   => 'Email tidak ditemukan.',
+            'email.email' => 'Format email tidak valid.',
+            'email.exists' => 'Email tidak ditemukan.',
         ];
     }
 }

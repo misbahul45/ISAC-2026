@@ -49,11 +49,15 @@ class AuthService
         $team = $this->authRepository->findByEmail($credentials['email']);
 
         if ($team === null || ! Hash::check($credentials['password'], (string) $team->password)) {
-            throw new InvalidCredentialException("Email atau password salah");
+            throw new InvalidCredentialException('Email atau password salah');
         }
 
         if (! $team->isEmailVerified()) {
-            throw new InvalidCredentialException("Email belum diverifikasi. Silakan cek email kamu.");
+            throw new InvalidCredentialException('Email belum diverifikasi. Silakan cek email kamu.');
+        }
+
+        if ($team->isBlocked()) {
+            throw new InvalidCredentialException('Akun team kamu sedang diblokir. Silakan hubungi panitia.');
         }
 
         $team->tokens()->delete();
@@ -81,8 +85,9 @@ class AuthService
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         $this->authRepository->createResetCode([
-            'email'      => $email,
-            'code'       => $code,
+            'email' => $email,
+            'code' => $code,
+            'type' => 'reset_password',
             'expired_at' => now()->addMinutes(5),
         ]);
 
@@ -156,9 +161,9 @@ class AuthService
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         $this->authRepository->createResetCode([
-            'email'      => $email,
-            'code'       => $code,
-            'type'       => 'verify_email',
+            'email' => $email,
+            'code' => $code,
+            'type' => 'verify_email',
             'expired_at' => now()->addMinutes(5),
         ]);
 

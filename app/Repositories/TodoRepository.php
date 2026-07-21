@@ -9,9 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 class TodoRepository implements TodoRepositoryInterface
 {
     /**
-     * 
      * @return Collection<int, Todo>
-     * 
      */
     public function allLatest(): Collection
     {
@@ -21,7 +19,7 @@ class TodoRepository implements TodoRepositoryInterface
     }
 
     /**
-     * @param array{title: string, is_completed?: bool} $data
+     * @param  array{title: string, is_completed?: bool}  $data
      */
     public function create(array $data): Todo
     {
@@ -29,7 +27,7 @@ class TodoRepository implements TodoRepositoryInterface
     }
 
     /**
-     * @param array{title?: string, is_completed?: bool} $data
+     * @param  array{title?: string, is_completed?: bool}  $data
      */
     public function update(Todo $todo, array $data): Todo
     {

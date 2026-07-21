@@ -12,10 +12,11 @@ class ExamEventLog extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'attempt_id', 'type', 'metadata'
+        'attempt_id', 'type', 'metadata',
     ];
 
     protected function casts(): array

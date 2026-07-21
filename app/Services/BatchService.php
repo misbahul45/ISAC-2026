@@ -2,39 +2,53 @@
 
 namespace App\Services;
 
+use App\Models\Batch;
+use App\Models\Competition;
 use App\Repositories\Contracts\BatchRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 
 class BatchService
 {
-    protected $batchRepo;
-
-    public function __construct(BatchRepositoryInterface $batchRepo)
-    {
-        $this->batchRepo = $batchRepo;
+    public function __construct(
+        private readonly BatchRepositoryInterface $batchRepository,
+    ) {
+        //
     }
 
-    public function getAllBatches()
+    /**
+     * @return Collection<int, Batch>
+     */
+    public function getBatches(?string $competitionId): Collection
     {
-        return $this->batchRepo->getAll();
+        return $this->batchRepository->allForCompetition($competitionId);
     }
 
-    public function getBatchById($id)
+    /**
+     * @return Collection<int, Batch>
+     */
+    public function getOpenBatches(Competition $competition): Collection
     {
-        return $this->batchRepo->findById($id);
+        return $this->batchRepository->openForCompetition($competition);
     }
 
-    public function createBatch(array $data)
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function createBatch(array $data): Batch
     {
-        return $this->batchRepo->create($data);
+        return $this->batchRepository->create($data);
     }
 
-    public function updateBatch($id, array $data)
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateBatch(Batch $batch, array $data): Batch
     {
-        return $this->batchRepo->update($id, $data);
+        return $this->batchRepository->update($batch, $data);
     }
 
-    public function deleteBatch($id)
+    public function deleteBatch(Batch $batch): void
     {
-        return $this->batchRepo->delete($id);
+        $this->batchRepository->delete($batch);
     }
 }

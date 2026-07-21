@@ -14,7 +14,7 @@ class FileService
     }
 
     /**
-     * @param array{fileId: string, url: string} $data
+     * @param  array{fileId: string, url: string}  $data
      */
     public function register(array $data): File
     {

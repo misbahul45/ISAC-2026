@@ -2,21 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 
 class Admin extends Model
 {
-    use HasFactory, SoftDeletes, HasApiTokens;
+    use HasApiTokens, HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'is_active', 'last_login_at'
+        'name', 'email', 'password', 'role', 'is_active', 'last_login_at',
     ];
 
     protected function casts(): array
@@ -27,10 +29,10 @@ class Admin extends Model
         ];
     }
 
-    protected function password(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function password(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            set: fn(string $value) => bcrypt($value),
+        return Attribute::make(
+            set: fn (string $value) => bcrypt($value),
         );
     }
 
