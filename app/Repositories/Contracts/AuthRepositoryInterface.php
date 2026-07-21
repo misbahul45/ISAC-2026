@@ -2,35 +2,30 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Models\PasswordResetCode;
+use App\Enums\AuthChallengePurpose;
+use App\Models\Admin;
+use App\Models\AuthChallenge;
 use App\Models\Team;
 
 interface AuthRepositoryInterface
 {
-    /**
-     * @param  array{email: string, password: string, code: string, status: string}  $data
-     */
     public function createTeam(array $data): Team;
 
     public function findByEmail(string $email): ?Team;
 
-    public function createResetCode(array $data): PasswordResetCode;
+    public function findAdminByEmail(string $email): ?Admin;
 
-    public function deleteOldResetCodes(string $email): void;
+    public function invalidateChallenges(string $accountId, string $accountType, AuthChallengePurpose $purpose): void;
 
-    public function findValidResetCode(string $email, string $code): ?PasswordResetCode;
+    public function createChallenge(array $data): AuthChallenge;
 
-    public function markCodeAsVerified(PasswordResetCode $resetCode, string $resetToken): void;
+    public function findValidChallenge(string $accountId, string $accountType, AuthChallengePurpose $purpose, string $code): ?AuthChallenge;
 
-    public function findValidResetToken(string $resetToken): ?PasswordResetCode;
+    public function findValidResetToken(string $resetToken): ?AuthChallenge;
 
-    public function markTokenAsUsed(PasswordResetCode $resetCode): void;
+    public function markChallengeUsed(AuthChallenge $challenge): void;
 
     public function updateTeamPassword(Team $team, string $password): void;
-
-    public function deleteOldVerificationCodes(string $email): void;
-
-    public function findValidVerificationCode(string $email, string $code): ?PasswordResetCode;
 
     public function markTeamEmailAsVerified(Team $team): void;
 }
