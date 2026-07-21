@@ -1,357 +1,503 @@
-# Backend and Frontend Contract Plan
+# API and Frontend Contract Plan
 
 ## Pendekatan
 
-Aplikasi memakai Inertia untuk halaman web. Karena itu kontrak dibagi:
+Aplikasi menggunakan React (Inertia) sebagai frontend yang berkomunikasi dengan backend Laravel melalui JSON API. Seluruh data dan mutation menggunakan format JSON. Frontend mengelola navigasi sendiri berdasarkan response API.
 
-1. Web page GET mengembalikan Inertia page dan props.
-2. Web mutation mengembalikan redirect.
-3. JSON API hanya untuk kebutuhan asynchronous yang tidak cocok dengan redirect, seperti external file registration atau selector dinamis.
-
-Login, register, verify email, forgot password, reset password, dan mutation registration tidak mengembalikan JSON.
+1. Seluruh komunikasi menggunakan JSON API.
+2. Auth mutation mengembalikan token + data.
+3. Registration mutation mengembalikan data + `redirectTo`.
+4. File upload tetap JSON API.
 
 ## Konvensi naming
 
 - Database dan request backend menggunakan snake_case.
-- Inertia props boleh menggunakan camelCase jika transformer konsisten.
-- TypeScript type dibuat dari kontrak yang sama dan tidak mendefinisikan enum berbeda.
+- Response API boleh menggunakan camelCase jika transformer konsisten.
+- TypeScript type dibuat dari kontrak yang sama.
 - Competition code wajib canonical.
 - ID seluruh domain menggunakan UUID string.
 - Date response menggunakan ISO 8601 dengan timezone.
 
-## Shared Inertia props
+## Format response standar
 
-Backend membagikan:
+Semua endpoint mengembalikan format:
 
-- auth.principalType: TEAM, ADMIN, atau null.
-- auth.team safe summary jika Team.
-- auth.admin safe summary jika Admin.
-- flash.success dan flash.error.
-- errors dari validation bag.
-- requestId untuk troubleshooting.
+```typescript
+type ApiResponse<T> = {
+  status: 'success' | 'error'
+  message: string
+  data: T | null
+  metadata: Record<string, unknown>
+  error: {
+    code?: string
+    details?: Record<string, string[]>
+  } | null
+}
+```
 
-Frontend tidak menerima:
-
-- password hash.
-- OTP atau reset token.
-- full session/token.
-- internal authorization detail yang sensitif.
-
-## Auth pages
+## Auth API
 
 ### Register
 
-GET /auth/register props minimal.
-
-POST /auth/register input:
-
-- email.
-- password.
-- password_confirmation.
-
-Hasil sukses:
-
-- Session Team terbentuk.
-- Redirect /auth/verify-email.
-
-### Login
-
-POST /auth/login:
-
-- email.
-- password.
-- remember opsional.
-
-Hasil:
-
-- Admin redirect /admin/dashboard.
-- Team redirect canonical.
-
-Frontend tidak menerima token JSON.
-
-### Verify email
-
-GET props:
-
-- maskedEmail.
-- resendAvailableAt.
-- challengeExpiresAt.
-
-POST input:
-
-- code.
-
-Resend tidak mengirim email input karena account berasal dari session.
-
-### Forgot/reset
-
-Forgot input hanya email. Response selalu redirect dengan pesan generik.
-
-Verify reset input hanya code karena challenge reference berada dalam session.
-
-Change password input:
-
-- password.
-- password_confirmation.
-
-## Registration selection page
-
-GET /registration props:
-
-- competitions.
-- tiap Competition berisi openBatches.
-- currentRegistration jika ada.
-
-Competition item:
-
-- id.
-- name.
-- slug.
-- type.
-- description.
-- paymentFlow.
-- registrationStart/end.
-
-Batch item:
-
-- id.
-- name.
-- slug.
-- startAt.
-- endAt.
-- price.
-- quota.
-- remainingQuota.
-- status.
-
-POST selection input:
-
-- competition_id.
-- batch_id.
-
-Frontend tidak mengirim competition name/type sebagai source of truth.
-
-## Team phase
-
-GET /registration/team props:
-
-- team current values.
-- competition summary.
-- revision note jika ada.
-
-PATCH input:
-
-- name.
-- phone.
-- school_name.
-- school_province.
-- school_city.
-- school_address.
-
-document_url dan twibbon_url tidak diterima di fase ini.
-
-## Member phase
-
-GET props:
-
-- competitionType.
-- minMembers.
-- maxMembers.
-- members existing.
-- field requirements.
-- revision note.
-
-PUT input:
-
-- members array final.
-
-Member item:
-
-- id opsional untuk update.
-- name.
-- role.
-- email.
-- phone.
-- education_level.
-- major nullable sesuai Competition.
-- faculty nullable.
-- student_id.
-- birth_date.
-- photo_file_id nullable.
-- sort_order.
-
-Backend menentukan min/max dari Competition, bukan dari value client.
-
-## Documents phase
-
-GET props:
-
-- documentUrl.
-- twibbonUrl.
-- revision note.
-
-PATCH input:
-
-- document_url.
-- twibbon_url.
-
-Sukses:
-
-- Olympiad redirect Payment.
-- Competition lain redirect Waiting Verification.
-
-## File registration JSON API
-
-External upload membutuhkan endpoint:
-
-- GET /api/uploads/provider-auth.
-- POST /api/files.
-
-Keduanya authenticated dan authorized untuk Team atau Admin sesuai collection/purpose.
-
-POST /api/files:
-
-- fileId.
-- url.
-- purpose.
-
-Response JSON:
-
-- id.
-- fileId.
-- url.
-
-Backend sebaiknya memvalidasi host provider dan purpose agar arbitrary URL tidak dicatat sebagai bukti pembayaran.
-
-## Payment phase
-
-GET props:
-
-- registrationId.
-- amount.
-- paymentMethods.
-- paymentInstructions.
-- qrImageUrl jika tersedia.
-- paymentStatus.
-- existingProof.
-- rejectionReason.
-- paymentForStage.
-
-POST/PATCH input:
-
-- payment_proof_file_id.
-- payment_method.
-- transaction_id opsional.
-
-Frontend tidak mengirim amount_paid, verified status, verified actor, atau destination Stage.
-
-Promo tidak dimasukkan sampai terdapat tabel, rule, dan endpoint promo resmi. UI promo mock dihapus atau disembunyikan.
-
-## Waiting and rejected pages
-
-Waiting props:
-
-- teamStatus.
-- paymentStatus.
-- submittedAt.
-- human-readable summary.
-
-Revision props:
-
-- revisionStep.
-- verificationNote.
-- paymentRejectionReason.
-
-Frontend boleh menampilkan status, tetapi tidak menentukan redirect dari status. Backend sudah memilih halaman sebelum render.
-
-## Dashboard Team
-
-GET /dashboard props:
-
-- team safe summary.
-- competition.
-- batch.
-- currentStage.
-- module.
-- availableActions.
-
-availableActions dihitung backend:
-
-- canSubmit.
-- canStartExam.
-- paymentRequired.
-- canViewFeedback.
-
-Authorization tetap dilakukan backend walaupun button disembunyikan.
-
-## Admin contracts
-
-Admin list memakai server-side pagination dan filter query.
-
-Mutation CRUD dan verification memakai Inertia redirect:
-
-- Sukses membawa flash.
-- Validation error kembali ke form.
-- Conflict status kembali dengan domain error.
-
-Jika data table memerlukan asynchronous fetch, endpoint JSON terpisah dapat ditambahkan tetapi memakai Policy yang sama.
-
-## Frontend state
-
-Yang boleh disimpan lokal:
-
-- Pure UI state seperti active card, animation, dan unsaved draft singkat.
-- Draft localStorage opsional dengan key menyertakan Team ID dan schema version.
-
-Yang tidak boleh menjadi source of truth:
-
-- Selected Competition.
-- Selected Batch.
-- Current registration phase.
+`POST /api/auth/register`
+
+Input:
+```typescript
+type RegisterPayload = {
+  email: string
+  password: string
+  password_confirmation: string
+}
+```
+
+Response:
+```typescript
+type RegisterData = {
+  id: string
+  email: string
+  code: string
+  status: TeamStatus
+  email_verified_at: string | null
+  created_at: string
+  redirectTo?: string
+}
+```
+
+### Login (Shared — Team & Admin)
+
+`POST /api/auth/login`
+
+Input:
+```typescript
+type LoginPayload = {
+  email: string
+  password: string
+}
+```
+
+Response Team:
+```typescript
+type LoginData = {
+  token: string
+  tokenType: 'Bearer'
+  principalType: 'TEAM'
+  team: AuthTeam
+  redirectTo: string
+}
+
+type AuthTeam = {
+  id: string
+  code: string
+  email: string
+  name: string | null
+  status: TeamStatus
+  emailVerifiedAt: string | null
+}
+```
+
+Response Admin:
+```typescript
+type AdminLoginData = {
+  token: string
+  tokenType: 'Bearer'
+  principalType: 'ADMIN'
+  admin: {
+    id: string
+    email: string
+    name: string
+    role: string
+  }
+  redirectTo: '/admin/dashboard'
+}
+```
+
+Frontend menentukan halaman berdasarkan `principalType`:
+- `TEAM` → render halaman Team, navigasi pakai `redirectTo`.
+- `ADMIN` → render halaman Admin, navigasi ke `/admin/dashboard`.
+
+### Verify Email
+
+`POST /api/auth/verify-email`
+
+Input:
+```typescript
+type VerifyEmailPayload = {
+  code: string
+}
+```
+
+### Resend Verification
+
+`POST /api/auth/send-verification`
+
+Input:
+```typescript
+type SendVerificationPayload = {
+  email: string
+}
+```
+
+### Forgot Password
+
+`POST /api/auth/forgot-password`
+
+Input:
+```typescript
+type ForgotPasswordPayload = {
+  email: string
+}
+```
+
+Response:
+```typescript
+type ForgotPasswordData = {
+  email: string
+}
+```
+
+### Verify Reset Code
+
+`POST /api/auth/verify-code`
+
+Input:
+```typescript
+type VerifyResetCodePayload = {
+  code: string
+}
+```
+
+Response:
+```typescript
+type VerifyResetCodeData = {
+  resetToken: string
+}
+```
+
+### Change Password
+
+`POST /api/auth/change-password`
+
+Input:
+```typescript
+type ChangePasswordPayload = {
+  password: string
+  password_confirmation: string
+}
+```
+
+### Me
+
+`GET /api/auth/me`
+
+Response (Team):
+```typescript
+type MeData = {
+  principalType: 'TEAM'
+  team: AuthTeam
+}
+```
+
+Response (Admin):
+```typescript
+type MeData = {
+  principalType: 'ADMIN'
+  admin: {
+    id: string
+    email: string
+    name: string
+    role: string
+  }
+}
+```
+
+### Logout
+
+`POST /api/auth/logout`
+
+## Registration API
+
+### Competition List
+
+`GET /api/competitions?status=REGISTRATION_OPEN&type=`
+
+Response:
+```typescript
+type CompetitionListData = Array<{
+  id: string
+  name: string
+  slug: string
+  type: 'OLIMPIADE' | 'BUSINESS_PLAN' | 'BUSINESS_IT_CASE'
+  description: string
+  paymentFlow: 'UPFRONT' | 'SEMIFINAL'
+  startDate: string
+  endDate: string
+  status: string
+  openBatches: Array<{
+    id: string
+    name: string
+    slug: string
+    startAt: string
+    endAt: string
+    price: number
+    quota: number | null
+    remainingQuota: number
+    status: string
+  }>
+}>
+```
+
+### Registration Context
+
+`GET /api/registrations/me/context`
+
+Response:
+```typescript
+type RegistrationContextData = {
+  registration: Registration | null
+  team: TeamProfile
+  progress: {
+    teamCompleted: boolean
+    membersCompleted: boolean
+    documentsCompleted: boolean
+    submitted: boolean
+  }
+}
+
+type Registration = {
+  id: string
+  status: RegistrationStatus
+  competition: CompetitionSummary
+  batch: BatchSummary
+}
+```
+
+### Select Competition & Batch
+
+`POST /api/registrations/me/selection`
+
+Input:
+```typescript
+type SelectCompetitionPayload = {
+  competition_id: string
+  batch_id: string
+}
+```
+
+Response:
+```typescript
+type RegistrationMutationData = {
+  redirectTo: string
+}
+```
+
+### Team Profile
+
+`GET /api/registrations/me/team`
+
+Response:
+```typescript
+type TeamProfileData = {
+  name: string | null
+  phone: string | null
+  school_name: string | null
+  school_province: string | null
+  school_city: string | null
+  school_address: string | null
+  competition_summary: { name: string, type: string }
+}
+```
+
+### Update Team
+
+`PATCH /api/registrations/me/team`
+
+Input:
+```typescript
+type TeamFormValues = {
+  name: string
+  phone: string
+  school_name: string
+  school_province: string
+  school_city: string
+  school_address: string
+}
+```
+
+### Members
+
+`GET /api/registrations/me/members`
+
+Response:
+```typescript
+type MembersPageData = {
+  competitionType: string
+  minMembers: number
+  maxMembers: number
+  members: Array<MemberData>
+  revisionNote: string | null
+}
+
+type MemberData = {
+  id: string | null
+  name: string
+  role: 'LEADER' | 'MEMBER'
+  email: string
+  phone: string
+  education_level: string
+  major: string | null
+  faculty: string | null
+  student_id: string
+  birth_date: string
+  photo_file_id: string | null
+  sort_order: number
+}
+```
+
+### Finalize Members
+
+`PUT /api/registrations/me/members`
+
+Input:
+```typescript
+type FinalizeMembersPayload = {
+  members: Array<MemberFormValues>
+}
+```
+
+### Documents
+
+`GET /api/registrations/me/documents`
+
+Response:
+```typescript
+type DocumentsPageData = {
+  document_url: string | null
+  twibbon_url: string | null
+  revisionNote: string | null
+}
+```
+
+### Update Documents
+
+`PATCH /api/registrations/me/documents`
+
+Input:
+```typescript
+type DocumentsFormValues = {
+  document_url: string
+  twibbon_url: string
+}
+```
+
+### Payment
+
+`GET /api/registrations/me/payment`
+
+Response:
+```typescript
+type PaymentPageData = {
+  amount: number
+  payment_methods: string[]
+  payment_instructions: string
+  payment_status: string
+  existing_proof: FileData | null
+  rejection_reason: string | null
+}
+```
+
+### Submit Payment
+
+`POST /api/registrations/me/payment`
+
+Input:
+```typescript
+type PaymentFormValues = {
+  payment_proof_file_id: string
+  payment_method: string
+  transaction_id?: string
+}
+```
+
+### Summary
+
+`GET /api/registrations/me/summary`
+
+### Submit Verification
+
+`POST /api/registrations/me/submit-verification`
+
+## File Upload API
+
+### Provider Auth
+
+`GET /api/imagekit-auth`
+
+### Register File
+
+`POST /api/files`
+
+Input:
+```typescript
+type FilePayload = {
+  fileId: string
+  url: string
+  purpose: string
+}
+```
+
+Response:
+```typescript
+type FileData = {
+  id: string
+  fileId: string
+  url: string
+}
+```
+
+## Frontend state management
+
+### Yang disimpan di localStorage:
+
+- `auth_token` — Sanctum Bearer token.
+- CSRF token dari meta tag (untuk web routes).
+
+### Yang di-fetch dari API setiap kali:
+
+- Registration context (`/api/registrations/me/context`).
+- Data per halaman (team, members, documents, payment).
+
+### Yang tidak boleh menjadi source of truth:
+
+- Selected Competition/Batch (harus dari DB).
+- Current registration phase (harus dari DB).
 - Team/Registration status.
 - Member final state setelah submit.
 - Payment verification.
 - Current Stage.
-- Authentication token.
-
-Setelah setiap GET, props backend menggantikan draft yang sudah sukses disimpan.
-
-## Form behavior
-
-- React Hook Form dan Zod tetap dipakai untuk UX.
-- Backend FormRequest tetap validasi authoritative.
-- Frontend schema harus mengikuti field DB/API.
-- Inertia router mutation menangani processing, errors, preserveScroll bila perlu.
-- Hilangkan setTimeout simulasi dan console.log data sensitif.
-- Disable submit saat processing, tetapi backend tetap idempotent.
 
 ## Error mapping
 
-- Validation errors dipetakan per field.
-- Domain conflict ditampilkan sebagai form-level error.
-- 403 menampilkan unauthorized.
-- 404 menampilkan not found.
-- 419 mengarahkan refresh/session expired.
-- Rate limit menampilkan retry countdown dari backend.
-- 500 menampilkan request ID tanpa stack trace.
+| HTTP Status | Penanganan Frontend |
+|---|---|
+| 200 | Sukses, render data |
+| 201 | Created, redirect sesuai redirectTo |
+| 401 | Hapus token, redirect login |
+| 403 | Tampilkan "Tidak punya akses" |
+| 404 | Tampilkan "Tidak ditemukan" |
+| 422 | Parse validation errors per field |
+| 429 | Tampilkan retry countdown dari Retry-After header |
+| 500 | Tampilkan "Terjadi kesalahan" + request ID |
 
-## Compatibility
+## Form behavior
 
-Selama transisi:
-
-1. Tambahkan transformer baru tanpa langsung menghapus seluruh prop lama.
-2. Pindahkan satu halaman pada satu waktu dari mock/localStorage ke DB.
-3. Tandai contract lama deprecated.
-4. Hapus API auth bearer lama setelah seluruh Inertia auth memakai session dan tidak ada consumer lain.
-5. Update koleksi API documentation hanya untuk endpoint JSON yang tetap ada.
+- React Hook Form + Zod untuk validasi client-side.
+- Backend FormRequest tetap validasi authoritative.
+- Disable submit saat processing.
+- Backend tetap idempotent.
 
 ## Test contract
 
-- Feature test memeriksa Inertia component dan props.
-- Feature test memeriksa redirect setiap mutation.
-- Typecheck memastikan type frontend cocok.
-- Browser test menyelesaikan ketiga flow Competition.
-- Browser test refresh pada setiap fase dan memastikan resume dari DB.
-- Browser test direct URL memastikan canonical redirect.
-- Browser test session expired dan rate-limited auth.
-
+- Unit test untuk setiap service.
+- Feature test untuk setiap endpoint API.
+- Typecheck memastikan type frontend cocok dengan response API.
+- Integration test untuk flow lengkap (register → verify → selection → team → members → documents → payment).

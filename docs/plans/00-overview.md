@@ -1,32 +1,31 @@
-# ISAC 2026 Architecture Plan
+# ISAC 2026 API Architecture Plan
 
 ## Tujuan
 
 Folder ini menjadi sumber rencana implementasi untuk:
 
-- Authentication Team dan Admin berbasis session.
+- Authentication Team dan Admin berbasis token Sanctum.
 - Authorization dan guard terpisah untuk Team dan Admin.
 - Rate limiting untuk seluruh flow authentication.
 - Registration Team dengan progress yang dikendalikan backend.
 - CRUD Competition dan Batch.
 - Verifikasi data Team dan pembayaran oleh Admin.
-- Redirect UI berdasarkan state database.
-- Integrasi Inertia frontend dengan backend.
+- Frontend menentukan navigasi berdasarkan response API.
+- Seluruh komunikasi frontend-backend melalui JSON API.
 
 Dokumen ini adalah planning. Implementasi aplikasi belum dianggap selesai hanya karena tercantum di sini.
 
 ## Prinsip arsitektur
 
-1. Backend menjadi satu-satunya sumber kebenaran untuk posisi halaman Team.
-2. Frontend tidak menghitung next route secara mandiri.
+1. Frontend mengelola state navigasi sendiri berdasarkan response API.
+2. Backend hanya mengembalikan data dan redirectTo sebagai petunjuk, bukan paksa redirect HTTP.
 3. Team.status hanya menyatakan status verifikasi data.
 4. Registration.status hanya menyatakan status payment gate.
 5. Verifikasi email disimpan pada Team.email_verified_at.
 6. Progress wizard disimpan terpisah dari kedua status.
-7. Mutation halaman Inertia menghasilkan redirect atau redirect back, bukan JSON.
-8. JSON API digunakan untuk komponen interaktif dan integrasi yang memang memerlukannya.
-9. Perubahan status, progress, kuota, dan Stage dilakukan melalui service transaction.
-10. Tindakan Admin wajib melewati authentication, authorization, dan audit.
+7. Seluruh komunikasi menggunakan JSON API dengan format response standar.
+8. Perubahan status, progress, kuota, dan Stage dilakukan melalui service transaction.
+9. Tindakan Admin wajib melewati authentication, authorization, dan audit.
 
 ## Flow utama Team
 
@@ -56,11 +55,11 @@ Business Plan dan Business IT Case baru menggunakan UI pembayaran ketika Team di
 ## Dokumen planning
 
 - 01-database-architecture.md: schema, constraints, dan state.
-- 02-authentication-authorization.md: session, guards, authorization, OTP, password reset, dan rate limiting.
-- 03-team-registration-flow.md: seluruh flow Registration Team.
-- 04-backend-redirect-tracking.md: resolver next route dan canonical redirect.
-- 05-competition-batch-admin.md: CRUD Competition, Batch, dan verifikasi Admin.
-- 06-api-frontend-contract.md: request, redirect, Inertia props, dan mapping UI.
+- 02-authentication-authorization.md: Sanctum token, guards, authorization, OTP, password reset, dan rate limiting.
+- 03-team-registration-flow.md: seluruh flow Registration Team via JSON API.
+- 04-frontend-routing.md: client-side routing, redirectTo, dan state navigasi.
+- 05-competition-batch-admin.md: CRUD Competition, Batch, dan verifikasi Admin via JSON API.
+- 06-api-frontend-contract.md: request, response, format JSON, dan mapping API.
 - 07-implementation-and-testing.md: urutan implementasi, test matrix, rollout, dan acceptance criteria.
 
 ## Batasan awal
@@ -103,4 +102,3 @@ Registration payment status:
 - REVISION_REQUIRED
 - REJECTED
 - CANCELLED
-

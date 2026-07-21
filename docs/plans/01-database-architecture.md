@@ -15,21 +15,18 @@ Satu field status tidak boleh menjawab seluruh pertanyaan tersebut.
 
 Team menyimpan identitas akun, data institusi, URL dokumen, status verifikasi data, dan Stage aktif.
 
-### Field yang dipertahankan
+### Field
 
-- id, code, email, password, email_verified_at.
+- id (UUID), code, email, password, email_verified_at.
 - name, phone, school_name, school_address.
+- school_province, nullable.
+- school_city, nullable.
 - document_url, twibbon_url.
 - current_stage_id.
 - status, verified_by, verified_at.
-- timestamps dan soft delete.
-
-### Field yang ditambahkan
-
-- school_province, nullable sebelum fase Team selesai.
-- school_city, nullable sebelum fase Team selesai.
 - verification_note, nullable text untuk alasan revisi atau penolakan.
 - revision_step, nullable enum TEAM, MEMBERS, DOCUMENTS.
+- timestamps dan soft delete.
 
 ### Status Team
 
@@ -61,7 +58,7 @@ Team memiliki satu-ke-banyak Member.
 
 ### Field
 
-- id, team_id.
+- id (UUID), team_id.
 - name, role, email, phone.
 - education_level, major, faculty, student_id, birth_date.
 - photo_file_id jika fitur foto digunakan.
@@ -95,7 +92,7 @@ Registration menghubungkan Team, Competition, dan Batch; menyimpan progress onbo
 
 ### Field inti
 
-- id, team_id, competition_id, batch_id.
+- id (UUID), team_id, competition_id, batch_id.
 - status.
 - payment_proof_file_id.
 - amount_paid, payment_method, transaction_id, paid_at.
@@ -173,7 +170,7 @@ File digunakan untuk bukti pembayaran, module Batch, Submission, dan foto Member
 
 ### Field
 
-- id, name, slug, description.
+- id (UUID), name, slug, description.
 - type, payment_flow.
 - start_date, end_date, status.
 - timestamps dan soft delete.
@@ -197,7 +194,7 @@ Hindari campuran lowercase di DB dan uppercase di frontend.
 
 ### Field
 
-- id, competition_id.
+- id (UUID), competition_id.
 - name, slug, description.
 - start_date, end_date, price.
 - module_file_id.
@@ -207,9 +204,9 @@ Hindari campuran lowercase di DB dan uppercase di frontend.
 
 ### Perbaikan model
 
-- Gunakan timestamp Laravel standar.
-- Perbaiki import SoftDeletes dan HasMany.
-- Cast start_date dan end_date, bukan camelCase.
+- Gunakan timestamp Laravel standar (created_at, updated_at), bukan camelCase.
+- Perbaiki import SoftDeletes.
+- Cast start_date dan end_date ke datetime.
 - Status canonical: DRAFT, OPEN, CLOSED, FULL.
 
 ### Constraint
@@ -225,7 +222,7 @@ current_registrations adalah cache counter. Perubahannya dilakukan dalam transac
 
 ## Auth challenge
 
-Tabel password_reset_codes direncanakan menjadi tabel auth_challenges.
+Tabel auth_challenges menggantikan skema ad-hoc password_reset_codes.
 
 ### Field
 
@@ -282,4 +279,3 @@ Setelah pembayaran VERIFIED, service memindahkan current_stage_id ke payment_for
 9. Hapus kolom lama dalam migration terpisah setelah satu release stabil.
 
 Migration data-normalizing harus menyediakan preflight report untuk record yang tidak dapat dipetakan otomatis.
-

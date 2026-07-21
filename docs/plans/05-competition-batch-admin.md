@@ -2,45 +2,42 @@
 
 ## Tujuan
 
-Admin mengelola Competition, Batch, data Team, payment verification, dan perpindahan Stage. Semua operasi berada di area guard admin serta menggunakan Policy.
+Admin mengelola Competition, Batch, data Team, payment verification, dan perpindahan Stage. Semua operasi melalui JSON API endpoint dengan guard admin (Sanctum) dan Policy.
 
 ## Layer
 
 Setiap domain memakai:
 
 - FormRequest untuk validasi input.
-- Controller tipis untuk HTTP/Inertia.
+- Controller tipis untuk HTTP API.
 - Policy untuk authorization.
-- Action atau Service untuk transaksi dan business rules.
+- Service untuk transaksi dan business rules.
 - Repository/query object hanya jika query kompleks memerlukannya.
-- Resource atau Inertia data transformer untuk output.
+- Resource untuk output response.
 
 Controller tidak langsung mengubah status kompleks.
 
-## Competition CRUD
+## Competition CRUD (Admin)
 
-### Halaman dan endpoint
+### Endpoint
 
-- GET /admin/competitions.
-- GET /admin/competitions/create.
-- POST /admin/competitions.
-- GET /admin/competitions/{competition}/edit.
-- PATCH /admin/competitions/{competition}.
-- DELETE /admin/competitions/{competition}.
+Semua endpoint prefix `/api/admin/competitions`, middleware `auth:sanctum` + guard `admins`.
 
-Opsional JSON endpoint untuk selector:
-
-- GET /api/competitions/open.
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| GET | /api/admin/competitions | List semua Competition (filter, pagination) |
+| POST | /api/admin/competitions | Create Competition |
+| GET | /api/admin/competitions/{competition} | Detail Competition |
+| PATCH | /api/admin/competitions/{competition} | Update Competition |
+| DELETE | /api/admin/competitions/{competition} | Soft delete Competition |
+| PATCH | /api/admin/competitions/{competition}/status | Transition status |
 
 ### Input
 
-- name.
-- slug.
-- description.
-- type.
-- payment_flow.
-- start_date.
-- end_date.
+- name, slug, description.
+- type (OLIMPIADE, BUSINESS_PLAN, BUSINESS_IT_CASE).
+- payment_flow (UPFRONT, SEMIFINAL).
+- start_date, end_date.
 - status.
 
 ### Rules
@@ -60,28 +57,27 @@ Opsional JSON endpoint untuk selector:
 - ONGOING ke COMPLETED.
 - Reopen hanya melalui ability khusus dan validasi periode.
 
-Competition dengan Registration tidak dapat dihapus permanen. DELETE berarti soft delete hanya jika tidak merusak Registration aktif; jika sudah dipakai, lebih tepat ubah status.
+Competition dengan Registration tidak dapat dihapus permanen.
 
-## Batch CRUD
+## Batch CRUD (Admin)
 
-### Halaman dan endpoint
+### Endpoint
 
-- GET /admin/competitions/{competition}/batches.
-- GET /admin/competitions/{competition}/batches/create.
-- POST /admin/competitions/{competition}/batches.
-- GET /admin/batches/{batch}/edit.
-- PATCH /admin/batches/{batch}.
-- DELETE /admin/batches/{batch}.
+Semua endpoint prefix `/api/admin/competitions/{competition}/batches`.
+
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| GET | /api/admin/competitions/{competition}/batches | List Batch dalam Competition |
+| POST | /api/admin/competitions/{competition}/batches | Create Batch |
+| GET | /api/admin/batches/{batch} | Detail Batch |
+| PATCH | /api/admin/batches/{batch} | Update Batch |
+| DELETE | /api/admin/batches/{batch} | Soft delete Batch |
 
 ### Input
 
-- name.
-- slug.
-- description.
-- start_date.
-- end_date.
-- price.
-- quota.
+- name, slug, description.
+- start_date, end_date.
+- price, quota.
 - status.
 - module_file_id.
 
@@ -98,12 +94,11 @@ competition_id berasal dari scoped route, bukan input bebas.
 - Batch OPEN hanya jika Competition menerima registration.
 - Batch FULL dapat ditentukan otomatis ketika kuota tercapai.
 - Batch dengan Registration tidak dapat dipindah ke Competition lain.
-- Harga tidak dapat diubah sembarangan jika sudah ada payment submission; butuh ability override dan audit.
+- Harga tidak dapat diubah sembarangan jika sudah ada payment submission.
 
 ### Quota concurrency
 
 Selection Registration:
-
 1. Transaction.
 2. SELECT Batch for update.
 3. Hitung atau validasi current_registrations.
@@ -115,138 +110,101 @@ Scheduled reconciliation membandingkan cached counter dengan count Registration 
 
 ## Admin Team list
 
-Halaman:
+### Endpoint
 
-- GET /admin/teams.
-- GET /admin/teams/{team}.
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| GET | /api/admin/teams | List Team dengan filter |
+| GET | /api/admin/teams/{team} | Detail Team + Registration + Member |
 
 Filter:
-
-- Competition.
-- Batch.
-- Team.status.
-- Registration.status.
-- Stage.
-- Institusi/provinsi.
-- submitted date.
+- Competition, Batch, Team.status, Registration.status, Stage, provinsi, submitted date.
 
 Detail memuat:
-
-- Account Team.
-- Registration dan progress.
-- Member.
-- Document/twibbon links.
-- Payment proof.
-- Status dan verification notes.
-- Current Stage.
-- Riwayat tindakan Admin jika audit table ditambahkan.
+- Account Team, Registration progress, Member.
+- Document/twibbon links, Payment proof.
+- Status dan verification notes, Current Stage.
+- Riwayat tindakan Admin.
 
 Query memakai pagination, eager loading, dan index yang relevan.
 
-## Verifikasi data Team
+## Verifikasi data Team (Admin)
 
-Endpoint:
-
-- POST /admin/teams/{team}/verify.
-- POST /admin/teams/{team}/request-revision.
-- POST /admin/teams/{team}/reject.
+| Method | Endpoint |
+|---|---|
+| POST | /api/admin/teams/{team}/verify |
+| POST | /api/admin/teams/{team}/request-revision |
+| POST | /api/admin/teams/{team}/reject |
 
 Verify:
-
 - Hanya Team WAITING_VERIFICATION.
 - Set status VERIFIED.
 - Isi verified_by dan verified_at.
-- Bersihkan revision_step dan note jika sesuai.
+- Bersihkan revision_step dan note.
 - Panggil activation service.
 
 Request revision:
-
 - Input revision_step dan verification_note.
 - Set status REVISION_REQUIRED.
-- Team diarahkan ke fase terkait.
+- Team diarahkan ke fase terkait via redirectTo.
 
 Reject:
-
 - Input verification_note wajib.
 - Set status REJECTED.
 - Tidak menghapus Registration.
 
 Semua operasi idempotent dan melalui Policy ability.
 
-## Verifikasi pembayaran
+## Verifikasi pembayaran (Admin)
 
-Endpoint:
-
-- POST /admin/registrations/{registration}/payment/verify.
-- POST /admin/registrations/{registration}/payment/request-revision.
-- POST /admin/registrations/{registration}/payment/reject.
+| Method | Endpoint |
+|---|---|
+| POST | /api/admin/registrations/{registration}/payment/verify |
+| POST | /api/admin/registrations/{registration}/payment/request-revision |
+| POST | /api/admin/registrations/{registration}/payment/reject |
 
 Verify:
-
 - Hanya WAITING_VERIFICATION.
 - Proof harus tersedia.
 - Set status VERIFIED.
 - Isi payment_verified_by dan payment_verified_at.
-- Bersihkan rejection reason.
-- Panggil activation atau Stage payment completion service.
+- Panggil activation atau Stage completion service.
 
-Request revision:
+Auto-verification non-Olympiad hanya dilakukan service saat membuat Registration.
 
-- Alasan wajib.
-- Set status REVISION_REQUIRED.
-- Team diarahkan ke Payment.
+## Stage movement (Admin)
 
-Reject:
-
-- Alasan wajib.
-- Set status REJECTED.
-
-Auto-verification non-Olympiad hanya dilakukan service saat membuat Registration. Admin endpoint tidak dipakai.
-
-## Stage movement
-
-Endpoint konseptual:
-
-- POST /admin/teams/{team}/stage/qualify.
-- POST /admin/teams/{team}/stage/advance.
+| Method | Endpoint |
+|---|---|
+| POST | /api/admin/teams/{team}/stage/qualify |
+| POST | /api/admin/teams/{team}/stage/advance |
 
 Untuk Business Plan/BIT menuju Semifinal:
-
 - Jangan langsung advance.
-- Buka payment gate pada Registration.
+- Buka payment gate pada Registration (status WAITING_PAYMENT).
 - Set payment_for_stage_id.
 - Team baru pindah setelah pembayaran VERIFIED.
 
 Untuk Stage tanpa payment gate:
-
 - Validasi Stage tujuan merupakan next order.
 - Update current_stage_id dalam transaction.
 
-Manual arbitrary Stage jump membutuhkan ability khusus dan audit reason.
-
 ## Audit log
 
-Direkomendasikan tabel admin_audit_logs:
+Tabel admin_audit_logs:
 
-- id.
-- admin_id.
-- action.
-- subject_type.
-- subject_id.
-- before_data JSON dengan data sensitif disaring.
-- after_data JSON.
-- reason.
-- request_id.
+- id, admin_id, action.
+- subject_type, subject_id.
+- before_data JSON, after_data JSON.
+- reason, request_id.
 - created_at.
 
 Action yang dicatat:
-
 - Competition create/update/status/delete.
 - Batch create/update/status/delete.
 - Team verify/revision/reject.
 - Payment verify/revision/reject.
 - Stage qualify/advance/override.
-- Perubahan Competition/Batch pada Registration.
 
 ## Authorization matrix
 
@@ -260,15 +218,33 @@ Action yang dicatat:
 | Advance Stage | Ya | Ya | Tidak | Sesuai rule |
 | Review Submission | Ya | Opsional | Tidak | Ya |
 
-Matrix final dapat diperluas, tetapi Policy wajib menjadi enforcement backend.
+Policy wajib menjadi enforcement backend.
 
-## Validation dan error
+## Response format
 
-- Mutation Inertia Admin mengembalikan redirect.
-- Conflict status menghasilkan validation/domain error yang dapat dipahami.
-- Concurrent verification menggunakan optimistic check pada status atau row lock.
-- Resource tidak ditemukan tetap 404.
-- Unauthorized tetap 403, bukan disamarkan sebagai sukses.
+Semua endpoint mengembalikan format JSON standar:
+
+Sukses:
+```json
+{
+  "status": "success",
+  "message": "...",
+  "data": {},
+  "metadata": {},
+  "error": null
+}
+```
+
+Error:
+```json
+{
+  "status": "error",
+  "message": "...",
+  "data": null,
+  "metadata": {},
+  "error": { "code": "...", "details": {} }
+}
+```
 
 ## Test wajib
 
@@ -285,4 +261,3 @@ Matrix final dapat diperluas, tetapi Policy wajib menjadi enforcement backend.
 - Revision reason dan step wajib.
 - Audit actor tercatat.
 - Soft delete tidak merusak Registration existing.
-
