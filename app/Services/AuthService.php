@@ -238,7 +238,10 @@ class AuthService
     private function generateTeamCode(): string
     {
         return DB::transaction(function (): string {
-            $result = DB::select('SELECT MAX(CAST(SUBSTRING(code, 10) AS UNSIGNED)) AS max_code FROM teams');
+            $result = DB::table('teams')
+                ->select(DB::raw('MAX(CAST(SUBSTRING(code, 10) AS UNSIGNED)) AS max_code'))
+                ->lockForUpdate()
+                ->get();
             $next = ((int) ($result[0]->max_code ?? 0)) + 1;
 
             return 'ISAC-TM-'.str_pad((string) $next, 3, '0', STR_PAD_LEFT);
