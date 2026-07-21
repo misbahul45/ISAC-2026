@@ -12,7 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('competition_id')->constrained('competitions')->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->text('description')->nullable();
             $table->dateTime('start_date');
             $table->dateTime('end_date');
@@ -20,12 +20,12 @@ return new class extends Migration
             $table->foreignUuid('module_file_id')->nullable()->constrained('files')->nullOnDelete();
             $table->integer('quota')->nullable();
             $table->integer('current_registrations')->default(0);
-            $table->enum('status', ['draft', 'open', 'closed', 'full'])->default('draft');
+            $table->enum('status', ['DRAFT', 'OPEN', 'CLOSED', 'FULL'])->default('DRAFT');
             $table->timestamps();
             $table->softDeletes();
 
+            $table->unique(['competition_id', 'slug']);
             $table->index(['competition_id', 'status']);
-            $table->index('slug');
         });
     }
 
