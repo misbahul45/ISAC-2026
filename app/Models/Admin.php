@@ -34,9 +34,9 @@ class Admin extends Model
         );
     }
 
-    public function verifiedRegistrations(): HasMany
+    public function approvedRegistrations(): HasMany
     {
-        return $this->hasMany(Registration::class, 'verified_by');
+        return $this->hasMany(Registration::class, 'approved_by');
     }
 
     public function reviewedSubmissions(): HasMany

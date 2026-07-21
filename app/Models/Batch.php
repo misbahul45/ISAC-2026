@@ -9,14 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-enum BatchStatus: string
-{
-    case DRAFT = 'DRAFT';
-    case OPEN = 'OPEN';
-    case CLOSED = 'CLOSED';
-    case FULL = 'FULL';
-}
-
 class Batch extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
@@ -50,7 +42,6 @@ class Batch extends Model
             'price' => 'decimal:2',
             'quota' => 'integer',
             'current_registrations' => 'integer',
-            'status' => BatchStatus::class,
         ];
     }
 
