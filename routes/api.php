@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BatchController;
 use App\Http\Controllers\Api\CompetitionController;
@@ -44,7 +45,12 @@ Route::get('/competitions', [CompetitionController::class, 'index']);
 Route::get('/competitions/open', [CompetitionController::class, 'open']);
 Route::get('/competitions/{competition}', [CompetitionController::class, 'show'])->whereUuid('competition');
 
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->middleware('throttle:5,1');
+
 Route::prefix('admin')->middleware('auth:admins')->group(function (): void {
+    Route::post('/logout', [AdminAuthController::class, 'logout']);
+    Route::get('/me', [AdminAuthController::class, 'me']);
+
     Route::post('/competitions', [CompetitionController::class, 'store']);
     Route::patch('/competitions/{competition}', [CompetitionController::class, 'update']);
     Route::delete('/competitions/{competition}', [CompetitionController::class, 'destroy']);

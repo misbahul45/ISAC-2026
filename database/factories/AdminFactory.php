@@ -22,7 +22,7 @@ class AdminFactory extends Factory
             'id' => (string) Str::uuid(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'password' => bcrypt('Password123!'),
+            'password' => 'Password123!',
             'role' => 'super_admin',
         ];
     }
