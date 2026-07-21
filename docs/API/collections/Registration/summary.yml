@@ -1,0 +1,36 @@
+info:
+  name: summary
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/registrations/me/summary"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/registrations/me/summary — RegistrationController@summary
+  - **Deskripsi**: Ringkasan lengkap pendaftaran — data tim, anggota, kompetisi, batch, status registration.
+    Ditampilkan di halaman review sebelum submit verifikasi.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:73`.
+  - **Request**: Header `Authorization: Bearer <token>`.
+  - **Alur Proses** (`RegistrationSummaryResource`, `app/Http/Resources/RegistrationSummaryResource.php:15-39`):
+    `$team->loadMissing('members', 'registration.competition', 'registration.batch')`.
+    Response: `{team: TeamFormResource, members: [MembersFormResource], registration: { id, status, progress_markers, competition: CompetitionResource, batch: BatchResource }}`.
+  - **Database yang Terkena**: `teams` — SELECT; `members` — SELECT (eager load); `registrations` — SELECT;
+    `competitions` — SELECT; `batches` — SELECT.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: RegistrationSummaryResource, metadata, error}`.

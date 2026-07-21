@@ -24,7 +24,7 @@ settings:
 docs: |-
   #### POST /api/auth/logout — AuthController@logout
   - **Deskripsi**: Revoke Sanctum token yang sedang dipakai.
-  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:53`.
+  - **Middleware & Auth**: `auth:sanctum` (throttle:10,1). Sumber: `routes/api.php:87`.
   - **Request**: Header `Authorization: Bearer <token>`.
   - **Alur Proses** (`AuthService::logout`, `app/Services/AuthService.php:70-73`):
     `$team->currentAccessToken()?->delete()` (hapus hanya token request ini).

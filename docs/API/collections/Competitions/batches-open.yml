@@ -1,0 +1,31 @@
+info:
+  name: batches-open
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/competitions/{{competition_id}}/batches/open"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/competitions/{competition}/batches/open — BatchController@openForCompetition
+  - **Deskripsi**: Daftar batch yang sedang OPEN untuk kompetisi tertentu. Dipakai frontend untuk dropdown pemilihan batch.
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:77`.
+  - **Request**: Path `{competition}` (UUID). Route model binding.
+  - **Alur Proses** (`BatchService::getOpenBatches`):
+    Filter `status = OPEN` untuk kompetisi tertentu. Return `BatchResource::collection`.
+  - **Database yang Terkena**: `competitions` — SELECT (route binding); `batches` — SELECT (filter status & competition_id).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: [BatchResource], metadata, error}`.

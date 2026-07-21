@@ -1,0 +1,53 @@
+info:
+  name: batches-store
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/batches"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "competition_id": "00000000-0000-0000-0000-000000000000",
+          "name": "Batch 1",
+          "slug": "batch-1",
+          "start_date": "2026-01-01T00:00:00Z",
+          "end_date": "2026-01-31T00:00:00Z",
+          "price": 100000,
+          "quota": 50,
+          "status": "OPEN"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/batches — BatchController@store
+  - **Deskripsi**: Buat batch baru (admin).
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:55`.
+  - **Request** (validasi `StoreBatchRequest`):
+    - `competition_id`: required, uuid, exists:competitions,id
+    - `name`: required, string, max:255
+    - `slug`: required, string, regex:/^[a-z0-9-]+$/, unique:batches,slug
+    - `start_date`: required, date
+    - `end_date`: required, date, after_or_equal:start_date
+    - `price`: required, numeric, min:0
+    - `quota`: sometimes, nullable, integer, min:1
+    - `module_file_id`: sometimes, nullable, uuid, exists:files,id
+    - `status`: sometimes, in:DRAFT,OPEN,CLOSED,FULL
+  - **Database yang Terkena**: `batches` — INSERT.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (201): `{status, message, data: BatchResource, metadata, error}`.

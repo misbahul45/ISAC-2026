@@ -1,0 +1,33 @@
+info:
+  name: batches-index
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/admin/batches"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/admin/batches — BatchController@index
+  - **Deskripsi**: Daftar batch (admin). Optional filter by `competition_id`.
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:54`.
+  - **Query Parameters**: `competition_id` (opsional) — filter batch milik kompetisi tertentu.
+  - **Alur Proses** (`BatchService::getBatches`):
+    Query batches dengan filter `competition_id` opsional. Return `BatchResource::collection`.
+  - **Database yang Terkena**: `batches` — SELECT (dengan filter).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: [BatchResource], metadata, error}`.

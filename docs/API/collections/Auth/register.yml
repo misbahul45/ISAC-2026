@@ -30,7 +30,7 @@ settings:
 docs: |-
   #### POST /api/auth/register — AuthController@register
   - **Deskripsi**: Daftarkan akun team baru, lalu kirim OTP verifikasi email.
-  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:44`.
+  - **Middleware & Auth**: Publik (throttle:3,1). Sumber: `routes/api.php:80`.
   - **Request** (`RegisterRequest.php:17-23`): `email` required/email/max:255/
     unique:teams,email; `password` required/min:8/confirmed
     (butuh `password_confirmation`).

@@ -24,7 +24,7 @@ settings:
 docs: |-
   #### GET /api/auth/me — AuthController@me
   - **Deskripsi**: Data team yang sedang login.
-  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:54`.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:88`.
   - **Request**: Header `Authorization: Bearer <token>`.
   - **Alur Proses**: `$team = $request->user()` → `TeamAuthResource($team)`
     (`app/Http/Resources/TeamAuthResource.php`).

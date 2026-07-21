@@ -24,9 +24,9 @@ docs: |-
   - **Deskripsi**: Endpoint health-check. Mengembalikan status aplikasi, environment,
     dan metadata teknis (nama app, backend, frontend, query client, database, timestamp).
   - **Middleware & Auth**: Publik (hanya `SubstituteBindings`, default group `api`).
-    Sumber: `routes/api.php:10-24`.
+    Sumber: `routes/api.php:13-27`.
   - **Request**: Tidak ada header/body wajib.
-  - **Alur Proses** (`routes/api.php:10-24`):
+  - **Alur Proses** (`routes/api.php:13-27`):
     1. Langsung `response()->json([...])`.
     2. Ambil `config('app.name')`, `app()->environment()`,
        `config('database.default')`, `now()->toISOString()`.

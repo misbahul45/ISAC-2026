@@ -1,0 +1,81 @@
+info:
+  name: members-update
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/registrations/me/members"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "members": [
+              {
+                  "name": "John Doe",
+                  "role": "LEADER",
+                  "email": "john@example.com",
+                  "phone": "081234567891",
+                  "major": "IPA",
+                  "faculty": "MIPA",
+                  "studentId": "2023001",
+                  "birthDate": "2005-06-15",
+                  "educationLevel": "SMA",
+                  "photoFileId": null
+              },
+              {
+                  "name": "Jane Doe",
+                  "role": "MEMBER",
+                  "email": "jane@example.com",
+                  "phone": "081234567892",
+                  "major": "IPA",
+                  "faculty": "MIPA",
+                  "studentId": "2023002",
+                  "birthDate": "2005-08-20",
+                  "educationLevel": "SMA",
+                  "photoFileId": null
+              }
+          ]
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### PUT /api/registrations/me/members — RegistrationController@updateMembers
+  - **Deskripsi**: Finalisasi data anggota tim (upsert). HAPUS semua anggota lama + INSERT ulang (full replacement).
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:68`.
+  - **Request** (validasi `FinalizeMembersRequest`,
+    `app/Http/Requests/Registration/FinalizeMembersRequest.php:12-27`):
+    - `members`: required, array, min:1, max:3
+    - `members.*.name`: required, string, max:255
+    - `members.*.role`: required, string, `in:LEADER,MEMBER` (harus tepat 1 LEADER)
+    - `members.*.email`: required, email, max:255
+    - `members.*.phone`: required, string, max:20
+    - `members.*.major`: required, string, max:255
+    - `members.*.faculty`: required, string, max:255
+    - `members.*.studentId`: required, string, max:50
+    - `members.*.birthDate`: required, date
+    - `members.*.educationLevel`: nullable, string, max:50
+    - `members.*.photoFileId`: nullable, uuid, exists:`files,id`
+  - **Alur Proses** (`RegistrationService::finalizeMembers`, `app/Services/RegistrationService.php:119-187`):
+    1. Cek registration & team_completed_at ada.
+    2. Validasi jumlah anggota sesuai tipe kompetisi: OLIMPIADE → 1 (tetap 1 orang), BUSINESS_PLAN / BUSINESS_IT_CASE → 2-3 orang.
+    3. Validasi tepat 1 LEADER.
+    4. `$team->members()->delete()` + `Member::insert(...)` (full replacement).
+    5. Jika `members_completed_at` null → set `now()`.
+  - **Database yang Terkena**: `members` — DELETE (all old) + INSERT (new batch); `registrations` — UPDATE (`members_completed_at`).
+  - **Efek Samping**: Semua data anggota lama dihapus dan diganti. `sort_order` di-reset berdasarkan urutan array (1-indexed).
+  - **Response** (200): `{status, message, data: [MembersFormResource, ...], metadata, error}`.
+    (422) validasi gagal atau jumlah anggota tidak sesuai kompetisi.

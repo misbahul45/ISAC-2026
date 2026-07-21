@@ -1,0 +1,35 @@
+info:
+  name: index
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/competitions"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/competitions — CompetitionController@index
+  - **Deskripsi**: Daftar kompetisi (dengan filter & pagination). Untuk halaman pemilihan kompetisi.
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:44`.
+  - **Query Parameters**:
+    - `search`: string (opsional) — filter nama.
+    - `type`: string (opsional) — filter tipe (OLIMPIADE/BUSINESS_PLAN/BUSINESS_IT_CASE).
+    - `status`: string (opsional) — filter status.
+    - `perPage`: integer (opsional, default 15).
+  - **Alur Proses** (`CompetitionService::getCompetitions`):
+    Paginated query dengan filter opsional (search, type, status). Return `CompetitionResource::collection`.
+  - **Database yang Terkena**: `competitions` — SELECT (paginated).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: [CompetitionResource], metadata: {pagination}, error}`.

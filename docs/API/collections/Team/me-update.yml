@@ -35,7 +35,7 @@ settings:
 docs: |-
   #### PATCH /api/teams/me — TeamController@update
   - **Deskripsi**: Update profil team (name, phone, school, file dokumen/twibbon).
-  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:35`.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:33`.
   - **Request** (validasi `UpdateTeamRequest`,
     `app/Http/Requests/Team/UpdateTeamRequest.php:17-26`):
     - `name`: sometimes, required, string, min:2, max:255

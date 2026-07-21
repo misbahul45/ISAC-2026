@@ -76,23 +76,15 @@ class AuthRepository implements AuthRepositoryInterface
 
     public function findValidResetToken(string $resetToken): ?AuthChallenge
     {
-        $challenge = AuthChallenge::query()
+        $challenges = AuthChallenge::query()
             ->where('purpose', AuthChallengePurpose::RESET_PASSWORD)
             ->whereNotNull('verified_at')
             ->whereNull('used_at')
             ->where('expired_at', '>', now())
             ->whereNotNull('reset_token_hash')
-            ->first();
+            ->get();
 
-        if ($challenge === null) {
-            return null;
-        }
-
-        if (! Hash::check($resetToken, $challenge->reset_token_hash)) {
-            return null;
-        }
-
-        return $challenge;
+        return $challenges->first(fn (AuthChallenge $c) => Hash::check($resetToken, $c->reset_token_hash));
     }
 
     public function markChallengeUsed(AuthChallenge $challenge): void

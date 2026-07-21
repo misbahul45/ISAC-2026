@@ -1,0 +1,38 @@
+info:
+  name: auth
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/imagekit-auth"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/imagekit-auth — ImageKitAuthController@auth
+  - **Deskripsi**: Mendapatkan token autentikasi ImageKit untuk upload client-side.
+    Client-side upload langsung ke ImageKit tanpa melalui backend Laravel.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:41-42`.
+  - **Request**: Header `Authorization: Bearer <token>`.
+  - **Alur Proses** (`ImageKitAuthController.php:9-23`):
+    1. `$privateKey = config('services.imagekit.private_key')`.
+    2. `$token = (string) Str::uuid()` — unik per request.
+    3. `$expire = time() + 2400` — 40 menit, wajib < 1 jam.
+    4. `$signature = hash_hmac('sha1', $token.$expire, $privateKey)`.
+  - **Database yang Terkena**: Tidak ada.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{token (uuid), expire (timestamp), signature (string)}`.
+  - **Catatan**: Tidak ada.

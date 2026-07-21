@@ -16,11 +16,12 @@ class FileService
     /**
      * @param  array{fileId: string, url: string}  $data
      */
-    public function register(array $data): File
+    public function register(array $data, ?string $teamId = null): File
     {
         return $this->fileRepository->create([
             'file_id' => $data['fileId'],
             'url' => $data['url'],
+            'uploaded_by' => $teamId,
         ]);
     }
 }

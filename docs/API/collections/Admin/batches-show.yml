@@ -1,0 +1,33 @@
+info:
+  name: batches-show
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/admin/batches/{{batch_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/admin/batches/{batch} — BatchController@show
+  - **Deskripsi**: Detail batch (admin).
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:56`.
+  - **Request**: Path `{batch}` (UUID). Route model binding.
+  - **Alur Proses** (`BatchController.php:62-71`):
+    `new BatchResource($batch)`.
+  - **Database yang Terkena**: `batches` — SELECT (route model binding).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: BatchResource, metadata, error}`.

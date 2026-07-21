@@ -1,0 +1,40 @@
+info:
+  name: submit-verification
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/registrations/me/submit-verification"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/registrations/me/submit-verification — RegistrationController@submitVerification
+  - **Deskripsi**: Kirim pendaftaran untuk verifikasi admin. Untuk non-OLIMPIADE biasanya auto-submit via dokumen, endpoint ini untuk resubmit revisi. Untuk OLIMPIADE — submit manual setelah semua langkah termasuk pembayaran.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:74`.
+  - **Request**: Body kosong (POST tanpa payload).
+  - **Alur Proses** (`RegistrationService::submitForVerification`, `app/Services/RegistrationService.php:270-316`):
+    1. Cek registration & seluruh progress marker:
+       - `team_completed_at` (data tim)
+       - `members_completed_at` (data anggota)
+       - `documents_completed_at` (dokumen)
+       - OLIMPIADE saja: `payment_submitted_at` (pembayaran)
+    2. `registration->status = WAITING_VERIFICATION`, `team->status = WAITING_VERIFICATION`.
+    3. Jika `submitted_at` null → set `now()` (idempotent untuk revision resubmit).
+  - **Database yang Terkena**: `registrations` — UPDATE (`status`, `submitted_at`); `teams` — UPDATE (`status`).
+  - **Efek Samping**: Team masuk antrian verifikasi admin. Endpoint idempotent — bisa dipanggil ulang tanpa error (untuk resubmit revisi).
+  - **Response** (200): `{status, message, data: RegistrationSummaryResource, metadata, error}`.
+    (422) jika progress marker belum lengkap.

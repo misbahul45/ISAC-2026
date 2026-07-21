@@ -1,0 +1,48 @@
+info:
+  name: payment-submit
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/registrations/me/payment"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "paymentProofFileId": "00000000-0000-0000-0000-000000000000"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/registrations/me/payment — RegistrationController@submitPayment
+  - **Deskripsi**: Kirim bukti pembayaran. Untuk OLIMPIADE — ini adalah langkah final sebelum verifikasi admin.
+    Untuk non-OLIMPIADE — pembayaran opsional (status sudah WAITING_VERIFICATION dari auto-finalize dokumen).
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:72`.
+  - **Request** (validasi `SubmitPaymentRequest`,
+    `app/Http/Requests/Registration/SubmitPaymentRequest.php:12-17`):
+    - `paymentProofFileId`: required, uuid, exists:`files,id`
+  - **Alur Proses** (`RegistrationService::submitPayment`, `app/Services/RegistrationService.php:230-263`):
+    1. Cek registration ada & `payment_submitted_at` null (cegah duplikat).
+    2. `registration->update(...)` — set `payment_proof_file_id`, `amount_paid` (dari batch.price),
+       `payment_submitted_at = now()`, `status = WAITING_VERIFICATION`.
+    3. Jika `submitted_at` null (OLIMPIADE baru bayar) → set `submitted_at = now()`,
+       `team.status = WAITING_VERIFICATION`.
+    4. Jika `submitted_at` sudah ada (non-OLIMPIADE sudah submit via dokumen) → hanya update payment.
+  - **Database yang Terkena**: `registrations` — UPDATE (payment fields, status); `teams` — UPDATE (status jika first submit).
+  - **Efek Samping**: `status` registration jadi `WAITING_VERIFICATION`. Team masuk antrian verifikasi admin.
+  - **Response** (200): `{status, message, data: PaymentFormResource, metadata, error}`.
+    (422) validasi gagal atau pembayaran sudah pernah dikirim.

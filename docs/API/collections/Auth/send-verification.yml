@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/api/auth/send-verification"
+  url: "{{baseUrl}}/api/auth/verify-email/resend"
   headers:
     - name: Accept
       value: application/json
@@ -17,7 +17,9 @@ http:
       {
           "email": "lkiokijoap@gmail.com"
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
 
 settings:
   encodeUrl: true
@@ -26,9 +28,9 @@ settings:
   maxRedirects: 5
 
 docs: |-
-  #### POST /api/auth/send-verification — AuthController@sendVerification
+  #### POST /api/auth/verify-email/resend — AuthController@sendVerification
   - **Deskripsi**: Kirim ulang OTP verifikasi email.
-  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:49`.
+  - **Middleware & Auth**: auth:sanctum (throttle:1,1). Sumber: `routes/api.php:89`.
   - **Request** (`SendVerificationRequest.php:14-19`): `email` required/email/
     exists:teams,email.
   - **Alur Proses** (`AuthService::sendVerificationCode`, `app/Services/AuthService.php:140-166`):
@@ -40,4 +42,3 @@ docs: |-
   - **Efek Samping**: kirim `VerifyEmailMail`.
   - **Response** (200): data null. (422) `VALIDATION_ERROR` (email tak terdaftar).
   - **Catatan**: Tidak ada.
-

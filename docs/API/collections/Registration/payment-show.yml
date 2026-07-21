@@ -1,0 +1,35 @@
+info:
+  name: payment-show
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/registrations/me/payment"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/registrations/me/payment — RegistrationController@getPayment
+  - **Deskripsi**: Ambil data pembayaran (harga, bukti existing, status payment).
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:71`.
+  - **Request**: Header `Authorization: Bearer <token>`.
+  - **Alur Proses**: `$team->load('registration.batch')` → `new PaymentFormResource($team)`.
+    `PaymentFormResource` (`app/Http/Resources/PaymentFormResource.php:23-34`):
+    price (string|from batch), paymentProofFileId, amountPaid, paymentMethod, paymentSubmittedAt,
+    paymentRequiredAt, paidAt, status.
+  - **Database yang Terkena**: `teams` — SELECT; `registrations` — SELECT (eager load); `batches` — SELECT (eager load).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: PaymentFormResource, metadata, error}`.

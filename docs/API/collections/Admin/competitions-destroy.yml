@@ -1,0 +1,33 @@
+info:
+  name: competitions-destroy
+  type: http
+  seq: 3
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/admin/competitions/{{competition_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### DELETE /api/admin/competitions/{competition} — CompetitionController@destroy
+  - **Deskripsi**: Hapus kompetisi (soft delete).
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:51`.
+  - **Request**: Path `{competition}` (UUID).
+  - **Alur Proses** (`CompetitionService::deleteCompetition`):
+    Soft delete kompetisi (model uses `SoftDeletes`).
+  - **Database yang Terkena**: `competitions` — UPDATE `deleted_at`.
+  - **Efek Samping**: Kompetisi tidak aktif lagi, registrasi terkait tidak terhapus.
+  - **Response** (200): `{status, message, data: null, metadata, error}`.

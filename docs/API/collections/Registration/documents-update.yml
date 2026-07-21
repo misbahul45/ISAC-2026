@@ -1,0 +1,48 @@
+info:
+  name: documents-update
+  type: http
+  seq: 8
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/registrations/me/documents"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "documentUrl": "https://storage.example.com/documents/team-x.pdf",
+          "twibbonUrl": "https://instagram.com/p/xxx"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### PATCH /api/registrations/me/documents — RegistrationController@updateDocuments
+  - **Deskripsi**: Update URL dokumen persyaratan dan twibbon. Untuk non-OLIMPIADE, langkah ini otomatis mengirim pendaftaran (auto-finalize).
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:70`.
+  - **Request** (validasi `UpdateDocumentsRequest`,
+    `app/Http/Requests/Registration/UpdateDocumentsRequest.php:12-17`):
+    - `documentUrl`: required, url, max:2048
+    - `twibbonUrl`: required, url, max:2048
+  - **Alur Proses** (`RegistrationService::updateDocuments`, `app/Services/RegistrationService.php:194-223`):
+    1. Cek registration ada.
+    2. `$team->update(...)` — update `document_url`, `twibbon_url`.
+    3. Jika `documents_completed_at` null → set `now()`.
+    4. **Non-OLIMPIADE**: set `submitted_at = now()`, `team.status = WAITING_VERIFICATION` (auto-finalize).
+       **OLIMPIADE**: hanya simpan dokumen, tidak submit — tunggu pembayaran.
+  - **Database yang Terkena**: `teams` — UPDATE (`document_url`, `twibbon_url`, `status`); `registrations` — UPDATE (`documents_completed_at`, `submitted_at`).
+  - **Efek Samping**: Non-OLIMPIADE → pendaftaran otomatis dikirim untuk verifikasi.
+  - **Response** (200): `{status, message, data: DocumentsFormResource, metadata, error}`.
+    (422) validasi gagal atau belum pilih kompetisi.

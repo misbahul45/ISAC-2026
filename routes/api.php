@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BatchController;
 use App\Http\Controllers\Api\CompetitionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FileController;
+use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\ImageKitAuthController;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +57,21 @@ Route::prefix('admin')->middleware('auth:admins')->group(function (): void {
         Route::patch('/{batch}', [BatchController::class, 'update']);
         Route::delete('/{batch}', [BatchController::class, 'destroy']);
     });
+});
+
+Route::prefix('registrations')->middleware('auth:sanctum')->group(function (): void {
+    Route::get('/me/context', [RegistrationController::class, 'context']);
+    Route::post('/me/selection', [RegistrationController::class, 'selection']);
+    Route::get('/me/team', [RegistrationController::class, 'getTeam']);
+    Route::patch('/me/team', [RegistrationController::class, 'updateTeam']);
+    Route::get('/me/members', [RegistrationController::class, 'getMembers']);
+    Route::put('/me/members', [RegistrationController::class, 'updateMembers']);
+    Route::get('/me/documents', [RegistrationController::class, 'getDocuments']);
+    Route::patch('/me/documents', [RegistrationController::class, 'updateDocuments']);
+    Route::get('/me/payment', [RegistrationController::class, 'getPayment']);
+    Route::post('/me/payment', [RegistrationController::class, 'submitPayment']);
+    Route::get('/me/summary', [RegistrationController::class, 'summary']);
+    Route::post('/me/submit-verification', [RegistrationController::class, 'submitVerification']);
 });
 
 Route::get('/competitions/{competition}/batches/open', [BatchController::class, 'openForCompetition']);

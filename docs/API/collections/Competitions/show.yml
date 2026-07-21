@@ -1,0 +1,33 @@
+info:
+  name: show
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/competitions/{{competition_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/competitions/{competition} — CompetitionController@show
+  - **Deskripsi**: Detail kompetisi beserta batch-batch-nya.
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:46`.
+  - **Request**: Path `{competition}` (UUID). Route model binding dengan `whereUuid`.
+  - **Alur Proses** (`CompetitionController.php:47-58`):
+    `$competition->loadMissing('batches')` → `new CompetitionResource($competition)`.
+    Resource menyertakan `batches` (BatchResource collection) jika ter-load.
+  - **Database yang Terkena**: `competitions` — SELECT (route model binding); `batches` — SELECT (eager load).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: CompetitionResource (dengan batches), metadata, error}`.
+  - **Catatan**: Path di-declare setelah `/competitions/open` agar `open` tidak tertelan route binding.

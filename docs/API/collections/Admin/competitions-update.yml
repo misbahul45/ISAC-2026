@@ -1,0 +1,48 @@
+info:
+  name: competitions-update
+  type: http
+  seq: 2
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/admin/competitions/{{competition_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "name": "OLIMPIADE SAINS 2026 (Updated)"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### PATCH /api/admin/competitions/{competition} — CompetitionController@update
+  - **Deskripsi**: Update kompetisi (admin, partial update).
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:50`.
+  - **Request** (validasi `UpdateCompetitionRequest`,
+    `app/Http/Requests/Competition/UpdateCompetitionRequest.php:19-37`):
+    Semua field `sometimes` — hanya kirim yang ingin diubah.
+    - `name`: sometimes, string, max:255
+    - `slug`: sometimes, regex:/^[a-z0-9-]+$/, unique:competitions,slug (ignore self)
+    - `description`: sometimes, nullable, string
+    - `type`: sometimes, in:OLIMPIADE,BUSINESS_PLAN,BUSINESS_IT_CASE
+    - `payment_flow`: sometimes, in:UPFRONT,SEMIFINAL
+    - `start_date`: sometimes, date, format:Y-m-d
+    - `end_date`: sometimes, date, after_or_equal:start_date
+    - `status`: sometimes, in:DRAFT,REGISTRATION_OPEN,...
+  - **Database yang Terkena**: `competitions` — UPDATE.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: CompetitionResource, metadata, error}`.
+    (422) validasi gagal.

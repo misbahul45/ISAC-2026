@@ -24,7 +24,7 @@ settings:
 docs: |-
   #### GET /api/files/{file} — FileController@show
   - **Deskripsi**: Download file (stream). Route name `files.show`.
-  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:40`.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:38`.
   - **Request**: path `{file}` (UUID).
   - **Alur Proses** (`FileController.php:38-42`):
     `Storage::disk($file->disk)->download($file->path, $file->original_name)`.

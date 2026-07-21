@@ -1,0 +1,53 @@
+info:
+  name: competitions-store
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/competitions"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "name": "OLIMPIADE SAINS 2026",
+          "type": "OLIMPIADE",
+          "payment_flow": "UPFRONT",
+          "start_date": "2026-01-01",
+          "end_date": "2026-12-31"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/competitions — CompetitionController@store
+  - **Deskripsi**: Buat kompetisi baru (admin).
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:49`.
+  - **Request** (validasi `StoreCompetitionRequest`,
+    `app/Http/Requests/Competition/StoreCompetitionRequest.php:19-31`):
+    - `name`: required, string, max:255
+    - `slug`: sometimes, nullable, regex:/^[a-z0-9-]+$/, unique:competitions,slug
+    - `description`: sometimes, nullable, string
+    - `type`: required, in:OLIMPIADE,BUSINESS_PLAN,BUSINESS_IT_CASE
+    - `payment_flow`: required, in:UPFRONT,SEMIFINAL
+    - `start_date`: required, date, format:Y-m-d
+    - `end_date`: required, date, after_or_equal:start_date
+    - `status`: sometimes, in:DRAFT,REGISTRATION_OPEN,REGISTRATION_CLOSED,ONGOING,COMPLETED
+  - **Alur Proses** (`CompetitionService::createCompetition`):
+    Simpan data kompetisi baru ke database.
+  - **Database yang Terkena**: `competitions` — INSERT.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (201): `{status, message, data: CompetitionResource, metadata, error}`.
+    (422) validasi gagal.

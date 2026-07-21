@@ -1,0 +1,55 @@
+info:
+  name: team-update
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/registrations/me/team"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "name": "Alpha Team",
+          "phone": "081234567890",
+          "school_name": "SMA Negeri 1 Jakarta",
+          "school_address": "Jl. Pendidikan No. 1",
+          "school_province": "DKI Jakarta",
+          "school_city": "Jakarta Pusat"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### PATCH /api/registrations/me/team — RegistrationController@updateTeam
+  - **Deskripsi**: Update data tim (nama, nomor telepon, sekolah). Tidak perlu file/dokumen — itu di endpoint dokumen.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:66`.
+  - **Request** (validasi `UpdateTeamRequest`,
+    `app/Http/Requests/Registration/UpdateTeamRequest.php:12-22`):
+    - `name`: required, string, max:255
+    - `phone`: required, string, max:20
+    - `school_name`: required, string, max:255
+    - `school_address`: required, string, max:500
+    - `school_province`: required, string, max:100
+    - `school_city`: required, string, max:100
+  - **Alur Proses** (`RegistrationService::updateTeamData`, `app/Services/RegistrationService.php:78-112`):
+    1. Cek registration ada.
+    2. `$team->update(...)` — update kolom.
+    3. Jika `team_completed_at` null → set `now()` (first time).
+    4. Jika team dalam status `REVISION_REQUIRED` → set `WAITING_VERIFICATION`, reset `verified_at`/`verified_by` (revision resubmit).
+  - **Database yang Terkena**: `teams` — UPDATE; `registrations` — UPDATE (`team_completed_at`).
+  - **Efek Samping**: Jika `team_completed_at` baru di-set, progress registrasi bertambah.
+  - **Response** (200): `{status, message, data: TeamFormResource, metadata, error}`.
+    (422) validasi gagal; (422) belum pilih kompetisi.

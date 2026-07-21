@@ -1,0 +1,46 @@
+info:
+  name: batches-update
+  type: http
+  seq: 7
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/admin/batches/{{batch_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "status": "FULL"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### PATCH /api/admin/batches/{batch} — BatchController@update
+  - **Deskripsi**: Update batch (admin, partial).
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:57`.
+  - **Request** (validasi `UpdateBatchRequest`):
+    Semua field `sometimes`.
+    - `name`: sometimes, string, max:255
+    - `slug`: sometimes, regex:/^[a-z0-9-]+$/, unique:batches,slug (ignore self)
+    - `start_date`: sometimes, date
+    - `end_date`: sometimes, date, after_or_equal:start_date
+    - `price`: sometimes, numeric, min:0
+    - `quota`: sometimes, nullable, integer, min:1
+    - `module_file_id`: sometimes, nullable, uuid, exists:files,id
+    - `status`: sometimes, in:DRAFT,OPEN,CLOSED,FULL
+  - **Database yang Terkena**: `batches` — UPDATE.
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: BatchResource, metadata, error}`.

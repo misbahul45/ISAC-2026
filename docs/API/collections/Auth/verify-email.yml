@@ -18,7 +18,9 @@ http:
           "email": "lkiokijoap@gmail.com",
           "code": "559317"
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
 
 settings:
   encodeUrl: true
@@ -29,7 +31,7 @@ settings:
 docs: |-
   #### POST /api/auth/verify-email — AuthController@verifyEmail
   - **Deskripsi**: Verifikasi email → ubah status menjadi `ACTIVE`.
-  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:50`.
+  - **Middleware & Auth**: auth:sanctum (throttle:6,10). Sumber: `routes/api.php:90`.
   - **Request** (`VerifyEmailRequest.php:14-19`): `email` required/email/
     exists:teams,email; `code` required/string/size:6.
   - **Alur Proses** (`AuthService::verifyEmail`, `app/Services/AuthService.php:171-192`):
@@ -40,4 +42,3 @@ docs: |-
   - **Response** (200): data null. (401) `INVALID_CREDENTIALS`; (422) `VALIDATION_ERROR`.
   - **Catatan**: ⚠️ Tidak cek ulang bahwa team masih `EMAIL_UNVERIFIED` sebelum
     update `ACTIVE` (Lampiran B #9).
-

@@ -22,7 +22,7 @@ settings:
 docs: |-
   #### GET /api/dashboard/summary — DashboardController@summary
   - **Deskripsi**: Ringkasan jumlah todo (total, aktif=belum selesai, selesai).
-  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:31`.
+  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:29`.
   - **Request**: Tidak ada.
   - **Alur Proses** (`DashboardService::getSummary` → `DashboardRepository::todoSummary`,
     `app/Repositories/DashboardRepository.php:13-23`):

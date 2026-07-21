@@ -1,0 +1,34 @@
+info:
+  name: context
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/registrations/me/context"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/registrations/me/context — RegistrationController@context
+  - **Deskripsi**: Konteks registrasi team (status, kompetisi terpilih, progress). Titik masuk frontend untuk menentukan step yang ditampilkan.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:63`.
+  - **Request**: Header `Authorization: Bearer <token>`.
+  - **Alur Proses**: `$team->load('registration.competition', 'registration.batch')` → `new RegistrationContextResource($team)`. Resource mengembalikan data team + registration + nested competition/batch. Jika belum daftar, `registration` = null.
+  - **Database yang Terkena**: `teams` — SELECT; `registrations` — SELECT; `competitions` — SELECT (eager load); `batches` — SELECT (eager load).
+  - **Efek Samping**: Tidak ada.
+  - **Response** (200): `{status, message, data: RegistrationContextResource, metadata, error}`.
+    `data.team.membersCompletedAt` dll dari `registrations.*_completed_at`.
+    `data.team.nextRedirect` — redirect URL yang ditentukan frontend.

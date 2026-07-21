@@ -30,7 +30,7 @@ docs: |-
   #### POST /api/auth/login — AuthController@login
   - **Deskripsi**: Autentikasi team, terbitkan Sanctum token (Bearer).
   - **Middleware & Auth**: Publik + `throttle:5,1` (maks 5 req/menit per IP).
-    Sumber: `routes/api.php:45`.
+    Sumber: `routes/api.php:81`.
   - **Request** (`LoginRequest.php:17-23`): `email` required/email;
     `password` required/string.
   - **Alur Proses** (`AuthService::login`, `app/Services/AuthService.php:47-68`):

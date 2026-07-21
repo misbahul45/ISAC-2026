@@ -1,0 +1,33 @@
+info:
+  name: batches-destroy
+  type: http
+  seq: 8
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/admin/batches/{{batch_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### DELETE /api/admin/batches/{batch} — BatchController@destroy
+  - **Deskripsi**: Hapus batch (soft delete).
+  - **Middleware & Auth**: `auth:admins`. Sumber: `routes/api.php:58`.
+  - **Request**: Path `{batch}` (UUID). Route model binding.
+  - **Alur Proses** (`BatchService::deleteBatch`):
+    Soft delete batch.
+  - **Database yang Terkena**: `batches` — UPDATE `deleted_at`.
+  - **Efek Samping**: Batch tidak aktif lagi.
+  - **Response** (200): `{status, message, data: null, metadata, error}`.

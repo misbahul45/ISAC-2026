@@ -1,0 +1,47 @@
+info:
+  name: selection
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/registrations/me/selection"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: ""
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "competition_id": "00000000-0000-0000-0000-000000000000",
+          "batch_id": "00000000-0000-0000-0000-000000000000"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/registrations/me/selection — RegistrationController@selection
+  - **Deskripsi**: Pilih kompetisi dan batch. Otentikasi team untuk mendaftar kompetisi.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:64`.
+  - **Request** (validasi `SelectCompetitionRequest`,
+    `app/Http/Requests/Registration/SelectCompetitionRequest.php:12-17`):
+    - `competition_id`: required, uuid, exists:`competitions,id`
+    - `batch_id`: required, uuid, exists:`batches,id`
+  - **Alur Proses** (`RegistrationService::selectCompetition`, `app/Services/RegistrationService.php:18-71`):
+    1. `Batch::lockForUpdate()` — pessimistic lock cegah race condition kuota.
+    2. Validasi batch milik kompetisi, kompetisi dibuka, batch dibuka, kuota tersedia, team belum daftar.
+    3. `Registration::create` dengan status `WAITING_PAYMENT` (OLIMPIADE) atau `WAITING_VERIFICATION` (non-OLIMPIADE).
+    4. `$batch->increment('current_registrations')`.
+  - **Database yang Terkena**: `batches` — SELECT FOR UPDATE + UPDATE (current_registrations +1); `competitions` — SELECT; `registrations` — INSERT.
+  - **Efek Samping**: `current_registrations` batch bertambah 1. Team dianggap telah memilih kompetisi (tidak bisa pilih lagi).
+  - **Response** (200): `{status, message, data: RegistrationContextResource, metadata, error}`.
+    (422) validasi gagal; (422) batch penuh / kompetisi tutup / sudah daftar.

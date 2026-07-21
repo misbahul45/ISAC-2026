@@ -24,7 +24,7 @@ settings:
 docs: |-
   #### GET /api/teams/me — TeamController@show
   - **Deskripsi**: Profil lengkap team terautentikasi.
-  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:34`.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:32`.
   - **Request**: Header `Authorization: Bearer <token>`.
   - **Alur Proses**: `new TeamResource($request->user())`
     (`TeamController.php:20-29`, `app/Http/Resources/TeamResource.php`).

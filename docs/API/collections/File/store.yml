@@ -30,7 +30,7 @@ docs: |-
   #### POST /api/files — FileController@store
   - **Deskripsi**: Upload file (pdf/jpg/jpeg/png, maks 5 MB) ke disk `local`,
     simpan metadata ke tabel `files`.
-  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:39`.
+  - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:37`.
   - **Request** (validasi `StoreFileRequest`,
     `app/Http/Requests/File/StoreFileRequest.php:17-22`):
     - `file`: required, file, max:5120 (KB), mimes:pdf,jpg,jpeg,png
