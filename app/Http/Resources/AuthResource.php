@@ -20,8 +20,12 @@ class AuthResource extends JsonResource
             'id' => $this->id,
             'code' => $this->code,
             'email' => $this->email,
+            'name' => $this->name,
             'status' => strtoupper((string) $this->status),
             'emailVerifiedAt' => $this->email_verified_at?->toISOString(),
+            'nextRedirect' => $this->next_redirect,
+            'redirectTo' => $this->next_redirect,
+            'createdAt' => $this->created_at?->toISOString(),
         ];
     }
 }

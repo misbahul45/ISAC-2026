@@ -4,7 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SendVerificationRequest extends FormRequest
+class VerifyResetCodeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,6 +15,7 @@ class SendVerificationRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
+            'code' => ['required', 'digits:6'],
         ];
     }
 
@@ -23,6 +24,8 @@ class SendVerificationRequest extends FormRequest
         return [
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
+            'code.required' => 'Kode OTP wajib diisi.',
+            'code.digits' => 'Kode OTP harus 6 digit angka.',
         ];
     }
 }

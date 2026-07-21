@@ -7,9 +7,8 @@ use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Requests\Auth\SendVerificationRequest;
 use App\Http\Requests\Auth\VerifyEmailRequest;
-use App\Http\Requests\VerifyCodeRequest;
+use App\Http\Requests\Auth\VerifyResetCodeRequest;
 use App\Http\Resources\AdminResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\TeamAuthResource;
@@ -28,12 +27,18 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $team = $this->authService->register($request->validated());
+        $result = $this->authService->register($request->validated());
 
         return response()->json([
             'status' => 'success',
             'message' => 'Akun team berhasil dibuat. Silakan cek email kamu untuk kode verifikasi.',
-            'data' => new AuthResource($team),
+            'data' => [
+                'token' => $result['token'],
+                'tokenType' => $result['tokenType'],
+                'principalType' => $result['principalType'],
+                'team' => new AuthResource($result['team']),
+                'redirectTo' => $result['redirectTo'],
+            ],
             'metadata' => (object) [],
             'error' => null,
         ], 201);
@@ -105,7 +110,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function verifyCode(VerifyCodeRequest $request): JsonResponse
+    public function verifyCode(VerifyResetCodeRequest $request): JsonResponse
     {
         $result = $this->authService->verifyCode($request->validated());
 
@@ -131,9 +136,9 @@ class AuthController extends Controller
         ]);
     }
 
-    public function sendVerification(SendVerificationRequest $request): JsonResponse
+    public function sendVerification(Request $request): JsonResponse
     {
-        $this->authService->sendVerificationCode($request->validated());
+        $this->authService->sendVerificationCode($request->user());
 
         return response()->json([
             'status' => 'success',
@@ -146,7 +151,7 @@ class AuthController extends Controller
 
     public function verifyEmail(VerifyEmailRequest $request): JsonResponse
     {
-        $this->authService->verifyEmail($request->validated());
+        $this->authService->verifyEmail($request->user(), $request->validated());
 
         return response()->json([
             'status' => 'success',

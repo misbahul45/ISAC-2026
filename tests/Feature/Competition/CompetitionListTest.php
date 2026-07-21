@@ -33,11 +33,11 @@ test('can filter competitions by type', function (): void {
     Competition::factory()->create(['type' => Competition::TYPE_BUSINESS_PLAN]);
     Competition::factory()->create(['type' => Competition::TYPE_BUSINESS_IT_CASE]);
 
-    $response = $this->getJson('/api/competitions?type=OLYMPIAD');
+    $response = $this->getJson('/api/competitions?type=OLIMPIADE');
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(1);
-    expect($response->json('data.0.type'))->toBe('OLYMPIAD');
+    expect($response->json('data.0.type'))->toBe('OLIMPIADE');
 });
 
 test('can filter competitions by status', function (): void {

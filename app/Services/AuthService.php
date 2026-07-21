@@ -22,7 +22,7 @@ class AuthService
         private readonly AuthRepositoryInterface $authRepository,
     ) {}
 
-    public function register(array $data): Team
+    public function register(array $data): array
     {
         $team = DB::transaction(function () use ($data): Team {
             return $this->authRepository->createTeam([
@@ -33,9 +33,17 @@ class AuthService
             ]);
         });
 
-        $this->sendVerificationCode(['email' => $team->email]);
+        $this->sendVerificationCode($team);
 
-        return $team;
+        $token = $team->createToken('auth-token');
+
+        return [
+            'token' => $token->plainTextToken,
+            'tokenType' => 'Bearer',
+            'principalType' => 'TEAM',
+            'team' => $team,
+            'redirectTo' => '/registration',
+        ];
     }
 
     public function login(array $data): array
@@ -182,15 +190,8 @@ class AuthService
         });
     }
 
-    public function sendVerificationCode(array $data): void
+    public function sendVerificationCode(Team $team): void
     {
-        $email = $data['email'];
-        $team = $this->authRepository->findByEmail($email);
-
-        if ($team === null) {
-            throw new InvalidCredentialException('Team tidak ditemukan.');
-        }
-
         if ($team->isEmailVerified()) {
             throw new InvalidCredentialException('Email sudah diverifikasi.');
         }
@@ -215,15 +216,8 @@ class AuthService
         Mail::to($team->email)->send(new VerifyEmailMail($code));
     }
 
-    public function verifyEmail(array $data): void
+    public function verifyEmail(Team $team, array $data): void
     {
-        $email = $data['email'];
-        $team = $this->authRepository->findByEmail($email);
-
-        if ($team === null) {
-            throw new InvalidCredentialException('Team tidak ditemukan.');
-        }
-
         $challenge = $this->authRepository->findValidChallenge(
             $team->id,
             AccountType::TEAM->value,

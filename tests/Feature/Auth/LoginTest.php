@@ -141,7 +141,7 @@ test('login rejects missing email and password', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['email', 'password']]]);
+        ->assertJsonStructure(['error' => ['details' => ['email', 'password']]]);
 });
 
 test('login deletes prior sanctum tokens before issuing a new one', function (): void {

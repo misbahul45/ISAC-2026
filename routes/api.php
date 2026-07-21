@@ -61,16 +61,16 @@ Route::prefix('admin')->middleware('auth:admins')->group(function (): void {
 Route::get('/competitions/{competition}/batches/open', [BatchController::class, 'openForCompetition']);
 
 Route::prefix('auth')->group(function (): void {
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:3,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
-    Route::post('/reset-password/verify', [AuthController::class, 'verifyCode'])->middleware('throttle:5,1');
-    Route::post('/reset-password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
-    Route::post('/verify-email/resend', [AuthController::class, 'sendVerification'])->middleware('throttle:3,1');
-    Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:5,1');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,15');
+    Route::post('/reset-password/verify', [AuthController::class, 'verifyCode'])->middleware('throttle:5,15');
+    Route::post('/reset-password', [AuthController::class, 'changePassword'])->middleware('throttle:3,15');
 
     Route::middleware('auth:sanctum')->group(function (): void {
-        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/logout', [AuthController::class, 'logout'])->middleware('throttle:10,1');
         Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/verify-email/resend', [AuthController::class, 'sendVerification'])->middleware('throttle:1,1');
+        Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:6,10');
     });
 });

@@ -35,5 +35,5 @@ test('team document and twibbon reject non google drive urls', function (): void
             'twibbon_url' => 'https://example.com/twibbon.png',
         ])
         ->assertUnprocessable()
-        ->assertJsonStructure(['error' => ['fields' => ['document_url', 'twibbon_url']]]);
+        ->assertJsonStructure(['error' => ['details' => ['document_url', 'twibbon_url']]]);
 });

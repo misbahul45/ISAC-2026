@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Member extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
 
@@ -17,12 +18,14 @@ class Member extends Model
 
     protected $fillable = [
         'team_id', 'name', 'role', 'email', 'phone', 'major', 'faculty', 'student_id', 'birth_date', 'photo_file_id',
+        'education_level', 'sort_order',
     ];
 
     protected function casts(): array
     {
         return [
             'birth_date' => 'date',
+            'sort_order' => 'integer',
         ];
     }
 

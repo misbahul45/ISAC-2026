@@ -12,7 +12,7 @@ class Competition extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    public const TYPE_OLIMPIADE = 'OLYMPIAD';
+    public const TYPE_OLIMPIADE = 'OLIMPIADE';
 
     public const TYPE_BUSINESS_PLAN = 'BUSINESS_PLAN';
 

@@ -15,10 +15,10 @@ beforeEach(function (): void {
 
 test('admin can create a competition', function (): void {
     $payload = [
-        'name' => 'OLYMPIAD SAINS 2026',
+        'name' => 'OLIMPIADE SAINS 2026',
         'slug' => 'olympiad-sains-2026',
         'description' => 'Kompetisi sains nasional',
-        'type' => 'OLYMPIAD',
+        'type' => 'OLIMPIADE',
         'payment_flow' => 'UPFRONT',
         'start_date' => now()->addDay()->toDateString(),
         'end_date' => now()->addMonth()->toDateString(),
@@ -30,16 +30,16 @@ test('admin can create a competition', function (): void {
 
     $response->assertCreated()
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.name', 'OLYMPIAD SAINS 2026')
-        ->assertJsonPath('data.type', 'OLYMPIAD')
+        ->assertJsonPath('data.name', 'OLIMPIADE SAINS 2026')
+        ->assertJsonPath('data.type', 'OLIMPIADE')
         ->assertJsonPath('data.paymentFlow', 'UPFRONT')
         ->assertJsonPath('data.status', 'DRAFT');
 });
 
 test('admin cannot create competition with wrong type-paymentFlow combination', function (): void {
     $payload = [
-        'name' => 'OLYMPIAD SAINS 2026',
-        'type' => 'OLYMPIAD',
+        'name' => 'OLIMPIADE SAINS 2026',
+        'type' => 'OLIMPIADE',
         'payment_flow' => 'SEMIFINAL',
         'status' => 'DRAFT',
         'start_date' => now()->addDay()->toDateString(),
@@ -51,19 +51,19 @@ test('admin cannot create competition with wrong type-paymentFlow combination', 
 
     $response->assertUnprocessable()
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['payment_flow']]]);
+        ->assertJsonStructure(['error' => ['details' => ['payment_flow']]]);
 });
 
 test('admin can update a competition', function (): void {
     $competition = Competition::factory()->create();
-    $payload = ['name' => 'OLYMPIAD SAINS 2026 UPDATED'];
+    $payload = ['name' => 'OLIMPIADE SAINS 2026 UPDATED'];
 
     $response = $this->withToken($this->token)
         ->patchJson("/api/admin/competitions/{$competition->id}", $payload);
 
     $response->assertOk()
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.name', 'OLYMPIAD SAINS 2026 UPDATED');
+        ->assertJsonPath('data.name', 'OLIMPIADE SAINS 2026 UPDATED');
 });
 
 test('admin cannot update competition to a slug that already exists', function (): void {
@@ -77,7 +77,7 @@ test('admin cannot update competition to a slug that already exists', function (
 
     $response->assertUnprocessable()
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['slug']]]);
+        ->assertJsonStructure(['error' => ['details' => ['slug']]]);
 });
 
 test('admin cannot update competition with invalid status transition', function (): void {
@@ -127,13 +127,13 @@ test('admin cannot create business plan with upfront payment', function (): void
         ->postJson('/api/admin/competitions', $payload);
 
     $response->assertUnprocessable()
-        ->assertJsonStructure(['error' => ['fields' => ['payment_flow']]]);
+        ->assertJsonStructure(['error' => ['details' => ['payment_flow']]]);
 });
 
 test('guest cannot create competition', function (): void {
     $response = $this->postJson('/api/admin/competitions', [
         'name' => 'Test',
-        'type' => 'OLYMPIAD',
+        'type' => 'OLIMPIADE',
         'payment_flow' => 'UPFRONT',
         'start_date' => now()->addDay()->toDateString(),
         'end_date' => now()->addMonth()->toDateString(),

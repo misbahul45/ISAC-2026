@@ -38,5 +38,5 @@ test('external file id must be unique', function (): void {
     $this->withToken($token)
         ->postJson('/api/files', $payload)
         ->assertUnprocessable()
-        ->assertJsonPath('error.fields.fileId.0', 'File sudah tercatat.');
+        ->assertJsonPath('error.details.fileId.0', 'File sudah tercatat.');
 });

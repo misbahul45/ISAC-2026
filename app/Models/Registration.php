@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 enum RegistrationStatus: string
 {
-    case NOT_REQUIRED = 'NOT_REQUIRED';
     case WAITING_PAYMENT = 'WAITING_PAYMENT';
     case WAITING_VERIFICATION = 'WAITING_VERIFICATION';
     case VERIFIED = 'VERIFIED';
@@ -46,10 +45,17 @@ class Registration extends Model
         'payment_method',
         'transaction_id',
         'paid_at',
-        'verified_by',
-        'verified_at',
-        'rejection_reason',
+        'payment_verified_by',
+        'payment_verified_at',
+        'payment_rejection_reason',
         'metadata',
+        'team_completed_at',
+        'members_completed_at',
+        'documents_completed_at',
+        'submitted_at',
+        'payment_required_at',
+        'payment_submitted_at',
+        'payment_for_stage_id',
     ];
 
     protected function casts(): array
@@ -60,8 +66,14 @@ class Registration extends Model
 
             'amount_paid' => 'decimal:2',
             'paid_at' => 'datetime',
-            'verified_at' => 'datetime',
+            'payment_verified_at' => 'datetime',
             'metadata' => 'array',
+            'team_completed_at' => 'datetime',
+            'members_completed_at' => 'datetime',
+            'documents_completed_at' => 'datetime',
+            'submitted_at' => 'datetime',
+            'payment_required_at' => 'datetime',
+            'payment_submitted_at' => 'datetime',
         ];
     }
 
@@ -85,8 +97,13 @@ class Registration extends Model
         return $this->belongsTo(File::class, 'payment_proof_file_id', 'id');
     }
 
-    public function verifiedBy(): BelongsTo
+    public function paymentVerifiedBy(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'verified_by', 'id');
+        return $this->belongsTo(Admin::class, 'payment_verified_by', 'id');
+    }
+
+    public function paymentForStage(): BelongsTo
+    {
+        return $this->belongsTo(Stage::class, 'payment_for_stage_id');
     }
 }

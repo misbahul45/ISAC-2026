@@ -99,7 +99,7 @@ test('forgot password rejects missing email', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['email']]]);
+        ->assertJsonStructure(['error' => ['details' => ['email']]]);
 });
 
 test('forgot password rejects invalid email format', function (): void {
@@ -110,5 +110,5 @@ test('forgot password rejects invalid email format', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['email']]]);
+        ->assertJsonStructure(['error' => ['details' => ['email']]]);
 });

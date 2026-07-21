@@ -102,7 +102,7 @@ test('guest cannot access logout', function (): void {
 test('guest cannot access admin competitions', function (): void {
     $response = $this->postJson('/api/admin/competitions', [
         'name' => 'Test',
-        'type' => 'OLYMPIAD',
+        'type' => 'OLIMPIADE',
         'payment_flow' => 'UPFRONT',
         'start_date' => now()->addDay()->toDateString(),
         'end_date' => now()->addMonth()->toDateString(),

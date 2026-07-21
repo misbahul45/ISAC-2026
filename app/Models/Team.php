@@ -54,6 +54,10 @@ class Team extends Model
         'email_verified_at',
         'verified_at',
         'verified_by',
+        'school_province',
+        'school_city',
+        'verification_note',
+        'revision_step',
     ];
 
     protected function casts(): array

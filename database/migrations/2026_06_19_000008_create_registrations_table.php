@@ -15,22 +15,28 @@ return new class extends Migration
             $table->foreignUuid('team_id')->constrained('teams')->cascadeOnDelete();
             $table->foreignUuid('payment_proof_file_id')->nullable()->constrained('files')->nullOnDelete();
             $table->enum('status', [
-                'NOT_REQUIRED',
                 'WAITING_PAYMENT',
                 'WAITING_VERIFICATION',
                 'VERIFIED',
                 'REVISION_REQUIRED',
                 'REJECTED',
                 'CANCELLED',
-            ])->default('NOT_REQUIRED');
+            ])->default('WAITING_PAYMENT');
             $table->decimal('amount_paid', 15, 2)->default(0);
             $table->enum('payment_method', ['BANK_TRANSFER', 'QRIS'])->nullable();
             $table->string('transaction_id')->nullable();
             $table->timestamp('paid_at')->nullable();
-            $table->foreignUuid('verified_by')->nullable()->constrained('admins')->nullOnDelete();
-            $table->timestamp('verified_at')->nullable();
-            $table->text('rejection_reason')->nullable();
+            $table->foreignUuid('payment_verified_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->timestamp('payment_verified_at')->nullable();
+            $table->text('payment_rejection_reason')->nullable();
             $table->json('metadata')->nullable();
+            $table->timestamp('team_completed_at')->nullable();
+            $table->timestamp('members_completed_at')->nullable();
+            $table->timestamp('documents_completed_at')->nullable();
+            $table->timestamp('submitted_at')->nullable();
+            $table->timestamp('payment_required_at')->nullable();
+            $table->timestamp('payment_submitted_at')->nullable();
+            $table->foreignUuid('payment_for_stage_id')->nullable()->constrained('stages')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
 

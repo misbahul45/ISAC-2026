@@ -38,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'metadata' => (object) [],
                 'error' => [
                     'code' => 'VALIDATION_ERROR',
-                    'fields' => $e->errors(),
+                    'details' => $e->errors(),
                 ],
             ], $e->status);
         });

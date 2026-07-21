@@ -120,7 +120,7 @@ test('verify code rejects missing email and code', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['email', 'code']]]);
+        ->assertJsonStructure(['error' => ['details' => ['email', 'code']]]);
 });
 
 test('verify code rejects code that is not 6 digits', function (): void {
@@ -132,7 +132,7 @@ test('verify code rejects code that is not 6 digits', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['code']]]);
+        ->assertJsonStructure(['error' => ['details' => ['code']]]);
 });
 
 test('verify code enforces max attempt limit', function (): void {

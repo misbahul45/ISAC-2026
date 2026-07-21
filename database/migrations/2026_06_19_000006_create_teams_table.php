@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('school_name')->nullable();
             $table->text('school_address')->nullable();
+            $table->string('school_province')->nullable();
+            $table->string('school_city')->nullable();
             $table->text('document_url')->nullable();
             $table->text('twibbon_url')->nullable();
             $table->foreignUuid('current_stage_id')->nullable()->constrained('stages')->nullOnDelete();
@@ -30,6 +32,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->foreignUuid('verified_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->text('verification_note')->nullable();
+            $table->string('revision_step')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

@@ -216,7 +216,7 @@ test('change password rejects missing reset token', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['resetToken']]]);
+        ->assertJsonStructure(['error' => ['details' => ['resetToken']]]);
 });
 
 test('change password rejects short password', function (): void {
@@ -229,7 +229,7 @@ test('change password rejects short password', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['password']]]);
+        ->assertJsonStructure(['error' => ['details' => ['password']]]);
 });
 
 test('change password rejects mismatched confirmation', function (): void {
@@ -242,5 +242,5 @@ test('change password rejects mismatched confirmation', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['password']]]);
+        ->assertJsonStructure(['error' => ['details' => ['password']]]);
 });

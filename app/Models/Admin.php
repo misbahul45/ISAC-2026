@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Admin extends Model
 {
-    use Authenticatable, HasApiTokens, HasFactory, SoftDeletes;
+    use Authenticatable, HasApiTokens, HasFactory, HasUuids, SoftDeletes;
 
     protected $keyType = 'string';
 
@@ -39,7 +40,7 @@ class Admin extends Model
 
     public function verifiedRegistrations(): HasMany
     {
-        return $this->hasMany(Registration::class, 'verified_by');
+        return $this->hasMany(Registration::class, 'payment_verified_by');
     }
 
     public function reviewedSubmissions(): HasMany

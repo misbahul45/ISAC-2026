@@ -136,15 +136,15 @@ return new class extends Migration
 
     private function makeRegistrationStatusPaymentOnly(): void
     {
-        if (Schema::hasColumn('registrations', 'approved_by') && ! Schema::hasColumn('registrations', 'verified_by')) {
+        if (Schema::hasColumn('registrations', 'approved_by') && ! Schema::hasColumn('registrations', 'payment_verified_by')) {
             Schema::table('registrations', function (Blueprint $table): void {
-                $table->renameColumn('approved_by', 'verified_by');
+                $table->renameColumn('approved_by', 'payment_verified_by');
             });
         }
 
-        if (Schema::hasColumn('registrations', 'approved_at') && ! Schema::hasColumn('registrations', 'verified_at')) {
+        if (Schema::hasColumn('registrations', 'approved_at') && ! Schema::hasColumn('registrations', 'payment_verified_at')) {
             Schema::table('registrations', function (Blueprint $table): void {
-                $table->renameColumn('approved_at', 'verified_at');
+                $table->renameColumn('approved_at', 'payment_verified_at');
             });
         }
 

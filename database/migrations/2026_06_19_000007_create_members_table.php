@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignUuid('team_id')->constrained('teams')->cascadeOnDelete();
             $table->string('name');
             $table->enum('role', ['leader', 'member'])->default('member');
+            $table->string('education_level')->nullable();
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->string('major')->nullable();
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->string('student_id')->nullable();
             $table->date('birth_date')->nullable();
             $table->foreignUuid('photo_file_id')->nullable()->constrained('files')->nullOnDelete();
+            $table->unsignedTinyInteger('sort_order')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
