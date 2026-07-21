@@ -3,38 +3,55 @@
 namespace App\Repositories;
 
 use App\Models\Batch;
+use App\Models\BatchStatus;
+use App\Models\Competition;
 use App\Repositories\Contracts\BatchRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 
 class BatchRepository implements BatchRepositoryInterface
 {
-    public function getAll()
+    /**
+     * @return Collection<int, Batch>
+     */
+    public function allForCompetition(?string $competitionId): Collection
     {
-        // Bisa disesuaikan jadi return Batch::paginate(10); jika datanya banyak
-        return Batch::all(); 
+        return Batch::query()
+            ->when($competitionId !== null, fn ($query) => $query->where('competition_id', $competitionId))
+            ->latest()
+            ->get();
     }
 
-    public function findById($id)
+    /**
+     * @return Collection<int, Batch>
+     */
+    public function openForCompetition(Competition $competition): Collection
     {
-        return Batch::findOrFail($id);
+        return $competition->batches()
+            ->where('status', BatchStatus::OPEN)
+            ->orderBy('start_date')
+            ->get();
     }
 
-    public function create(array $data)
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function create(array $data): Batch
     {
-        return Batch::create($data);
+        return Batch::query()->create($data);
     }
 
-    public function update($id, array $data)
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function update(Batch $batch, array $data): Batch
     {
-        $batch = Batch::findOrFail($id);
         $batch->update($data);
-        
-        return $batch;
+
+        return $batch->fresh();
     }
 
-    public function delete($id)
+    public function delete(Batch $batch): void
     {
-        $batch = Batch::findOrFail($id);
-        
-        return $batch->delete();
+        $batch->delete();
     }
 }

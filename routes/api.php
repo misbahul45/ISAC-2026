@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BatchController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\TeamController;
@@ -39,6 +40,16 @@ Route::prefix('files')->middleware('auth:sanctum')->group(function (): void {
 
 Route::get('/imagekit-auth', [ImageKitAuthController::class, 'auth'])
     ->middleware('auth:sanctum');
+
+Route::get('/competitions/{competition}/batches/open', [BatchController::class, 'openForCompetition']);
+
+Route::prefix('batches')->middleware('auth:admins')->group(function (): void {
+    Route::get('/', [BatchController::class, 'index']);
+    Route::post('/', [BatchController::class, 'store']);
+    Route::get('/{batch}', [BatchController::class, 'show']);
+    Route::patch('/{batch}', [BatchController::class, 'update']);
+    Route::delete('/{batch}', [BatchController::class, 'destroy']);
+});
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
