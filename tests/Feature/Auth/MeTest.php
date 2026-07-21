@@ -7,8 +7,8 @@ uses(LazilyRefreshDatabase::class);
 
 test('me returns authenticated team data', function (): void {
     $team = Team::factory()->create([
-        'name'        => 'Alpha Team',
-        'phone'       => '081234567890',
+        'name' => 'Alpha Team',
+        'phone' => '081234567890',
         'school_name' => 'SMA Negeri 1',
     ]);
     $token = $team->createToken('auth-token')->plainTextToken;

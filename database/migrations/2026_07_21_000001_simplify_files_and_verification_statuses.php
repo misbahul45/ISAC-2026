@@ -204,7 +204,7 @@ return new class extends Migration
     }
 
     /**
-     * @param list<string> $columns
+     * @param  list<string>  $columns
      */
     private function hasIndex(string $table, array $columns, bool $unique): bool
     {

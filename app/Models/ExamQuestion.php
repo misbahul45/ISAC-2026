@@ -13,10 +13,11 @@ class ExamQuestion extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'exam_id', 'question', 'explanation', 'type', 'options', 'correct_answer', 'order', 'correct_score', 'wrong_score', 'empty_score', 'difficulty', 'category', 'tags', 'is_active'
+        'exam_id', 'question', 'explanation', 'type', 'options', 'correct_answer', 'order', 'correct_score', 'wrong_score', 'empty_score', 'difficulty', 'category', 'tags', 'is_active',
     ];
 
     protected function casts(): array

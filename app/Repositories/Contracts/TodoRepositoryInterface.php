@@ -13,12 +13,12 @@ interface TodoRepositoryInterface
     public function allLatest(): Collection;
 
     /**
-     * @param array{title: string, is_completed?: bool} $data
+     * @param  array{title: string, is_completed?: bool}  $data
      */
     public function create(array $data): Todo;
 
     /**
-     * @param array{title?: string, is_completed?: bool} $data
+     * @param  array{title?: string, is_completed?: bool}  $data
      */
     public function update(Todo $todo, array $data): Todo;
 

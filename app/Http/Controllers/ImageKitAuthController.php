@@ -6,7 +6,6 @@ use Illuminate\Support\Str;
 
 class ImageKitAuthController extends Controller
 {
- 
     public function auth()
     {
         $privateKey = config('services.imagekit.private_key');
@@ -14,7 +13,7 @@ class ImageKitAuthController extends Controller
         $token = (string) Str::uuid(); // harus unik per request
         $expire = time() + 2400; // detik, wajib < 1 jam dari sekarang
 
-        $signature = hash_hmac('sha1', $token . $expire, $privateKey);
+        $signature = hash_hmac('sha1', $token.$expire, $privateKey);
 
         return response()->json([
             'token' => $token,

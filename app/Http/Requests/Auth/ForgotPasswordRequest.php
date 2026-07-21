@@ -22,8 +22,8 @@ class ForgotPasswordRequest extends FormRequest
     {
         return [
             'email.required' => 'Email wajib diisi.',
-            'email.email'    => 'Format email tidak valid.',
-            'email.exists'   => 'Email tidak terdaftar.',
+            'email.email' => 'Format email tidak valid.',
+            'email.exists' => 'Email tidak terdaftar.',
         ];
     }
 }

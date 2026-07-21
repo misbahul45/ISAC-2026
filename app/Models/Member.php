@@ -12,10 +12,11 @@ class Member extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'team_id', 'name', 'role', 'email', 'phone', 'major', 'faculty', 'student_id', 'birth_date', 'photo_file_id'
+        'team_id', 'name', 'role', 'email', 'phone', 'major', 'faculty', 'student_id', 'birth_date', 'photo_file_id',
     ];
 
     protected function casts(): array

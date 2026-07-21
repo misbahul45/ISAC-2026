@@ -13,10 +13,11 @@ class ExamAttempt extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'team_id', 'exam_id', 'reviewed_by', 'total_score', 'max_possible_score', 'start_time', 'end_time', 'finished', 'flagged', 'cheat_count', 'suspicious_score', 'device_id', 'ip_address', 'user_agent', 'metadata'
+        'team_id', 'exam_id', 'reviewed_by', 'total_score', 'max_possible_score', 'start_time', 'end_time', 'finished', 'flagged', 'cheat_count', 'suspicious_score', 'device_id', 'ip_address', 'user_agent', 'metadata',
     ];
 
     protected function casts(): array

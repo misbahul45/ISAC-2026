@@ -31,7 +31,7 @@ return new class extends Migration
                 'auto_submitted',
                 'disconnected',
                 'reconnected',
-                'suspicious_activity'
+                'suspicious_activity',
             ]);
             $table->json('metadata')->nullable();
             $table->timestamps();

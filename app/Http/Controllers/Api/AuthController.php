@@ -87,11 +87,11 @@ class AuthController extends Controller
         $result = $this->authService->forgotPassword($request->validated());
 
         return response()->json([
-            'status'   => 'success',
-            'message'  => 'Kode reset password berhasil dikirim ke email',
-            'data'     => $result,
+            'status' => 'success',
+            'message' => 'Kode reset password berhasil dikirim ke email',
+            'data' => $result,
             'metadata' => (object) [],
-            'error'    => null,
+            'error' => null,
         ]);
     }
 
@@ -100,11 +100,11 @@ class AuthController extends Controller
         $result = $this->authService->verifyCode($request->validated());
 
         return response()->json([
-            'status'   => 'success',
-            'message'  => 'Kode berhasil diverifikasi',
-            'data'     => $result,
+            'status' => 'success',
+            'message' => 'Kode berhasil diverifikasi',
+            'data' => $result,
             'metadata' => (object) [],
-            'error'    => null,
+            'error' => null,
         ]);
     }
 
@@ -113,11 +113,11 @@ class AuthController extends Controller
         $this->authService->changePassword($request->validated());
 
         return response()->json([
-            'status'   => 'success',
-            'message'  => 'Password berhasil diubah',
-            'data'     => null,
+            'status' => 'success',
+            'message' => 'Password berhasil diubah',
+            'data' => null,
             'metadata' => (object) [],
-            'error'    => null,
+            'error' => null,
         ]);
     }
 
@@ -126,11 +126,11 @@ class AuthController extends Controller
         $this->authService->sendVerificationCode($request->validated());
 
         return response()->json([
-            'status'   => 'success',
-            'message'  => 'Kode verifikasi berhasil dikirim. Silakan cek email kamu.',
-            'data'     => null,
+            'status' => 'success',
+            'message' => 'Kode verifikasi berhasil dikirim. Silakan cek email kamu.',
+            'data' => null,
             'metadata' => (object) [],
-            'error'    => null,
+            'error' => null,
         ]);
     }
 
@@ -139,11 +139,11 @@ class AuthController extends Controller
         $this->authService->verifyEmail($request->validated());
 
         return response()->json([
-            'status'   => 'success',
-            'message'  => 'Email berhasil diverifikasi.',
-            'data'     => null,
+            'status' => 'success',
+            'message' => 'Email berhasil diverifikasi.',
+            'data' => null,
             'metadata' => (object) [],
-            'error'    => null,
+            'error' => null,
         ]);
     }
 }

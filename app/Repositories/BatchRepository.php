@@ -33,7 +33,7 @@ class BatchRepository implements BatchRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): Batch
     {
@@ -41,7 +41,7 @@ class BatchRepository implements BatchRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(Batch $batch, array $data): Batch
     {

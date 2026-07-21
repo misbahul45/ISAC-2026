@@ -32,7 +32,7 @@ class BatchService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function createBatch(array $data): Batch
     {
@@ -40,7 +40,7 @@ class BatchService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function updateBatch(Batch $batch, array $data): Batch
     {

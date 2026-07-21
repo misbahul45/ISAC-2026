@@ -19,12 +19,12 @@ interface BatchRepositoryInterface
     public function openForCompetition(Competition $competition): Collection;
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): Batch;
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(Batch $batch, array $data): Batch;
 

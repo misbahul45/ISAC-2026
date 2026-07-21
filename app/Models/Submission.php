@@ -12,10 +12,11 @@ class Submission extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'team_id', 'stage_id', 'title', 'description', 'file_id', 'status', 'reviewed_by', 'reviewed_at', 'feedback', 'score', 'metadata', 'submitted_at'
+        'team_id', 'stage_id', 'title', 'description', 'file_id', 'status', 'reviewed_by', 'reviewed_at', 'feedback', 'score', 'metadata', 'submitted_at',
     ];
 
     protected function casts(): array

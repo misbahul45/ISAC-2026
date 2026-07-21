@@ -14,8 +14,8 @@ class ChangePasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'resetToken'           => ['required', 'string'],
-            'password'              => ['required', 'string', 'min:8', 'confirmed'],
+            'resetToken' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required', 'string'],
         ];
     }
@@ -23,10 +23,10 @@ class ChangePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'resetToken.required'           => 'Reset token wajib diisi.',
-            'password.required'              => 'Password wajib diisi.',
-            'password.min'                   => 'Password minimal 8 karakter.',
-            'password.confirmed'             => 'Konfirmasi password tidak cocok.',
+            'resetToken.required' => 'Reset token wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'password_confirmation.required' => 'Konfirmasi password wajib diisi.',
         ];
     }

@@ -23,7 +23,7 @@ class TodoService
     }
 
     /**
-     * @param array{title: string} $data
+     * @param  array{title: string}  $data
      */
     public function createTodo(array $data): Todo
     {
@@ -34,7 +34,7 @@ class TodoService
     }
 
     /**
-     * @param array{title?: string, is_completed?: bool} $data
+     * @param  array{title?: string, is_completed?: bool}  $data
      */
     public function updateTodo(Todo $todo, array $data): Todo
     {

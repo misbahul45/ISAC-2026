@@ -13,10 +13,11 @@ class Stage extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'competition_id', 'name', 'type', 'description', 'order', 'start_date', 'end_date', 'is_active', 'criteria'
+        'competition_id', 'name', 'type', 'description', 'order', 'start_date', 'end_date', 'is_active', 'criteria',
     ];
 
     protected function casts(): array

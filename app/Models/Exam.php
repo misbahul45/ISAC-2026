@@ -13,10 +13,11 @@ class Exam extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
-        'stage_id', 'title', 'description', 'start_date', 'end_date', 'duration', 'passing_score', 'type', 'shuffle_questions', 'shuffle_options', 'show_result_immediately', 'max_attempts', 'settings'
+        'stage_id', 'title', 'description', 'start_date', 'end_date', 'duration', 'passing_score', 'type', 'shuffle_questions', 'shuffle_options', 'show_result_immediately', 'max_attempts', 'settings',
     ];
 
     protected function casts(): array

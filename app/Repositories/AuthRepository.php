@@ -56,7 +56,7 @@ class AuthRepository implements AuthRepositoryInterface
         $resetCode->update([
             'reset_token' => $resetToken,
             'verified_at' => now(),
-            'expired_at'  => now()->addMinutes(10),
+            'expired_at' => now()->addMinutes(10),
         ]);
     }
 

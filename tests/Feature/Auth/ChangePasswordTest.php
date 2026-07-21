@@ -10,23 +10,23 @@ uses(LazilyRefreshDatabase::class);
 
 test('change password updates password and returns success', function (): void {
     $team = Team::factory()->create([
-        'email'    => 'team.alpha@gmail.com',
+        'email' => 'team.alpha@gmail.com',
         'password' => 'OldPassword123!',
     ]);
 
     $resetToken = Str::random(64);
 
     PasswordResetCode::factory()->create([
-        'email'       => $team->email,
-        'code'        => '123456',
+        'email' => $team->email,
+        'code' => '123456',
         'reset_token' => $resetToken,
-        'expired_at'  => now()->addMinutes(5),
+        'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
     ]);
 
     $response = $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'NewPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ]);
 
@@ -39,23 +39,23 @@ test('change password updates password and returns success', function (): void {
 
 test('change password actually hashes and updates the password in the database', function (): void {
     $team = Team::factory()->create([
-        'email'    => 'team.alpha@gmail.com',
+        'email' => 'team.alpha@gmail.com',
         'password' => 'OldPassword123!',
     ]);
 
     $resetToken = Str::random(64);
 
     PasswordResetCode::factory()->create([
-        'email'       => $team->email,
-        'code'        => '123456',
+        'email' => $team->email,
+        'code' => '123456',
         'reset_token' => $resetToken,
-        'expired_at'  => now()->addMinutes(5),
+        'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
     ]);
 
     $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'NewPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ])->assertOk();
 
@@ -70,16 +70,16 @@ test('change password marks the reset token as used', function (): void {
     $resetToken = Str::random(64);
 
     $resetCode = PasswordResetCode::factory()->create([
-        'email'       => $team->email,
-        'code'        => '123456',
+        'email' => $team->email,
+        'code' => '123456',
         'reset_token' => $resetToken,
-        'expired_at'  => now()->addMinutes(5),
+        'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
     ]);
 
     $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'NewPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ])->assertOk();
 
@@ -96,16 +96,16 @@ test('change password revokes all existing sanctum tokens', function (): void {
     $resetToken = Str::random(64);
 
     PasswordResetCode::factory()->create([
-        'email'       => $team->email,
-        'code'        => '123456',
+        'email' => $team->email,
+        'code' => '123456',
         'reset_token' => $resetToken,
-        'expired_at'  => now()->addMinutes(5),
+        'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
     ]);
 
     $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'NewPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ])->assertOk();
 
@@ -118,23 +118,23 @@ test('change password cannot be used twice with the same token', function (): vo
     $resetToken = Str::random(64);
 
     PasswordResetCode::factory()->create([
-        'email'       => $team->email,
-        'code'        => '123456',
+        'email' => $team->email,
+        'code' => '123456',
         'reset_token' => $resetToken,
-        'expired_at'  => now()->addMinutes(5),
+        'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
     ]);
 
     $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'NewPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ])->assertOk();
 
     // Coba pakai token yang sama lagi
     $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'AnotherPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'AnotherPassword123!',
         'password_confirmation' => 'AnotherPassword123!',
     ])->assertStatus(422)
         ->assertJsonPath('error.code', 'INVALID_RESET_TOKEN');
@@ -146,16 +146,16 @@ test('change password rejects expired reset token', function (): void {
     $resetToken = Str::random(64);
 
     PasswordResetCode::factory()->create([
-        'email'       => $team->email,
-        'code'        => '123456',
+        'email' => $team->email,
+        'code' => '123456',
         'reset_token' => $resetToken,
-        'expired_at'  => now()->subMinute(),
+        'expired_at' => now()->subMinute(),
         'verified_at' => now()->subMinutes(2),
     ]);
 
     $response = $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'NewPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ]);
 
@@ -166,8 +166,8 @@ test('change password rejects expired reset token', function (): void {
 
 test('change password rejects invalid reset token', function (): void {
     $response = $this->postJson('/api/auth/change-password', [
-        'resetToken'           => 'selamat-pagi-warga-ambu',
-        'password'              => 'NewPassword123!',
+        'resetToken' => 'selamat-pagi-warga-ambu',
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ]);
 
@@ -182,16 +182,16 @@ test('change password rejects unverified reset token', function (): void {
     $resetToken = Str::random(64);
 
     PasswordResetCode::factory()->create([
-        'email'       => $team->email,
-        'code'        => '123456',
+        'email' => $team->email,
+        'code' => '123456',
         'reset_token' => $resetToken,
-        'expired_at'  => now()->addMinutes(5),
+        'expired_at' => now()->addMinutes(5),
         'verified_at' => null,
     ]);
 
     $response = $this->postJson('/api/auth/change-password', [
-        'resetToken'           => $resetToken,
-        'password'              => 'NewPassword123!',
+        'resetToken' => $resetToken,
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ]);
 
@@ -201,7 +201,7 @@ test('change password rejects unverified reset token', function (): void {
 
 test('change password rejects missing reset token', function (): void {
     $response = $this->postJson('/api/auth/change-password', [
-        'password'              => 'NewPassword123!',
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ]);
 
@@ -213,8 +213,8 @@ test('change password rejects missing reset token', function (): void {
 
 test('change password rejects short password', function (): void {
     $response = $this->postJson('/api/auth/change-password', [
-        'resetToken'           => 'hai-juga-warga-ambu',
-        'password'              => 'short',
+        'resetToken' => 'hai-juga-warga-ambu',
+        'password' => 'short',
         'password_confirmation' => 'short',
     ]);
 
@@ -226,8 +226,8 @@ test('change password rejects short password', function (): void {
 
 test('change password rejects mismatched confirmation', function (): void {
     $response = $this->postJson('/api/auth/change-password', [
-        'resetToken'           => 'maringunu',
-        'password'              => 'NewPassword123!',
+        'resetToken' => 'maringunu',
+        'password' => 'NewPassword123!',
         'password_confirmation' => 'DifferentPassword123!',
     ]);
 

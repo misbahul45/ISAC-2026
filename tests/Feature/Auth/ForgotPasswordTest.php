@@ -51,7 +51,7 @@ test('forgot password sets expired_at 5 minutes from now', function (): void {
     Team::factory()->create(['email' => 'team.alpha@gmail.com']);
 
     $before = now()->addMinutes(4);
-    $after  = now()->addMinutes(6);
+    $after = now()->addMinutes(6);
 
     $this->postJson('/api/auth/forgot-password', [
         'email' => 'team.alpha@gmail.com',

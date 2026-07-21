@@ -94,45 +94,45 @@ Route::get('/todos', function () {
 })->name('todos.page');
 
 Route::prefix('registration')
-->name('registration.')
+    ->name('registration.')
 // ->middleware('auth')
-->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Registration/Index', [
-            'title' => 'Registration',
-        ]);
-    })->name('index');
+    ->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Registration/Index', [
+                'title' => 'Registration',
+            ]);
+        })->name('index');
 
-    Route::get('/team', function () {
-        return Inertia::render('Registration/Team', [
-            'title' => 'Registration',
-        ]);
-    })->name('team');
+        Route::get('/team', function () {
+            return Inertia::render('Registration/Team', [
+                'title' => 'Registration',
+            ]);
+        })->name('team');
 
-    Route::get('/biodata', function () {
-        return Inertia::render('Registration/Biodata', [
-            'title' => 'Registration',
-        ]);
-    })->name('biodata');
+        Route::get('/biodata', function () {
+            return Inertia::render('Registration/Biodata', [
+                'title' => 'Registration',
+            ]);
+        })->name('biodata');
 
-    Route::get('/documents', function () {
-        return Inertia::render('Registration/Documents', [
-            'title' => 'Registration',
-        ]);
-    })->name('documents');
+        Route::get('/documents', function () {
+            return Inertia::render('Registration/Documents', [
+                'title' => 'Registration',
+            ]);
+        })->name('documents');
 
-    Route::get('/payment', function () {
-        return Inertia::render('Registration/Payment', [
-            'title' => 'Registration',
-        ]);
-    })->name('payment');
+        Route::get('/payment', function () {
+            return Inertia::render('Registration/Payment', [
+                'title' => 'Registration',
+            ]);
+        })->name('payment');
 
-    Route::get('/validation', function () {
-        return Inertia::render('Registration/Validation', [
-            'title' => 'Registration',
-        ]);
-    })->name('validation');
-});
+        Route::get('/validation', function () {
+            return Inertia::render('Registration/Validation', [
+                'title' => 'Registration',
+            ]);
+        })->name('validation');
+    });
 
 Route::fallback(function () {
     return Inertia::render('Errors/NotFound')

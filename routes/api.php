@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BatchController;
+use App\Http\Controllers\Api\CompetitionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\TeamController;
-use App\Http\Controllers\Api\TodoController;
 use App\Http\Controllers\ImageKitAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,7 +25,6 @@ Route::get('/system/status', function () {
     ]);
 });
 
-
 Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
 Route::prefix('teams')->middleware('auth:sanctum')->group(function (): void {
@@ -41,15 +40,25 @@ Route::prefix('files')->middleware('auth:sanctum')->group(function (): void {
 Route::get('/imagekit-auth', [ImageKitAuthController::class, 'auth'])
     ->middleware('auth:sanctum');
 
-Route::get('/competitions/{competition}/batches/open', [BatchController::class, 'openForCompetition']);
+Route::get('/competitions', [CompetitionController::class, 'index']);
+Route::get('/competitions/open', [CompetitionController::class, 'open']);
+Route::get('/competitions/{competition}', [CompetitionController::class, 'show'])->whereUuid('competition');
 
-Route::prefix('batches')->middleware('auth:admins')->group(function (): void {
-    Route::get('/', [BatchController::class, 'index']);
-    Route::post('/', [BatchController::class, 'store']);
-    Route::get('/{batch}', [BatchController::class, 'show']);
-    Route::patch('/{batch}', [BatchController::class, 'update']);
-    Route::delete('/{batch}', [BatchController::class, 'destroy']);
+Route::prefix('admin')->middleware('auth:admins')->group(function (): void {
+    Route::post('/competitions', [CompetitionController::class, 'store']);
+    Route::patch('/competitions/{competition}', [CompetitionController::class, 'update']);
+    Route::delete('/competitions/{competition}', [CompetitionController::class, 'destroy']);
+
+    Route::prefix('batches')->group(function (): void {
+        Route::get('/', [BatchController::class, 'index']);
+        Route::post('/', [BatchController::class, 'store']);
+        Route::get('/{batch}', [BatchController::class, 'show']);
+        Route::patch('/{batch}', [BatchController::class, 'update']);
+        Route::delete('/{batch}', [BatchController::class, 'destroy']);
+    });
 });
+
+Route::get('/competitions/{competition}/batches/open', [BatchController::class, 'openForCompetition']);
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
