@@ -10,8 +10,10 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\SendVerificationRequest;
 use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Http\Requests\VerifyCodeRequest;
+use App\Http\Resources\AdminResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\TeamAuthResource;
+use App\Models\Admin;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,13 +43,19 @@ class AuthController extends Controller
     {
         $result = $this->authService->login($request->validated());
 
+        $userData = $result['principalType'] === 'ADMIN'
+            ? ['admin' => new AdminResource($result['admin'])]
+            : ['team' => new AuthResource($result['team'])];
+
         return response()->json([
             'status' => 'success',
             'message' => 'Login berhasil',
             'data' => [
                 'token' => $result['token'],
                 'tokenType' => $result['tokenType'],
-                'team' => new AuthResource($result['team']),
+                'principalType' => $result['principalType'],
+                ...$userData,
+                'redirectTo' => $result['redirectTo'],
             ],
             'metadata' => (object) [],
             'error' => null,
@@ -56,12 +64,16 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        $team = $request->user();
+        $user = $request->user();
+
+        $data = $user instanceof Admin
+            ? ['principalType' => 'ADMIN', 'admin' => new AdminResource($user)]
+            : ['principalType' => 'TEAM', 'team' => new TeamAuthResource($user)];
 
         return response()->json([
             'status' => 'success',
             'message' => 'Data user berhasil diambil',
-            'data' => new TeamAuthResource($team),
+            'data' => $data,
             'metadata' => (object) [],
             'error' => null,
         ]);
@@ -69,9 +81,7 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $team = $request->user();
-
-        $this->authService->logout($team);
+        $this->authService->logout($request->user());
 
         return response()->json([
             'status' => 'success',
@@ -84,12 +94,12 @@ class AuthController extends Controller
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        $result = $this->authService->forgotPassword($request->validated());
+        $this->authService->forgotPassword($request->validated());
 
         return response()->json([
             'status' => 'success',
             'message' => 'Kode reset password berhasil dikirim ke email',
-            'data' => $result,
+            'data' => null,
             'metadata' => (object) [],
             'error' => null,
         ]);

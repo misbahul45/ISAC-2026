@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BatchController;
 use App\Http\Controllers\Api\CompetitionController;
@@ -45,12 +44,7 @@ Route::get('/competitions', [CompetitionController::class, 'index']);
 Route::get('/competitions/open', [CompetitionController::class, 'open']);
 Route::get('/competitions/{competition}', [CompetitionController::class, 'show'])->whereUuid('competition');
 
-Route::post('/admin/login', [AdminAuthController::class, 'login'])->middleware('throttle:5,1');
-
 Route::prefix('admin')->middleware('auth:admins')->group(function (): void {
-    Route::post('/logout', [AdminAuthController::class, 'logout']);
-    Route::get('/me', [AdminAuthController::class, 'me']);
-
     Route::post('/competitions', [CompetitionController::class, 'store']);
     Route::patch('/competitions/{competition}', [CompetitionController::class, 'update']);
     Route::delete('/competitions/{competition}', [CompetitionController::class, 'destroy']);
@@ -70,9 +64,9 @@ Route::prefix('auth')->group(function (): void {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
-    Route::post('/verify-code', [AuthController::class, 'verifyCode'])->middleware('throttle:5,1');
-    Route::post('/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
-    Route::post('/send-verification', [AuthController::class, 'sendVerification'])->middleware('throttle:3,1');
+    Route::post('/reset-password/verify', [AuthController::class, 'verifyCode'])->middleware('throttle:5,1');
+    Route::post('/reset-password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
+    Route::post('/verify-email/resend', [AuthController::class, 'sendVerification'])->middleware('throttle:3,1');
     Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function (): void {

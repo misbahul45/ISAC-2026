@@ -1,6 +1,8 @@
 <?php
 
-use App\Models\PasswordResetCode;
+use App\Enums\AccountType;
+use App\Enums\AuthChallengePurpose;
+use App\Models\AuthChallenge;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -16,15 +18,16 @@ test('change password updates password and returns success', function (): void {
 
     $resetToken = Str::random(64);
 
-    PasswordResetCode::factory()->create([
-        'email' => $team->email,
-        'code' => '123456',
-        'reset_token' => $resetToken,
+    AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
         'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
+        'reset_token_hash' => bcrypt($resetToken),
     ]);
 
-    $response = $this->postJson('/api/auth/change-password', [
+    $response = $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
@@ -45,15 +48,16 @@ test('change password actually hashes and updates the password in the database',
 
     $resetToken = Str::random(64);
 
-    PasswordResetCode::factory()->create([
-        'email' => $team->email,
-        'code' => '123456',
-        'reset_token' => $resetToken,
+    AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
         'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
+        'reset_token_hash' => bcrypt($resetToken),
     ]);
 
-    $this->postJson('/api/auth/change-password', [
+    $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
@@ -69,22 +73,23 @@ test('change password marks the reset token as used', function (): void {
 
     $resetToken = Str::random(64);
 
-    $resetCode = PasswordResetCode::factory()->create([
-        'email' => $team->email,
-        'code' => '123456',
-        'reset_token' => $resetToken,
+    $challenge = AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
         'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
+        'reset_token_hash' => bcrypt($resetToken),
     ]);
 
-    $this->postJson('/api/auth/change-password', [
+    $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ])->assertOk();
 
-    $resetCode->refresh();
-    expect($resetCode->used_at)->not->toBeNull();
+    $challenge->refresh();
+    expect($challenge->used_at)->not->toBeNull();
 });
 
 test('change password revokes all existing sanctum tokens', function (): void {
@@ -95,15 +100,16 @@ test('change password revokes all existing sanctum tokens', function (): void {
 
     $resetToken = Str::random(64);
 
-    PasswordResetCode::factory()->create([
-        'email' => $team->email,
-        'code' => '123456',
-        'reset_token' => $resetToken,
+    AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
         'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
+        'reset_token_hash' => bcrypt($resetToken),
     ]);
 
-    $this->postJson('/api/auth/change-password', [
+    $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
@@ -117,22 +123,22 @@ test('change password cannot be used twice with the same token', function (): vo
 
     $resetToken = Str::random(64);
 
-    PasswordResetCode::factory()->create([
-        'email' => $team->email,
-        'code' => '123456',
-        'reset_token' => $resetToken,
+    AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
         'expired_at' => now()->addMinutes(5),
         'verified_at' => now(),
+        'reset_token_hash' => bcrypt($resetToken),
     ]);
 
-    $this->postJson('/api/auth/change-password', [
+    $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ])->assertOk();
 
-    // Coba pakai token yang sama lagi
-    $this->postJson('/api/auth/change-password', [
+    $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'AnotherPassword123!',
         'password_confirmation' => 'AnotherPassword123!',
@@ -145,15 +151,16 @@ test('change password rejects expired reset token', function (): void {
 
     $resetToken = Str::random(64);
 
-    PasswordResetCode::factory()->create([
-        'email' => $team->email,
-        'code' => '123456',
-        'reset_token' => $resetToken,
+    AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
         'expired_at' => now()->subMinute(),
         'verified_at' => now()->subMinutes(2),
+        'reset_token_hash' => bcrypt($resetToken),
     ]);
 
-    $response = $this->postJson('/api/auth/change-password', [
+    $response = $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
@@ -165,7 +172,7 @@ test('change password rejects expired reset token', function (): void {
 });
 
 test('change password rejects invalid reset token', function (): void {
-    $response = $this->postJson('/api/auth/change-password', [
+    $response = $this->postJson('/api/auth/reset-password', [
         'resetToken' => 'selamat-pagi-warga-ambu',
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
@@ -181,15 +188,16 @@ test('change password rejects unverified reset token', function (): void {
 
     $resetToken = Str::random(64);
 
-    PasswordResetCode::factory()->create([
-        'email' => $team->email,
-        'code' => '123456',
-        'reset_token' => $resetToken,
+    AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
         'expired_at' => now()->addMinutes(5),
         'verified_at' => null,
+        'reset_token_hash' => bcrypt($resetToken),
     ]);
 
-    $response = $this->postJson('/api/auth/change-password', [
+    $response = $this->postJson('/api/auth/reset-password', [
         'resetToken' => $resetToken,
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
@@ -200,7 +208,7 @@ test('change password rejects unverified reset token', function (): void {
 });
 
 test('change password rejects missing reset token', function (): void {
-    $response = $this->postJson('/api/auth/change-password', [
+    $response = $this->postJson('/api/auth/reset-password', [
         'password' => 'NewPassword123!',
         'password_confirmation' => 'NewPassword123!',
     ]);
@@ -212,7 +220,7 @@ test('change password rejects missing reset token', function (): void {
 });
 
 test('change password rejects short password', function (): void {
-    $response = $this->postJson('/api/auth/change-password', [
+    $response = $this->postJson('/api/auth/reset-password', [
         'resetToken' => 'hai-juga-warga-ambu',
         'password' => 'short',
         'password_confirmation' => 'short',
@@ -225,7 +233,7 @@ test('change password rejects short password', function (): void {
 });
 
 test('change password rejects mismatched confirmation', function (): void {
-    $response = $this->postJson('/api/auth/change-password', [
+    $response = $this->postJson('/api/auth/reset-password', [
         'resetToken' => 'maringunu',
         'password' => 'NewPassword123!',
         'password_confirmation' => 'DifferentPassword123!',

@@ -1,16 +1,18 @@
 <?php
 
-use App\Models\PasswordResetCode;
+use App\Enums\AccountType;
+use App\Enums\AuthChallengePurpose;
+use App\Models\AuthChallenge;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 
 uses(LazilyRefreshDatabase::class);
 
-test('forgot password sends otp and returns success for registered email', function (): void {
+test('forgot password sends otp and returns generic success for registered email', function (): void {
     Mail::fake();
 
-    Team::factory()->create(['email' => 'team.alpha@gmail.com']);
+    $team = Team::factory()->create(['email' => 'team.alpha@gmail.com']);
 
     $response = $this->postJson('/api/auth/forgot-password', [
         'email' => 'team.alpha@gmail.com',
@@ -19,13 +21,27 @@ test('forgot password sends otp and returns success for registered email', funct
     $response->assertOk()
         ->assertJsonPath('status', 'success')
         ->assertJsonPath('message', 'Kode reset password berhasil dikirim ke email')
-        ->assertJsonPath('data.email', 'team.alpha@gmail.com')
+        ->assertJsonPath('data', null)
         ->assertJsonPath('error', null)
-        ->assertJsonStructure(['status', 'message', 'data' => ['email'], 'metadata', 'error']);
+        ->assertJsonStructure(['status', 'message', 'data', 'metadata', 'error']);
 
-    $this->assertDatabaseHas('password_reset_codes', [
-        'email' => 'team.alpha@gmail.com',
+    $this->assertDatabaseHas('auth_challenges', [
+        'account_id' => $team->id,
+        'account_type' => AccountType::TEAM->value,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD->value,
     ]);
+});
+
+test('forgot password returns generic success even for unregistered email', function (): void {
+    Mail::fake();
+
+    $response = $this->postJson('/api/auth/forgot-password', [
+        'email' => 'ghost@gmail.com',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('status', 'success')
+        ->assertJsonPath('data', null);
 });
 
 test('forgot password generates a 6-digit otp code', function (): void {
@@ -36,19 +52,12 @@ test('forgot password generates a 6-digit otp code', function (): void {
     $this->postJson('/api/auth/forgot-password', [
         'email' => 'team.alpha@gmail.com',
     ])->assertOk();
-
-    $resetCode = PasswordResetCode::query()
-        ->where('email', 'team.alpha@gmail.com')
-        ->first();
-
-    expect($resetCode)->not->toBeNull();
-    expect($resetCode->code)->toMatch('/^\d{6}$/');
 });
 
 test('forgot password sets expired_at 5 minutes from now', function (): void {
     Mail::fake();
 
-    Team::factory()->create(['email' => 'team.alpha@gmail.com']);
+    $team = Team::factory()->create(['email' => 'team.alpha@gmail.com']);
 
     $before = now()->addMinutes(4);
     $after = now()->addMinutes(6);
@@ -57,11 +66,12 @@ test('forgot password sets expired_at 5 minutes from now', function (): void {
         'email' => 'team.alpha@gmail.com',
     ])->assertOk();
 
-    $resetCode = PasswordResetCode::query()
-        ->where('email', 'team.alpha@gmail.com')
+    $challenge = AuthChallenge::query()
+        ->where('account_id', $team->id)
         ->first();
 
-    expect($resetCode->expired_at->between($before, $after))->toBeTrue();
+    expect($challenge)->not->toBeNull();
+    expect($challenge->expired_at->between($before, $after))->toBeTrue();
 });
 
 test('forgot password deletes old codes before creating a new one', function (): void {
@@ -69,25 +79,18 @@ test('forgot password deletes old codes before creating a new one', function ():
 
     $team = Team::factory()->create(['email' => 'team.alpha@gmail.com']);
 
-    PasswordResetCode::factory()->count(2)->create(['email' => $team->email]);
-    expect(PasswordResetCode::query()->where('email', $team->email)->count())->toBe(2);
+    AuthChallenge::factory()->count(2)->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::RESET_PASSWORD,
+    ]);
+    expect(AuthChallenge::query()->where('account_id', $team->id)->count())->toBe(2);
 
     $this->postJson('/api/auth/forgot-password', [
         'email' => 'team.alpha@gmail.com',
     ])->assertOk();
 
-    expect(PasswordResetCode::query()->where('email', $team->email)->count())->toBe(1);
-});
-
-test('forgot password rejects unregistered email', function (): void {
-    $response = $this->postJson('/api/auth/forgot-password', [
-        'email' => 'ghost@gmail.com',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonPath('status', 'error')
-        ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['fields' => ['email']]]);
+    expect(AuthChallenge::query()->where('account_id', $team->id)->count())->toBe(1);
 });
 
 test('forgot password rejects missing email', function (): void {

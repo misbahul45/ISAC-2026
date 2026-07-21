@@ -6,5 +6,10 @@ use Exception;
 
 class InvalidCredentialException extends Exception
 {
-    public $status = 401;
+    public function __construct(
+        string $message,
+        public int $status = 401,
+    ) {
+        parent::__construct($message);
+    }
 }

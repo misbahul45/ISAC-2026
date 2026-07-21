@@ -20,6 +20,9 @@ class AuthChallenge extends Model
         'expired_at',
         'verified_at',
         'used_at',
+        'attempt_count',
+        'sent_at',
+        'reset_token_hash',
     ];
 
     protected function casts(): array
@@ -30,6 +33,7 @@ class AuthChallenge extends Model
             'expired_at' => 'datetime',
             'verified_at' => 'datetime',
             'used_at' => 'datetime',
+            'sent_at' => 'datetime',
         ];
     }
 

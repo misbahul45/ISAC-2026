@@ -14,7 +14,7 @@ class VerifyEmailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'exists:teams,email'],
+            'email' => ['required', 'email'],
             'code' => ['required', 'string', 'size:6'],
         ];
     }
@@ -24,7 +24,6 @@ class VerifyEmailRequest extends FormRequest
         return [
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
-            'email.exists' => 'Email tidak ditemukan.',
             'code.required' => 'Kode verifikasi wajib diisi.',
             'code.size' => 'Kode verifikasi harus 6 karakter.',
         ];

@@ -25,6 +25,8 @@ interface AuthRepositoryInterface
 
     public function markChallengeUsed(AuthChallenge $challenge): void;
 
+    public function incrementChallengeAttempt(AuthChallenge $challenge): void;
+
     public function updateTeamPassword(Team $team, string $password): void;
 
     public function markTeamEmailAsVerified(Team $team): void;

@@ -1,11 +1,12 @@
 <?php
 
+use App\Models\Admin;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 uses(LazilyRefreshDatabase::class);
 
-test('me returns authenticated team data', function (): void {
+test('me returns authenticated team data with principalType', function (): void {
     $team = Team::factory()->create([
         'name' => 'Alpha Team',
         'phone' => '081234567890',
@@ -18,22 +19,39 @@ test('me returns authenticated team data', function (): void {
         ->assertOk()
         ->assertJsonPath('status', 'success')
         ->assertJsonPath('message', 'Data user berhasil diambil')
-        ->assertJsonPath('data.id', $team->id)
-        ->assertJsonPath('data.code', $team->code)
-        ->assertJsonPath('data.email', $team->email)
-        ->assertJsonPath('data.name', 'Alpha Team')
-        ->assertJsonPath('data.phone', '081234567890')
-        ->assertJsonPath('data.schoolName', 'SMA Negeri 1')
-        ->assertJsonPath('data.status', 'INCOMPLETE')
-        ->assertJsonPath('data.emailVerifiedAt', $team->email_verified_at?->toISOString())
+        ->assertJsonPath('data.principalType', 'TEAM')
+        ->assertJsonPath('data.team.id', $team->id)
+        ->assertJsonPath('data.team.code', $team->code)
+        ->assertJsonPath('data.team.email', $team->email)
+        ->assertJsonPath('data.team.name', 'Alpha Team')
+        ->assertJsonPath('data.team.phone', '081234567890')
+        ->assertJsonPath('data.team.schoolName', 'SMA Negeri 1')
+        ->assertJsonPath('data.team.status', 'INCOMPLETE')
+        ->assertJsonPath('data.team.emailVerifiedAt', $team->email_verified_at?->toISOString())
         ->assertJsonPath('error', null)
         ->assertJsonStructure([
-            'status',
-            'message',
-            'data' => ['id', 'code', 'email', 'name', 'phone', 'schoolName', 'status', 'emailVerifiedAt'],
-            'metadata',
-            'error',
+            'status', 'message',
+            'data' => ['principalType', 'team' => ['id', 'code', 'email', 'name', 'phone', 'schoolName', 'status', 'emailVerifiedAt']],
+            'metadata', 'error',
         ]);
+});
+
+test('me returns authenticated admin data with principalType', function (): void {
+    $admin = Admin::factory()->create([
+        'name' => 'Super Admin',
+        'role' => 'super_admin',
+    ]);
+    $token = $admin->createToken('auth-token')->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson('/api/auth/me')
+        ->assertOk()
+        ->assertJsonPath('data.principalType', 'ADMIN')
+        ->assertJsonPath('data.admin.id', $admin->id)
+        ->assertJsonPath('data.admin.name', 'Super Admin')
+        ->assertJsonPath('data.admin.role', 'super_admin')
+        ->assertJsonPath('data.admin.email', $admin->email)
+        ->assertJsonStructure(['data' => ['principalType', 'admin' => ['id', 'email', 'name', 'role', 'isActive']]]);
 });
 
 test('me returns null for optional profile fields when not yet filled', function (): void {
@@ -43,9 +61,9 @@ test('me returns null for optional profile fields when not yet filled', function
     $this->withToken($token)
         ->getJson('/api/auth/me')
         ->assertOk()
-        ->assertJsonPath('data.name', null)
-        ->assertJsonPath('data.phone', null)
-        ->assertJsonPath('data.schoolName', null);
+        ->assertJsonPath('data.team.name', null)
+        ->assertJsonPath('data.team.phone', null)
+        ->assertJsonPath('data.team.schoolName', null);
 });
 
 test('me rejects unauthenticated request', function (): void {

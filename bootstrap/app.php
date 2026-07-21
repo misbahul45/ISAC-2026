@@ -6,6 +6,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -76,5 +77,16 @@ return Application::configure(basePath: dirname(__DIR__))
                     'code' => 'NOT_FOUND',
                 ],
             ], 404);
+        });
+        $exceptions->render(function (ThrottleRequestsException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terlalu banyak permintaan. Silakan coba lagi nanti.',
+                'data' => null,
+                'metadata' => (object) [],
+                'error' => [
+                    'code' => 'RETRY_LATER',
+                ],
+            ], 429);
         });
     })->create();

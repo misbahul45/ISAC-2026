@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\AuthChallenge;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use Illuminate\Support\Facades\Hash;
 
 class AuthRepository implements AuthRepositoryInterface
 {
@@ -58,7 +59,13 @@ class AuthRepository implements AuthRepositoryInterface
             return null;
         }
 
-        if (! hash_equals($challenge->code_hash, bcrypt($code))) {
+        if ($challenge->attempt_count >= 5) {
+            return null;
+        }
+
+        if (! Hash::check($code, $challenge->code_hash)) {
+            $challenge->increment('attempt_count');
+
             return null;
         }
 
@@ -69,17 +76,33 @@ class AuthRepository implements AuthRepositoryInterface
 
     public function findValidResetToken(string $resetToken): ?AuthChallenge
     {
-        return AuthChallenge::query()
+        $challenge = AuthChallenge::query()
             ->where('purpose', AuthChallengePurpose::RESET_PASSWORD)
             ->whereNotNull('verified_at')
             ->whereNull('used_at')
             ->where('expired_at', '>', now())
+            ->whereNotNull('reset_token_hash')
             ->first();
+
+        if ($challenge === null) {
+            return null;
+        }
+
+        if (! Hash::check($resetToken, $challenge->reset_token_hash)) {
+            return null;
+        }
+
+        return $challenge;
     }
 
     public function markChallengeUsed(AuthChallenge $challenge): void
     {
         $challenge->markUsed();
+    }
+
+    public function incrementChallengeAttempt(AuthChallenge $challenge): void
+    {
+        $challenge->increment('attempt_count');
     }
 
     public function updateTeamPassword(Team $team, string $password): void

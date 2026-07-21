@@ -12,22 +12,23 @@ beforeEach(function (): void {
     ]);
 });
 
-test('admin can login with valid credentials', function (): void {
-    $response = $this->postJson('/api/admin/login', [
+test('admin can login via shared endpoint with valid credentials', function (): void {
+    $response = $this->postJson('/api/auth/login', [
         'email' => $this->admin->email,
         'password' => 'Password123!',
     ]);
 
     $response->assertOk()
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('message', 'Login berhasil.')
+        ->assertJsonPath('data.principalType', 'ADMIN')
+        ->assertJsonPath('data.redirectTo', '/admin/dashboard')
         ->assertJsonStructure([
-            'data' => ['token', 'tokenType', 'admin' => ['id', 'name', 'email', 'role', 'isActive']],
+            'data' => ['token', 'tokenType', 'principalType', 'redirectTo', 'admin' => ['id', 'name', 'email', 'role', 'isActive']],
         ]);
 });
 
-test('admin cannot login with wrong password', function (): void {
-    $response = $this->postJson('/api/admin/login', [
+test('admin cannot login with wrong password via shared endpoint', function (): void {
+    $response = $this->postJson('/api/auth/login', [
         'email' => $this->admin->email,
         'password' => 'wrong-password',
     ]);
@@ -36,8 +37,8 @@ test('admin cannot login with wrong password', function (): void {
         ->assertJsonPath('error.code', 'INVALID_CREDENTIALS');
 });
 
-test('admin cannot login with wrong email', function (): void {
-    $response = $this->postJson('/api/admin/login', [
+test('admin cannot login with wrong email via shared endpoint', function (): void {
+    $response = $this->postJson('/api/auth/login', [
         'email' => 'nonexistent@isac.com',
         'password' => 'Password123!',
     ]);
@@ -53,46 +54,47 @@ test('admin cannot login when inactive', function (): void {
         'is_active' => false,
     ]);
 
-    $response = $this->postJson('/api/admin/login', [
+    $response = $this->postJson('/api/auth/login', [
         'email' => $inactive->email,
         'password' => 'Password123!',
     ]);
 
-    $response->assertUnauthorized()
+    $response->assertStatus(403)
         ->assertJsonPath('error.code', 'INVALID_CREDENTIALS');
 });
 
-test('admin can view their profile', function (): void {
-    $token = $this->admin->createToken('admin-token')->plainTextToken;
+test('admin can view their profile via shared me endpoint', function (): void {
+    $token = $this->admin->createToken('auth-token')->plainTextToken;
 
     $response = $this->withToken($token)
-        ->getJson('/api/admin/me');
+        ->getJson('/api/auth/me');
 
     $response->assertOk()
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.id', $this->admin->id)
-        ->assertJsonPath('data.email', $this->admin->email);
+        ->assertJsonPath('data.principalType', 'ADMIN')
+        ->assertJsonPath('data.admin.id', $this->admin->id)
+        ->assertJsonPath('data.admin.email', $this->admin->email);
 });
 
-test('admin can logout', function (): void {
-    $token = $this->admin->createToken('admin-token')->plainTextToken;
+test('admin can logout via shared logout endpoint', function (): void {
+    $token = $this->admin->createToken('auth-token')->plainTextToken;
 
     $response = $this->withToken($token)
-        ->postJson('/api/admin/logout');
+        ->postJson('/api/auth/logout');
 
     $response->assertOk()
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('message', 'Logout berhasil.');
+        ->assertJsonPath('message', 'Logout berhasil');
 });
 
 test('guest cannot access me', function (): void {
-    $response = $this->getJson('/api/admin/me');
+    $response = $this->getJson('/api/auth/me');
 
     $response->assertUnauthorized();
 });
 
 test('guest cannot access logout', function (): void {
-    $response = $this->postJson('/api/admin/logout');
+    $response = $this->postJson('/api/auth/logout');
 
     $response->assertUnauthorized();
 });

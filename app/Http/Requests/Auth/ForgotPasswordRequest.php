@@ -14,7 +14,7 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'exists:teams,email'],
+            'email' => ['required', 'email'],
         ];
     }
 
@@ -23,7 +23,6 @@ class ForgotPasswordRequest extends FormRequest
         return [
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
-            'email.exists' => 'Email tidak terdaftar.',
         ];
     }
 }

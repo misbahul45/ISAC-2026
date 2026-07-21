@@ -8,9 +8,11 @@ use App\Exceptions\InvalidCredentialException;
 use App\Exceptions\InvalidResetPasswordException;
 use App\Mail\ResetPasswordMail;
 use App\Mail\VerifyEmailMail;
+use App\Models\Admin;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -31,9 +33,72 @@ class AuthService
             ]);
         });
 
-        $this->sendVerificationCode(['account_id' => $team->id]);
+        $this->sendVerificationCode(['email' => $team->email]);
 
         return $team;
+    }
+
+    public function login(array $data): array
+    {
+        $email = strtolower(trim($data['email']));
+
+        $team = $this->authRepository->findByEmail($email);
+        $admin = $this->authRepository->findAdminByEmail($email);
+
+        if ($team !== null && $admin !== null) {
+            throw new InvalidCredentialException('Akun ambigu. Gunakan email yang berbeda untuk Team dan Admin.', 409);
+        }
+
+        if ($admin !== null) {
+            if (! Hash::check($data['password'], (string) $admin->password)) {
+                throw new InvalidCredentialException('Email atau password salah.');
+            }
+
+            if (! $admin->is_active) {
+                throw new InvalidCredentialException('Akun admin tidak aktif.', 403);
+            }
+
+            $admin->tokens()->delete();
+            $token = $admin->createToken('auth-token');
+
+            $admin->update(['last_login_at' => now()]);
+
+            return [
+                'token' => $token->plainTextToken,
+                'tokenType' => 'Bearer',
+                'principalType' => 'ADMIN',
+                'admin' => $admin,
+                'redirectTo' => '/admin/dashboard',
+            ];
+        }
+
+        if ($team !== null) {
+            if (! Hash::check($data['password'], (string) $team->password)) {
+                throw new InvalidCredentialException('Email atau password salah.');
+            }
+
+            if (! $team->isEmailVerified()) {
+                throw new InvalidCredentialException('Email belum diverifikasi.', 401);
+            }
+
+            $team->tokens()->delete();
+            $token = $team->createToken('auth-token');
+
+            return [
+                'token' => $token->plainTextToken,
+                'tokenType' => 'Bearer',
+                'principalType' => 'TEAM',
+                'team' => $team,
+                'redirectTo' => $team->next_redirect,
+            ];
+        }
+
+        throw new InvalidCredentialException('Email atau password salah.');
+    }
+
+    public function logout(Team|Admin $user): void
+    {
+        $user->currentAccessToken()?->delete();
     }
 
     public function forgotPassword(array $data): void
@@ -59,6 +124,7 @@ class AuthService
             'purpose' => AuthChallengePurpose::RESET_PASSWORD,
             'code_hash' => bcrypt($code),
             'expired_at' => now()->addMinutes(5),
+            'sent_at' => now(),
         ]);
 
         Mail::to($email)->send(new ResetPasswordMail($code));
@@ -66,8 +132,15 @@ class AuthService
 
     public function verifyCode(array $data): array
     {
+        $email = $data['email'];
+        $team = $this->authRepository->findByEmail($email);
+
+        if ($team === null) {
+            throw new InvalidResetPasswordException('Kode OTP tidak valid atau sudah kadaluarsa.', 'INVALID_OTP');
+        }
+
         $challenge = $this->authRepository->findValidChallenge(
-            $data['account_id'],
+            $team->id,
             AccountType::TEAM->value,
             AuthChallengePurpose::RESET_PASSWORD,
             $data['code'],
@@ -82,6 +155,7 @@ class AuthService
         $challenge->update([
             'verified_at' => now(),
             'expired_at' => now()->addMinutes(10),
+            'reset_token_hash' => bcrypt($resetToken),
         ]);
 
         return ['resetToken' => $resetToken];
@@ -95,25 +169,23 @@ class AuthService
             throw new InvalidResetPasswordException('Sesi tidak valid atau sudah kadaluarsa.', 'INVALID_RESET_TOKEN');
         }
 
-        $team = $this->authRepository->findByEmail($challenge->account_id);
+        $team = Team::query()->find($challenge->account_id);
 
-        $teamFromId = Team::query()->find($challenge->account_id);
-
-        if ($teamFromId === null) {
+        if ($team === null) {
             throw new InvalidResetPasswordException('Team tidak ditemukan.', 'INVALID_RESET_TOKEN');
         }
 
-        DB::transaction(function () use ($teamFromId, $challenge, $data): void {
-            $this->authRepository->updateTeamPassword($teamFromId, $data['password']);
+        DB::transaction(function () use ($team, $challenge, $data): void {
+            $this->authRepository->updateTeamPassword($team, $data['password']);
             $this->authRepository->markChallengeUsed($challenge);
+            $team->tokens()->delete();
         });
     }
 
     public function sendVerificationCode(array $data): void
     {
-        $accountId = $data['account_id'];
-
-        $team = Team::query()->find($accountId);
+        $email = $data['email'];
+        $team = $this->authRepository->findByEmail($email);
 
         if ($team === null) {
             throw new InvalidCredentialException('Team tidak ditemukan.');
@@ -137,6 +209,7 @@ class AuthService
             'purpose' => AuthChallengePurpose::VERIFY_EMAIL,
             'code_hash' => bcrypt($code),
             'expired_at' => now()->addMinutes(5),
+            'sent_at' => now(),
         ]);
 
         Mail::to($team->email)->send(new VerifyEmailMail($code));
@@ -144,8 +217,15 @@ class AuthService
 
     public function verifyEmail(array $data): void
     {
+        $email = $data['email'];
+        $team = $this->authRepository->findByEmail($email);
+
+        if ($team === null) {
+            throw new InvalidCredentialException('Team tidak ditemukan.');
+        }
+
         $challenge = $this->authRepository->findValidChallenge(
-            $data['account_id'],
+            $team->id,
             AccountType::TEAM->value,
             AuthChallengePurpose::VERIFY_EMAIL,
             $data['code'],
@@ -153,12 +233,6 @@ class AuthService
 
         if ($challenge === null) {
             throw new InvalidCredentialException('Kode verifikasi tidak valid atau sudah kadaluarsa.');
-        }
-
-        $team = Team::query()->find($data['account_id']);
-
-        if ($team === null) {
-            throw new InvalidCredentialException('Team tidak ditemukan.');
         }
 
         DB::transaction(function () use ($team, $challenge): void {
@@ -169,8 +243,11 @@ class AuthService
 
     private function generateTeamCode(): string
     {
-        $count = Team::withTrashed()->count() + 1;
+        return DB::transaction(function (): string {
+            $result = DB::select('SELECT MAX(CAST(SUBSTRING(code, 10) AS UNSIGNED)) AS max_code FROM teams');
+            $next = ((int) ($result[0]->max_code ?? 0)) + 1;
 
-        return 'ISAC-TM-'.str_pad((string) $count, 3, '0', STR_PAD_LEFT);
+            return 'ISAC-TM-'.str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+        });
     }
 }
