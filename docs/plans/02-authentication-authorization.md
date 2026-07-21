@@ -50,7 +50,17 @@ Response sukses (201):
 {
   "status": "success",
   "message": "Akun team berhasil dibuat. Silakan cek email kamu untuk kode verifikasi.",
-  "data": { "id": "uuid", "email": "...", "code": "ISAC-TM-001", "status": "INCOMPLETE", ... }
+  "data": {
+    "id": "uuid",
+    "email": "team@example.com",
+    "code": "ISAC-TM-001",
+    "name": null,
+    "status": "INCOMPLETE",
+    "emailVerifiedAt": null,
+    "nextRedirect": "/auth/verify-email",
+    "redirectTo": "/auth/verify-email",
+    "createdAt": "2026-07-21T10:00:00.000Z"
+  }
 }
 ```
 
@@ -129,26 +139,26 @@ Mengembalikan data user yang sedang login (Team atau Admin).
 `POST /api/auth/verify-email`
 
 Input:
-- email.
 - code.
 
 Proses:
-1. Cari challenge VERIFY_EMAIL aktif untuk email tersebut.
-2. Validasi OTP (expired, used, attempt limit).
-3. Bandingkan OTP.
-4. Tandai email_verified_at.
+1. Ambil Team dari authenticated token.
+2. Cari challenge VERIFY_EMAIL aktif untuk Team.
+3. Validasi OTP (expired, used, attempt limit).
+4. Bandingkan OTP.
+5. Tandai email_verified_at.
 
 ### Resend Verification
 
-`POST /api/auth/send-verification`
+`POST /api/auth/verify-email/resend`
 
-Input:
-- email.
+Input: none (email diambil dari authenticated token).
 
 Proses:
-1. Invalidate challenge sebelumnya.
-2. Buat challenge baru.
-3. Kirim email OTP.
+1. Ambil Team dari authenticated token.
+2. Invalidate challenge sebelumnya.
+3. Buat challenge baru.
+4. Kirim email OTP.
 
 ### Forgot Password
 
@@ -170,10 +180,9 @@ Catatan: Plan sebelumnya meminta response generik. Saat ini masih mengembalikan 
 
 ### Verify Reset Code
 
-`POST /api/auth/verify-code`
+`POST /api/auth/reset-password/verify`
 
 Input:
-- email.
 - code.
 
 Response:
@@ -187,17 +196,17 @@ Response:
 
 ### Change Password
 
-`POST /api/auth/change-password`
+`POST /api/auth/reset-password`
 
 Input:
-- resetToken.
 - password.
 - password_confirmation.
 
 Proses:
-1. Validasi resetToken.
-2. Update password.
-3. Hapus semua token Team (revoke all sessions).
+1. Ambil resetToken dari session/challenge yang sudah diverifikasi sebelumnya.
+2. Validasi token.
+3. Update password.
+4. Hapus semua token Team (revoke all sessions).
 
 ### Logout
 

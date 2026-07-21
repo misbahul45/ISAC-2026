@@ -56,10 +56,12 @@ type RegisterData = {
   id: string
   email: string
   code: string
+  name: string | null
   status: TeamStatus
-  email_verified_at: string | null
-  created_at: string
-  redirectTo?: string
+  emailVerifiedAt: string | null
+  nextRedirect: string
+  redirectTo: string
+  createdAt: string
 }
 ```
 
@@ -128,14 +130,9 @@ type VerifyEmailPayload = {
 
 ### Resend Verification
 
-`POST /api/auth/send-verification`
+`POST /api/auth/verify-email/resend`
 
-Input:
-```typescript
-type SendVerificationPayload = {
-  email: string
-}
-```
+Input: none (email diambil dari authenticated token).
 
 ### Forgot Password
 
@@ -157,7 +154,7 @@ type ForgotPasswordData = {
 
 ### Verify Reset Code
 
-`POST /api/auth/verify-code`
+`POST /api/auth/reset-password/verify`
 
 Input:
 ```typescript
@@ -175,7 +172,7 @@ type VerifyResetCodeData = {
 
 ### Change Password
 
-`POST /api/auth/change-password`
+`POST /api/auth/reset-password`
 
 Input:
 ```typescript
