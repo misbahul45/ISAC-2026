@@ -120,9 +120,9 @@ const Biodata = () => {
               className="absolute w-full max-w-lg transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] will-change-transform"
               style={getLayoutTransform(index)}
             >
-              <div className="relative bg-background/80 backdrop-blur-md rounded-2xl p-6 border border-border/50 shadow-2xl shadow-secondary/30">
-                <span aria-hidden="true" className="auth-border-ribbon" />
-                <span aria-hidden="true" className="auth-border-diamond" />
+              <div className="relative bg-background/80 backdrop-blur-md rounded-2xl p-6 border border-border/50 shadow-2xl shadow-secondary/10">
+                <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
+                <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
                 <h3 className="text-xl font-semibold mb-4 relative z-10">{member.label}</h3>
                 <FormMember
                   memberId={member.key}
@@ -148,7 +148,7 @@ const Biodata = () => {
         </button>
       </div>
 
-      <div className="md:hidden space-y-6 py-16 px-4">
+      <div className="md:hidden space-y-6">
         {members.map((member, index) => (
           <div key={member.key} className="relative z-10 w-full rounded-xl border-0 bg-background/20 backdrop-blur-sm shadow-2xl">
             <span aria-hidden="true" className="auth-border-ribbon" />
