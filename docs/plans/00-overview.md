@@ -62,6 +62,8 @@ Business Plan dan Business IT Case baru menggunakan UI pembayaran ketika Team di
 - 06-api-frontend-contract.md: request, response, format JSON, dan mapping API.
 - 07-implementation-and-testing.md: urutan implementasi, test matrix, rollout, dan acceptance criteria.
 - 08-implementation-status.md: kontrak canonical, status implementasi, seed, dan command verifikasi Docker.
+- 09-admin-dashboard-ui.md: arsitektur UI Admin, sidebar responsif, matriks role, mapping API, dan gap endpoint.
+- 09-admin-dashboard-ui.md: arsitektur UI Admin, sidebar responsif, matriks role, mapping API, dan gap endpoint.
 
 ## Batasan awal
 

@@ -76,7 +76,7 @@ Frontend menggunakan context backend sebagai source of truth:
 
 Backend menyediakan list/detail Team, verify/revision/reject data, verify/revision/reject payment, dan ordered Stage advancement. Policy mengikuti role matrix pada dokumen `05`; setiap perubahan domain admin disimpan pada `admin_audit_logs` beserta actor, before/after state, reason, dan request ID.
 
-Admin dashboard saat ini adalah landing operasional dan session guard. Management UI admin berada di luar scope implementasi frontend ini; seluruh enforcement dan endpoint admin sudah berada di backend.
+Admin dashboard memakai shell operasional dengan sidebar minimize pada desktop, drawer pada mobile, role-aware navigation, dan session guard. UI aktif mencakup list/detail/review Team, Competition, serta Batch. Payment queue, Stage list, audit log, judging, dan agregat summary Admin ditampilkan sebagai placeholder sampai endpoint read-only masing-masing tersedia.
 
 ## File security
 

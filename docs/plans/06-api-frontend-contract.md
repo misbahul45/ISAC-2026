@@ -526,3 +526,10 @@ type FileData = {
 - Feature test untuk setiap endpoint API.
 - Typecheck memastikan type frontend cocok dengan response API.
 - Integration test untuk flow lengkap (register → verify → selection → team → members → documents → payment).
+
+## Pemisahan dashboard Team dan Admin
+
+- `GET /api/dashboard/summary` tetap khusus Team dan berisi progres satu pendaftaran, redirect, payment, serta next action.
+- UI Admin tidak menggunakan atau menghitung agregat dari endpoint Team maupun satu halaman pagination Team.
+- Summary Admin berikutnya menggunakan endpoint terpisah `GET /api/admin/dashboard/summary` dengan guard dan data role-aware.
+- Sebelum endpoint tersebut tersedia, kartu summary dan antrean pada Admin Dashboard tampil sebagai placeholder, bukan angka mock.

@@ -83,10 +83,6 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         'teamId' => $team,
     ]))->whereUuid('team')->name('teams.show');
     Route::get('/payments', fn () => Inertia::render('Admin/Payments', ['title' => 'Verifikasi Pembayaran']))->name('payments');
-    Route::get('/payments/{registration}', fn (string $registration) => Inertia::render('Admin/Payments/Show', [
-        'title' => 'Detail Pembayaran',
-        'registrationId' => $registration,
-    ]))->whereUuid('registration')->name('payments.show');
     Route::get('/competitions', fn () => Inertia::render('Admin/Competitions', ['title' => 'Kompetisi']))->name('competitions');
     Route::get('/batches', fn () => Inertia::render('Admin/Batches', ['title' => 'Batch']))->name('batches');
     Route::get('/stages', fn () => Inertia::render('Admin/Stages', ['title' => 'Tahapan']))->name('stages');

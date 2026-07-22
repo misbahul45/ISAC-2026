@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\ListPaymentsRequest;
 use App\Http\Requests\Admin\ReviewReasonRequest;
 use App\Http\Requests\Admin\TeamRevisionRequest;
-use App\Http\Resources\AdminPaymentResource;
 use App\Http\Resources\RegistrationSummaryResource;
 use App\Models\Admin;
 use App\Models\Registration;
@@ -34,23 +32,6 @@ class AdminRegistrationController extends Controller
         $this->authorize($request, 'view', $team);
 
         return $this->success('Detail team berhasil diambil.', new RegistrationSummaryResource($this->service->detail($team)));
-    }
-
-    public function payments(ListPaymentsRequest $request): JsonResponse
-    {
-        $this->authorize($request, 'viewAny', Registration::class);
-        $payments = $this->service->payments($request->validated(), $request->integer('per_page', 15));
-
-        return $this->success('Daftar pembayaran berhasil diambil.', AdminPaymentResource::collection($payments)->response()->getData(true));
-    }
-
-    public function payment(Request $request, Registration $registration): JsonResponse
-    {
-        $this->authorize($request, 'view', $registration);
-
-        return $this->success('Detail pembayaran berhasil diambil.', new AdminPaymentResource(
-            $this->service->paymentDetail($registration),
-        ));
     }
 
     public function verifyTeam(Request $request, Team $team): JsonResponse
@@ -85,27 +66,21 @@ class AdminRegistrationController extends Controller
     {
         $this->authorize($request, 'verifyPayment', $registration);
 
-        return $this->success('Pembayaran berhasil diverifikasi.', new AdminPaymentResource(
-            $this->service->verifyPayment($this->admin($request), $registration, $request->header('X-Request-ID')),
-        ));
+        return $this->success('Pembayaran berhasil diverifikasi.', $this->service->verifyPayment($this->admin($request), $registration, $request->header('X-Request-ID')));
     }
 
     public function revisePayment(ReviewReasonRequest $request, Registration $registration): JsonResponse
     {
         $this->authorize($request, 'requestPaymentRevision', $registration);
 
-        return $this->success('Revisi pembayaran berhasil diminta.', new AdminPaymentResource(
-            $this->service->revisePayment($this->admin($request), $registration, $request->validated('reason'), $request->header('X-Request-ID')),
-        ));
+        return $this->success('Revisi pembayaran berhasil diminta.', $this->service->revisePayment($this->admin($request), $registration, $request->validated('reason'), $request->header('X-Request-ID')));
     }
 
     public function rejectPayment(ReviewReasonRequest $request, Registration $registration): JsonResponse
     {
         $this->authorize($request, 'rejectPayment', $registration);
 
-        return $this->success('Pembayaran ditolak.', new AdminPaymentResource(
-            $this->service->rejectPayment($this->admin($request), $registration, $request->validated('reason'), $request->header('X-Request-ID')),
-        ));
+        return $this->success('Pembayaran ditolak.', $this->service->rejectPayment($this->admin($request), $registration, $request->validated('reason'), $request->header('X-Request-ID')));
     }
 
     public function advanceStage(Request $request, Team $team, Stage $stage): JsonResponse

@@ -14,7 +14,12 @@ class RegistrationPolicy
 
     public function view(Admin $admin, Registration $registration): bool
     {
-        return in_array($admin->role, ['admin_registration', 'admin_payment'], true);
+        return $this->viewAny($admin);
+    }
+
+    public function viewAny(Admin $admin): bool
+    {
+        return in_array($admin->role, ['super_admin', 'admin_registration', 'admin_payment', 'judge'], true);
     }
 
     public function verifyPayment(Admin $admin, Registration $registration): bool

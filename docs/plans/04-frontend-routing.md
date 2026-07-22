@@ -149,6 +149,26 @@ Header pada seluruh `/auth/*` hanya menampilkan tombol Back di kiri dan logo res
 
 Setiap page registration melakukan GET context untuk validasi apakah halaman tersebut memang seharusnya diakses.
 
+### Admin
+
+- `/admin/dashboard` — ringkasan operasional Admin.
+- `/admin/teams` dan `/admin/teams/{team}` — list, detail, dan review Team.
+- `/admin/competitions` — management Competition sesuai role.
+- `/admin/batches` — management Batch sesuai role.
+- `/admin/payments`, `/admin/stages`, `/admin/audit-logs`, dan `/admin/judging` — placeholder terarah sampai endpoint read-only tersedia.
+
+Seluruh `/admin/*` memakai `AdminRouteMiddleware`, sidebar responsif, serta tidak menampilkan public Header/Footer. Guest diarahkan ke login dan principal Team diarahkan ke `/dashboard`.
+
+### Admin
+
+- `/admin/dashboard` — ringkasan operasional Admin.
+- `/admin/teams` dan `/admin/teams/{team}` — list, detail, dan review Team.
+- `/admin/competitions` — management Competition sesuai role.
+- `/admin/batches` — management Batch sesuai role.
+- `/admin/payments`, `/admin/stages`, `/admin/audit-logs`, dan `/admin/judging` — placeholder terarah sampai endpoint read-only tersedia.
+
+Seluruh `/admin/*` memakai `AdminRouteMiddleware`, sidebar responsif, serta tidak menampilkan public Header/Footer. Guest diarahkan ke login dan principal Team diarahkan ke `/dashboard`.
+
 ## State inconsistency
 
 Jika frontend mendeteksi inconsistency (misal: user akses `/registration/payment` tapi context menunjukkan documents belum selesai):

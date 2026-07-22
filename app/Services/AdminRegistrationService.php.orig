@@ -255,35 +255,6 @@ class AdminRegistrationService
         });
     }
 
-    private function paymentQuery(): Builder
-    {
-        return Registration::query()
-            ->with([
-                'team.currentStage',
-                'competition',
-                'batch',
-                'paymentProofFile',
-                'paymentVerifiedBy',
-                'paymentForStage',
-            ])
-            ->where(function (Builder $query): void {
-                $query->whereHas('competition', fn (Builder $competition) => $competition->where('payment_flow', Competition::PAYMENT_UPFRONT))
-                    ->orWhereNotNull('payment_required_at');
-            });
-    }
-
-    private function loadPayment(Registration $registration): Registration
-    {
-        return $registration->load([
-            'team.currentStage',
-            'competition',
-            'batch',
-            'paymentProofFile',
-            'paymentVerifiedBy',
-            'paymentForStage',
-        ]);
-    }
-
     private function activateIfEligible(Team $team): void
     {
         $registration = $team->registration()->with('competition')->first();
