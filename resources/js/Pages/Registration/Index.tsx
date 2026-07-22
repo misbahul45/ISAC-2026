@@ -12,14 +12,11 @@ import {
 } from '@/features/registrations/hooks/useRegistration'
 
 const Index = () => {
-  const [page, setPage] = useState(1)
   const competitionsQuery = useCompetitions({
     status: 'REGISTRATION_OPEN',
-    page,
-    perPage: 10,
   })
   const selectCompetitionMutation = useSelectCompetition()
-  const competitions = competitionsQuery.data?.data.items ?? []
+  const competitions = competitionsQuery.data?.data ?? []
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const [selectedBatches, setSelectedBatches] = useState<
@@ -263,33 +260,6 @@ const Index = () => {
         ))}
       </div>
 
-      {(competitionsQuery.data?.data.meta.lastPage ?? 1) > 1 && (
-        <div className="mt-8 flex items-center justify-center gap-4">
-          <Button
-            variant="outline"
-            disabled={page <= 1 || competitionsQuery.isFetching}
-            onClick={() => {
-              setActiveIndex(0)
-              setPage((current) => current - 1)
-            }}
-          >
-            Sebelumnya
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Halaman {competitionsQuery.data?.data.meta.currentPage} dari {competitionsQuery.data?.data.meta.lastPage}
-          </span>
-          <Button
-            variant="outline"
-            disabled={page >= (competitionsQuery.data?.data.meta.lastPage ?? 1) || competitionsQuery.isFetching}
-            onClick={() => {
-              setActiveIndex(0)
-              setPage((current) => current + 1)
-            }}
-          >
-            Berikutnya
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

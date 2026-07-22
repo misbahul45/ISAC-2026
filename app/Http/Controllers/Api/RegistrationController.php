@@ -14,187 +14,120 @@ use App\Http\Resources\PaymentFormResource;
 use App\Http\Resources\RegistrationContextResource;
 use App\Http\Resources\RegistrationSummaryResource;
 use App\Http\Resources\TeamFormResource;
+use App\Models\Competition;
+use App\Models\Team;
 use App\Services\RegistrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RegistrationController extends Controller
 {
-    public function __construct(
-        private readonly RegistrationService $registrationService,
-    ) {}
+    public function __construct(private readonly RegistrationService $registrationService) {}
 
     public function context(Request $request): JsonResponse
     {
-        $team = $request->user();
-
-        $team->load('registration.competition', 'registration.batch');
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data registrasi berhasil diambil.',
-            'data' => new RegistrationContextResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Data registrasi berhasil diambil.', new RegistrationContextResource($request->user()));
     }
 
     public function selection(SelectCompetitionRequest $request): JsonResponse
     {
         $team = $request->user();
-
         $this->registrationService->selectCompetition($team, $request->validated());
 
-        $team->load('registration.competition', 'registration.batch');
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kompetisi berhasil dipilih.',
-            'data' => new RegistrationContextResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->mutation('Competition dan Batch berhasil dipilih.', $team->fresh(), $request);
     }
 
     public function getTeam(Request $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $request->user()->load('registration.competition');
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data tim berhasil diambil.',
-            'data' => new TeamFormResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Data tim berhasil diambil.', new TeamFormResource($team));
     }
 
     public function updateTeam(UpdateTeamRequest $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $this->registrationService->updateTeamData($request->user(), $request->validated());
 
-        $team = $this->registrationService->updateTeamData($team, $request->validated());
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data tim berhasil diperbarui.',
-            'data' => new TeamFormResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->mutation('Data tim berhasil diperbarui.', $team, $request);
     }
 
     public function getMembers(Request $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $this->registrationService->getMembers($request->user());
+        $type = $team->registration->competition->type;
+        [$minimum, $maximum] = $type === Competition::TYPE_OLIMPIADE ? [1, 1] : [2, 3];
 
-        $team = $this->registrationService->getMembers($team);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data anggota berhasil diambil.',
-            'data' => MembersFormResource::collection($team->members),
-            'metadata' => (object) [],
-            'error' => null,
+        return $this->success('Data anggota berhasil diambil.', [
+            'competitionType' => $type,
+            'minMembers' => $minimum,
+            'maxMembers' => $maximum,
+            'members' => MembersFormResource::collection($team->members),
+            'revisionNote' => $team->revision_step === 'MEMBERS' ? $team->verification_note : null,
         ]);
     }
 
     public function updateMembers(FinalizeMembersRequest $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $this->registrationService->finalizeMembers($request->user(), $request->validated());
 
-        $team = $this->registrationService->finalizeMembers($team, $request->validated());
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data anggota berhasil diperbarui.',
-            'data' => MembersFormResource::collection($team->members),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->mutation('Data anggota berhasil diperbarui.', $team, $request);
     }
 
     public function getDocuments(Request $request): JsonResponse
     {
-        $team = $request->user();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data dokumen berhasil diambil.',
-            'data' => new DocumentsFormResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Data dokumen berhasil diambil.', new DocumentsFormResource($request->user()));
     }
 
     public function updateDocuments(UpdateDocumentsRequest $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $this->registrationService->updateDocuments($request->user(), $request->validated());
 
-        $team = $this->registrationService->updateDocuments($team, $request->validated());
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data dokumen berhasil diperbarui.',
-            'data' => new DocumentsFormResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->mutation('Data dokumen berhasil diperbarui.', $team, $request);
     }
 
     public function getPayment(Request $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $this->registrationService->getPaymentData($request->user());
 
-        $team = $this->registrationService->getPaymentData($team);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data pembayaran berhasil diambil.',
-            'data' => new PaymentFormResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Data pembayaran berhasil diambil.', new PaymentFormResource($team));
     }
 
     public function submitPayment(SubmitPaymentRequest $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $this->registrationService->submitPayment($request->user(), $request->validated());
 
-        $team = $this->registrationService->submitPayment($team, $request->validated());
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Pembayaran berhasil dikirim.',
-            'data' => new PaymentFormResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->mutation('Pembayaran berhasil dikirim.', $team, $request);
     }
 
     public function summary(Request $request): JsonResponse
     {
-        $team = $request->user();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Ringkasan pendaftaran berhasil diambil.',
-            'data' => new RegistrationSummaryResource($team),
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Ringkasan pendaftaran berhasil diambil.', new RegistrationSummaryResource($request->user()));
     }
 
     public function submitVerification(Request $request): JsonResponse
     {
-        $team = $request->user();
+        $team = $this->registrationService->submitForVerification($request->user());
 
-        $team = $this->registrationService->submitForVerification($team);
+        return $this->mutation('Pendaftaran berhasil dikirim untuk verifikasi.', $team, $request);
+    }
 
+    private function mutation(string $message, Team $team, Request $request): JsonResponse
+    {
+        $context = new RegistrationContextResource($team->fresh());
+        $resolved = $context->resolve($request);
+
+        return $this->success($message, [
+            'context' => $context,
+            'redirectTo' => $resolved['redirectTo'],
+        ]);
+    }
+
+    private function success(string $message, mixed $data): JsonResponse
+    {
         return response()->json([
             'status' => 'success',
-            'message' => 'Pendaftaran berhasil dikirim untuk verifikasi.',
-            'data' => new RegistrationSummaryResource($team),
+            'message' => $message,
+            'data' => $data,
             'metadata' => (object) [],
             'error' => null,
         ]);

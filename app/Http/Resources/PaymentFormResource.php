@@ -9,28 +9,26 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @property-read Team $resource */
 class PaymentFormResource extends JsonResource
 {
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        $registration = $this->resource->relationLoaded('registration')
-            ? $this->resource->registration
-            : null;
-
-        $batch = $registration !== null && $registration->relationLoaded('batch')
-            ? $registration->batch
-            : null;
+        $this->resource->loadMissing('registration.batch', 'registration.paymentProofFile', 'registration.paymentForStage');
+        $registration = $this->resource->registration;
 
         return [
-            'price' => $batch?->price !== null ? (string) $batch->price : null,
-            'paymentProofFileId' => $registration?->payment_proof_file_id,
-            'amountPaid' => $registration?->amount_paid !== null ? (string) $registration->amount_paid : null,
-            'paymentMethod' => $registration?->payment_method?->value,
+            'registrationId' => $registration?->id,
+            'amount' => $registration?->batch?->price === null ? null : (int) $registration->batch->price,
+            'paymentMethods' => config('registration.payment_methods'),
+            'paymentInstructions' => config('registration.payment_instructions'),
+            'qrImageUrl' => config('registration.qr_image_url'),
+            'paymentStatus' => $registration?->status?->value,
+            'existingProof' => $registration?->paymentProofFile === null ? null : new FileResource($registration->paymentProofFile),
+            'rejectionReason' => $registration?->payment_rejection_reason,
             'paymentSubmittedAt' => $registration?->payment_submitted_at?->toISOString(),
-            'paymentRequiredAt' => $registration?->payment_required_at?->toISOString(),
-            'paidAt' => $registration?->paid_at?->toISOString(),
-            'status' => $registration?->status?->value,
+            'paymentForStage' => $registration?->paymentForStage === null ? null : [
+                'id' => $registration->paymentForStage->id,
+                'name' => $registration->paymentForStage->name,
+            ],
         ];
     }
 }

@@ -121,6 +121,7 @@ const FormPayment = ({
                     value={field.value}
                     onChange={field.onChange}
                     folder="/payment-proofs"
+                    purpose="PAYMENT_PROOF"
                     label="Upload Bukti Pembayaran"
                     subLabel="PDF, JPG, PNG, atau WebP maksimal 10 MB"
                     accept="application/pdf,image/png,image/jpeg,image/webp"

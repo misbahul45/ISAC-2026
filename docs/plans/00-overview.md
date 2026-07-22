@@ -61,6 +61,7 @@ Business Plan dan Business IT Case baru menggunakan UI pembayaran ketika Team di
 - 05-competition-batch-admin.md: CRUD Competition, Batch, dan verifikasi Admin via JSON API.
 - 06-api-frontend-contract.md: request, response, format JSON, dan mapping API.
 - 07-implementation-and-testing.md: urutan implementasi, test matrix, rollout, dan acceptance criteria.
+- 08-implementation-status.md: kontrak canonical, status implementasi, seed, dan command verifikasi Docker.
 
 ## Batasan awal
 

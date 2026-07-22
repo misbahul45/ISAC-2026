@@ -31,48 +31,22 @@ class Team extends Model
 
     public const STATUS_REJECTED = 'REJECTED';
 
-    public const STATUSES = [
-        self::STATUS_INCOMPLETE,
-        self::STATUS_WAITING_VERIFICATION,
-        self::STATUS_VERIFIED,
-        self::STATUS_REVISION_REQUIRED,
-        self::STATUS_REJECTED,
-    ];
+    public const STATUSES = [self::STATUS_INCOMPLETE, self::STATUS_WAITING_VERIFICATION, self::STATUS_VERIFIED, self::STATUS_REVISION_REQUIRED, self::STATUS_REJECTED];
 
     protected $fillable = [
-        'name',
-        'code',
-        'password',
-        'email',
-        'phone',
-        'school_name',
-        'school_address',
-        'document_url',
-        'twibbon_url',
-        'current_stage_id',
-        'status',
-        'email_verified_at',
-        'verified_at',
-        'verified_by',
-        'school_province',
-        'school_city',
-        'verification_note',
-        'revision_step',
+        'name', 'code', 'password', 'email', 'phone', 'school_name', 'school_address', 'document_url', 'twibbon_url',
+        'current_stage_id', 'status', 'email_verified_at', 'verified_at', 'verified_by', 'school_province', 'school_city',
+        'verification_note', 'revision_step',
     ];
 
     protected function casts(): array
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'verified_at' => 'datetime',
-        ];
+        return ['email_verified_at' => 'datetime', 'verified_at' => 'datetime'];
     }
 
     protected function password(): Attribute
     {
-        return Attribute::make(
-            set: fn (string $value) => bcrypt($value),
-        );
+        return Attribute::make(set: fn (string $value) => bcrypt($value));
     }
 
     public function isEmailVerified(): bool
@@ -100,15 +74,36 @@ class Team extends Model
         if (! $this->isEmailVerified()) {
             return '/auth/verify-email';
         }
+        if ($this->status === self::STATUS_REVISION_REQUIRED) {
+            return match ($this->revision_step) {
+                'TEAM' => '/registration/team',
+                'MEMBERS' => '/registration/biodata',
+                'DOCUMENTS' => '/registration/documents',
+                default => '/dashboard',
+            };
+        }
+        if (in_array($this->status, [self::STATUS_WAITING_VERIFICATION, self::STATUS_VERIFIED, self::STATUS_REJECTED], true)) {
+            return '/dashboard';
+        }
 
-        return match ($this->status) {
-            self::STATUS_INCOMPLETE => '/registration',
-            self::STATUS_WAITING_VERIFICATION => '/dashboard/waiting-verification',
-            self::STATUS_REVISION_REQUIRED => '/dashboard/revision',
-            self::STATUS_REJECTED => '/dashboard/rejected',
-            self::STATUS_VERIFIED => '/dashboard',
-            default => '/dashboard',
-        };
+        $registration = $this->relationLoaded('registration') ? $this->registration : $this->registration()->with('competition')->first();
+        if ($registration === null) {
+            return '/registration';
+        }
+        if ($registration->team_completed_at === null) {
+            return '/registration/team';
+        }
+        if ($registration->members_completed_at === null) {
+            return '/registration/biodata';
+        }
+        if ($registration->documents_completed_at === null) {
+            return '/registration/documents';
+        }
+        if ($registration->status === RegistrationStatus::WAITING_PAYMENT || $registration->status === RegistrationStatus::REVISION_REQUIRED) {
+            return '/registration/payment';
+        }
+
+        return '/dashboard';
     }
 
     public function members(): HasMany

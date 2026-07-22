@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -25,7 +25,9 @@ import { useLogin } from '../hooks/useAuth';
 export function LoginForm() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [isVerificationRedirectPending, setIsVerificationRedirectPending] = useState(false);
     const loginMutation = useLogin();
+    const isBusy = loginMutation.isPending || isVerificationRedirectPending;
 
     const form = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
@@ -41,11 +43,13 @@ export function LoginForm() {
         try {
             const response = await loginMutation.mutateAsync(data);
             setSuccessMessage(response.message);
-            router.visit(
-                response.data.redirectTo ??
-                    response.data.team.nextRedirect ??
-                    '/dashboard',
-            );
+
+            if (response.data.emailVerificationRequired) {
+                setIsVerificationRedirectPending(true);
+                await new Promise((resolve) => window.setTimeout(resolve, 900));
+            }
+
+            router.visit(response.data.redirectTo ?? '/dashboard');
         } catch {
             return;
         }
@@ -167,7 +171,23 @@ export function LoginForm() {
                                 )}
                             />
 
-                            {successMessage && (
+                            {isVerificationRedirectPending && (
+                                <div
+                                    className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-primary"
+                                    role="status"
+                                    aria-live="polite"
+                                >
+                                    <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+                                    <div>
+                                        <p className="text-sm font-semibold">Email belum terverifikasi</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Kode baru telah dikirim. Mengarahkan ke halaman verifikasi...
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {successMessage && !isVerificationRedirectPending && (
                                 <p className="text-sm font-medium text-emerald-400" role="status">
                                     {successMessage}
                                 </p>
@@ -181,10 +201,15 @@ export function LoginForm() {
 
                             <Button
                                 type="submit"
-                                disabled={loginMutation.isPending}
+                                disabled={isBusy}
                                 className="h-12 w-full rounded-xl bg-primary font-bold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                {loginMutation.isPending ? 'MEMPROSES...' : 'MASUK'}
+                                {isBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isVerificationRedirectPending
+                                    ? 'MENUJU VERIFIKASI...'
+                                    : loginMutation.isPending
+                                      ? 'MEMERIKSA AKUN...'
+                                      : 'MASUK'}
                             </Button>
 
                             <div className="flex items-center justify-center gap-2 pt-2">

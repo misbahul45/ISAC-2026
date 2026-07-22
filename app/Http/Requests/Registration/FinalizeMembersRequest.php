@@ -6,41 +6,28 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class FinalizeMembersRequest extends FormRequest
 {
-    /**
-     * @return array<string, array<int, mixed>>
-     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {
         return [
             'members' => ['required', 'array', 'min:1', 'max:3'],
+            'members.*.id' => ['nullable', 'uuid'],
             'members.*.name' => ['required', 'string', 'max:255'],
             'members.*.role' => ['required', 'string', 'in:LEADER,MEMBER'],
-            'members.*.email' => ['required', 'email', 'max:255'],
+            'members.*.email' => ['required', 'email', 'max:255', 'distinct:ignore_case'],
             'members.*.phone' => ['required', 'string', 'max:20'],
-            'members.*.major' => ['required', 'string', 'max:255'],
-            'members.*.faculty' => ['required', 'string', 'max:255'],
-            'members.*.studentId' => ['required', 'string', 'max:50'],
-            'members.*.birthDate' => ['required', 'date'],
-            'members.*.educationLevel' => ['nullable', 'string', 'max:50'],
-            'members.*.photoFileId' => ['nullable', 'uuid', 'exists:files,id'],
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function bodyParameters(): array
-    {
-        return [
-            'members' => [
-                'description' => 'Daftar anggota tim.',
-            ],
-            'members.*.name' => [
-                'description' => 'Nama lengkap anggota.',
-            ],
-            'members.*.role' => [
-                'description' => 'Peran anggota (LEADER atau MEMBER).',
-            ],
+            'members.*.major' => ['nullable', 'string', 'max:255'],
+            'members.*.faculty' => ['nullable', 'string', 'max:255'],
+            'members.*.student_id' => ['required', 'string', 'max:50', 'distinct'],
+            'members.*.birth_date' => ['required', 'date', 'before:today'],
+            'members.*.education_level' => ['required', 'string', 'max:50'],
+            'members.*.photo_file_id' => ['nullable', 'uuid', 'exists:files,id'],
+            'members.*.sort_order' => ['nullable', 'integer', 'min:1', 'max:3'],
         ];
     }
 }

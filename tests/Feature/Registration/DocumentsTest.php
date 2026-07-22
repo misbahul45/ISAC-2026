@@ -48,11 +48,12 @@ test('can update documents for OLIMPIADE', function (): void {
 
     $this->withToken($this->token)
         ->patchJson('/api/registrations/me/documents', [
-            'documentUrl' => 'https://drive.google.com/proposal',
-            'twibbonUrl' => 'https://drive.google.com/twibbon-upload',
+            'document_url' => 'https://drive.google.com/proposal',
+            'twibbon_url' => 'https://drive.google.com/twibbon-upload',
         ])
         ->assertOk()
-        ->assertJsonPath('data.documentUrl', 'https://drive.google.com/proposal');
+        ->assertJsonPath('data.context.progress.documentsCompleted', true)
+        ->assertJsonPath('data.redirectTo', '/registration/payment');
 
     $this->team->refresh();
     expect($this->team->document_url)->toBe('https://drive.google.com/proposal');
@@ -73,17 +74,19 @@ test('documents auto-finalizes for non-OLIMPIADE', function (): void {
         'competition_id' => $competition->id,
         'batch_id' => $batch->id,
         'team_id' => $this->team->id,
-        'status' => RegistrationStatus::WAITING_PAYMENT,
+        'status' => RegistrationStatus::VERIFIED,
         'team_completed_at' => now(),
         'members_completed_at' => now(),
     ]);
 
     $this->withToken($this->token)
         ->patchJson('/api/registrations/me/documents', [
-            'documentUrl' => 'https://drive.google.com/proposal',
-            'twibbonUrl' => 'https://drive.google.com/twibbon-upload',
+            'document_url' => 'https://drive.google.com/proposal',
+            'twibbon_url' => 'https://drive.google.com/twibbon-upload',
         ])
-        ->assertOk();
+        ->assertOk()
+        ->assertJsonPath('data.context.team.status', Team::STATUS_WAITING_VERIFICATION)
+        ->assertJsonPath('data.redirectTo', '/dashboard');
 
     $this->team->refresh();
     expect($this->team->registration->submitted_at)->not->toBeNull();

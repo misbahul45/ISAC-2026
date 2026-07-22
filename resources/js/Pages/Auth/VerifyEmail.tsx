@@ -16,7 +16,7 @@ const VerifyEmail = () => {
 
 VerifyEmail.layout = (page: React.ReactNode) => (
     <AuthLayout
-        title="Verifikasi Email - ISAC 2026"
+        title="Verifikasi Email"
         description="Masukkan kode OTP yang dikirim ke email Anda untuk verifikasi akun."
         noindex
     >

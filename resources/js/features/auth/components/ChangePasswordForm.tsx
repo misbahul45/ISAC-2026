@@ -39,11 +39,13 @@ export function ChangePasswordForm() {
         setSuccessMessage(null);
         try {
             const response = await changePasswordMutation.mutateAsync({
+                reset_token: window.sessionStorage.getItem('isac.resetToken') ?? '',
                 password: data.password,
                 password_confirmation: data.password_confirmation,
             });
             setSuccessMessage(response.message);
-            router.visit(response.data.redirectTo);
+            window.sessionStorage.removeItem('isac.resetToken');
+            router.visit('/auth/login');
         } catch {
             return;
         }

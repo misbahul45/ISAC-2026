@@ -29,6 +29,7 @@ class CompetitionResource extends JsonResource
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
             'batches' => BatchResource::collection($this->whenLoaded('batches')),
+            'openBatches' => BatchResource::collection($this->whenLoaded('batches')),
         ];
     }
 }

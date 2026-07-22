@@ -58,14 +58,14 @@ Implementasikan:
 
 1. Admin model: tambahkan trait `Authenticatable`.
 2. `POST /api/auth/register` — register Team + kirim OTP.
-3. `POST /api/auth/send-verification` — kirim ulang OTP.
+3. `POST /api/auth/verify-email/resend` — kirim ulang OTP.
 4. `POST /api/auth/verify-email` — verifikasi email.
 5. `POST /api/auth/login` — shared login: deteksi Admin/Team, return token + principalType + redirectTo.
 6. `POST /api/auth/logout` — hapus token.
 7. `GET /api/auth/me` — data user login (Team atau Admin) + principalType.
 8. `POST /api/auth/forgot-password` — lupa password.
-9. `POST /api/auth/verify-code` — verifikasi OTP reset.
-10. `POST /api/auth/change-password` — ganti password.
+9. `POST /api/auth/reset-password/verify` — verifikasi OTP reset.
+10. `POST /api/auth/reset-password` — ganti password.
 11. Simpan token frontend di localStorage + kirim Bearer header.
 
 Yang perlu diperbaiki dari implementasi saat ini:

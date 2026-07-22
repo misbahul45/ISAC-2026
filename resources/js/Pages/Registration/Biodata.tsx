@@ -35,7 +35,12 @@ const Biodata = () => {
     const count = Math.max(pageData.minMembers, pageData.members.length)
     const slots = createSlots(count)
     const saved = Object.fromEntries(
-      pageData.members.map((member, index) => [index + 1, member]),
+      pageData.members.map((member, index) => [index + 1, {
+        id: member.id, name: member.name, role: member.role, email: member.email, phone: member.phone,
+        education_level: member.educationLevel, major: member.major, faculty: member.faculty,
+        student_id: member.studentId, birth_date: member.birthDate.slice(0, 10),
+        photo_file_id: member.photoFileId, sort_order: member.sortOrder,
+      }]),
     )
     const valid = Object.fromEntries(slots.map((slot) => [slot.key, Boolean(saved[slot.key])]))
     setMembers(slots)

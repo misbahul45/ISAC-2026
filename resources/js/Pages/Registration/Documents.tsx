@@ -65,7 +65,7 @@ const Documents = () => {
               {data.revisionNote && <p className="mt-3 text-sm text-amber-400">Catatan revisi: {data.revisionNote}</p>}
             </div>
             <FormDocuments
-              defaultValues={{ document_url: data.document_url, twibbon_url: data.twibbon_url }}
+              defaultValues={{ document_url: data.documentUrl ?? '', twibbon_url: data.twibbonUrl ?? '' }}
               onSave={handleSave}
               isSubmitting={updateDocuments.isPending}
             />

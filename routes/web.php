@@ -5,13 +5,13 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('LandingPage/Index', [
-        'title' => 'Todo List',
+        'title' => 'ISAC 2026',
     ]);
 })->name('landing.index');
 
 Route::get('/sitemap.xml', function () {
     $appUrl = rtrim(config('app.url'), '/');
-    $publicPaths = [];
+    $publicPaths = ['/'];
     $urls = collect($publicPaths)
         ->map(fn (string $path) => sprintf(
             '    <url><loc>%s%s</loc></url>',
@@ -31,17 +31,8 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200)->header('Content-Type', 'application/xml; charset=UTF-8');
 })->name('sitemap');
 
-Route::get('/login', function () {
-    return Inertia::render('Auth/Login', [
-        'title' => 'Login',
-    ]);
-})->name('login');
-
-Route::get('/register', function () {
-    return Inertia::render('Auth/Register', [
-        'title' => 'Register',
-    ]);
-})->name('register');
+Route::redirect('/login', '/auth/login')->name('login');
+Route::redirect('/register', '/auth/register')->name('register');
 
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::get('/login', function () {
@@ -80,6 +71,10 @@ Route::prefix('auth')->name('auth.')->group(function () {
         ]);
     })->name('reset-password');
 });
+
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('Admin/Dashboard', ['title' => 'Admin Dashboard']);
+})->name('admin.dashboard');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard/Index', [
@@ -135,7 +130,14 @@ Route::prefix('registration')
     });
 
 Route::fallback(function () {
-    return Inertia::render('Errors/NotFound')
+    if (request()->is('api/*')) {
+        abort(404);
+    }
+
+    return Inertia::render('Errors/NotFound', [
+        'status' => 404,
+        'errorPage' => true,
+    ])
         ->toResponse(request())
         ->setStatusCode(404);
 });

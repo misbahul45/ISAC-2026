@@ -16,7 +16,7 @@ const ChangePassword = () => {
 
 ChangePassword.layout = (page: React.ReactNode) => (
     <AuthLayout
-        title="Ubah Password - ISAC 2026"
+        title="Ubah Password"
         description="Buat password baru untuk akun Anda."
         noindex
     >

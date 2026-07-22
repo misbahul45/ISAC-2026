@@ -34,6 +34,8 @@ beforeEach(function (): void {
     $this->file = File::query()->create([
         'file_id' => 'payment-proof-123',
         'url' => 'https://ik.imagekit.io/isac/proof.pdf',
+        'uploaded_by' => $this->team->id,
+        'purpose' => 'PAYMENT_PROOF',
     ]);
 });
 
@@ -41,34 +43,39 @@ test('can get payment data', function (): void {
     $this->withToken($this->token)
         ->getJson('/api/registrations/me/payment')
         ->assertOk()
-        ->assertJsonPath('data.price', '150000.00');
+        ->assertJsonPath('data.amount', 150000)
+        ->assertJsonPath('data.paymentStatus', RegistrationStatus::WAITING_PAYMENT->value);
 });
 
 test('can submit payment for OLIMPIADE', function (): void {
     $this->withToken($this->token)
         ->postJson('/api/registrations/me/payment', [
-            'paymentProofFileId' => $this->file->id,
+            'payment_proof_file_id' => $this->file->id,
+            'payment_method' => 'BANK_TRANSFER',
         ])
         ->assertOk()
-        ->assertJsonPath('data.paymentProofFileId', $this->file->id)
-        ->assertJsonPath('data.status', 'WAITING_VERIFICATION');
+        ->assertJsonPath('data.context.registration.status', RegistrationStatus::WAITING_VERIFICATION->value)
+        ->assertJsonPath('data.context.team.status', Team::STATUS_WAITING_VERIFICATION)
+        ->assertJsonPath('data.redirectTo', '/dashboard');
 
-    $this->team->refresh();
-    expect($this->team->status)->toBe(Team::STATUS_WAITING_VERIFICATION);
+    expect($this->team->fresh()->status)->toBe(Team::STATUS_WAITING_VERIFICATION);
 });
 
-test('cannot submit payment twice', function (): void {
-    $this->withToken($this->token)
-        ->postJson('/api/registrations/me/payment', [
-            'paymentProofFileId' => $this->file->id,
-        ])
-        ->assertOk();
+test('same payment submission is idempotent', function (): void {
+    $payload = [
+        'payment_proof_file_id' => $this->file->id,
+        'payment_method' => 'BANK_TRANSFER',
+    ];
+
+    $this->withToken($this->token)->postJson('/api/registrations/me/payment', $payload)->assertOk();
+    $submittedAt = $this->team->registration()->firstOrFail()->payment_submitted_at;
 
     $this->withToken($this->token)
-        ->postJson('/api/registrations/me/payment', [
-            'paymentProofFileId' => $this->file->id,
-        ])
-        ->assertUnprocessable();
+        ->postJson('/api/registrations/me/payment', $payload)
+        ->assertOk()
+        ->assertJsonPath('data.context.registration.status', RegistrationStatus::WAITING_VERIFICATION->value);
+
+    expect($this->team->registration()->firstOrFail()->payment_submitted_at->equalTo($submittedAt))->toBeTrue();
 });
 
 test('payment endpoints require authentication', function (): void {

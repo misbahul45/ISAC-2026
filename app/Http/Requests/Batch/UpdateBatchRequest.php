@@ -36,7 +36,7 @@ class UpdateBatchRequest extends FormRequest
             'start_date' => ['sometimes', 'required', 'date'],
             'end_date' => ['sometimes', 'required', 'date', 'after:start_date'],
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],
-            'module_file_id' => ['sometimes', 'nullable', 'uuid', 'exists:files,id'],
+            'module_file_id' => ['sometimes', 'nullable', 'uuid', Rule::exists('files', 'id')->where('purpose', 'BATCH_MODULE')],
             'quota' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'status' => ['sometimes', 'required', new Enum(BatchStatus::class)],
         ];

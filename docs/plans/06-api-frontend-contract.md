@@ -1,5 +1,7 @@
 # API and Frontend Contract Plan
 
+
+> Status implementasi dan keputusan canonical terbaru dicatat pada `08-implementation-status.md`.
 ## Pendekatan
 
 Aplikasi menggunakan React (Inertia) sebagai frontend yang berkomunikasi dengan backend Laravel melalui JSON API. Seluruh data dan mutation menggunakan format JSON. Frontend mengelola navigasi sendiri berdasarkan response API.
@@ -85,6 +87,7 @@ type LoginData = {
   principalType: 'TEAM'
   team: AuthTeam
   redirectTo: string
+  emailVerificationRequired: boolean
 }
 
 type AuthTeam = {
@@ -110,8 +113,11 @@ type AdminLoginData = {
     role: string
   }
   redirectTo: '/admin/dashboard'
+  emailVerificationRequired: false
 }
 ```
+
+Untuk Team yang belum terverifikasi, login mengirim OTP baru dan mengembalikan `emailVerificationRequired: true` serta `redirectTo: '/auth/verify-email'`. Frontend menyimpan token terlebih dahulu, menampilkan status pengiriman, kemudian membuka UI verifikasi.
 
 Frontend menentukan halaman berdasarkan `principalType`:
 - `TEAM` → render halaman Team, navigasi pakai `redirectTo`.
@@ -436,7 +442,7 @@ type PaymentFormValues = {
 Input:
 ```typescript
 type FilePayload = {
-  fileId: string
+  file_id: string
   url: string
   purpose: string
 }
@@ -448,6 +454,7 @@ type FileData = {
   id: string
   fileId: string
   url: string
+  purpose: string
 }
 ```
 

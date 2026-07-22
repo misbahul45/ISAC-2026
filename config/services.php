@@ -36,13 +36,14 @@ return [
     ],
 
     'brevo' => [
-        'key'          => env('BREVO_API_KEY'),
+        'key' => env('BREVO_API_KEY'),
         'sender_email' => env('BREVO_SENDER_EMAIL'),
-        'sender_name'  => env('BREVO_SENDER_NAME'),
+        'sender_name' => env('BREVO_SENDER_NAME'),
     ],
 
     'imagekit' => [
         'private_key' => env('IMAGEKIT_PRIVATE_KEY'),
+        'url_endpoint' => env('IMAGEKIT_URL_ENDPOINT', env('VITE_IMAGEKIT_URL_ENDPOINT')),
     ],
 
 ];

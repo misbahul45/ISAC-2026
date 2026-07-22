@@ -16,7 +16,7 @@ const Login = () => {
 
 Login.layout = (page: React.ReactNode) => (
     <AuthLayout
-        title="Login - ISAC 2026"
+        title="Login"
         description="Masuk ke dashboard ISAC 2026."
     >
         {page}

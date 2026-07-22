@@ -19,8 +19,9 @@ class FileService
     public function register(array $data, ?string $teamId = null): File
     {
         return $this->fileRepository->create([
-            'file_id' => $data['fileId'],
+            'file_id' => $data['file_id'],
             'url' => $data['url'],
+            'purpose' => $data['purpose'],
             'uploaded_by' => $teamId,
         ]);
     }

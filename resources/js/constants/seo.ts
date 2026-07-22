@@ -9,12 +9,12 @@ export const DEFAULT_SEO = {
     defaultTitle: APP_NAME,
     titleTemplate: `%s | ${APP_NAME}`,
     defaultDescription:
-        'Sistem ISAC 2026 untuk mengelola todo, autentikasi, dan dashboard operasional.',
-    defaultImage: '/og-image.png',
-    defaultImageAlt: APP_NAME,
+        'Platform resmi pendaftaran kompetisi ISAC 2026 untuk Olimpiade, Business Plan, dan Business IT Case.',
+    defaultImage: '/logo.png',
+    defaultImageAlt: 'Logo ISAC 2026',
     locale: 'id_ID',
     type: 'website',
-    twitterCard: 'summary_large_image',
+    twitterCard: 'summary',
     robots: {
         index: true,
         follow: true,

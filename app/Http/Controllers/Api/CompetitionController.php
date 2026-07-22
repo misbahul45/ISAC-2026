@@ -10,6 +10,7 @@ use App\Models\Competition;
 use App\Services\CompetitionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CompetitionController extends Controller
 {
@@ -72,6 +73,7 @@ class CompetitionController extends Controller
 
     public function store(StoreCompetitionRequest $request): JsonResponse
     {
+        Gate::authorize('create', Competition::class);
         $competition = $this->competitionService->createCompetition($request->validated());
 
         return response()->json([
@@ -85,6 +87,7 @@ class CompetitionController extends Controller
 
     public function update(UpdateCompetitionRequest $request, Competition $competition): JsonResponse
     {
+        Gate::authorize('update', $competition);
         $competition = $this->competitionService->updateCompetition($competition, $request->validated());
 
         return response()->json([
@@ -98,6 +101,7 @@ class CompetitionController extends Controller
 
     public function destroy(Competition $competition): JsonResponse
     {
+        Gate::authorize('delete', $competition);
         $this->competitionService->deleteCompetition($competition);
 
         return response()->json([

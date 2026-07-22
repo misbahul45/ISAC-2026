@@ -20,7 +20,7 @@ Semua endpoint berada di prefix `/api/registrations/me`, dilindungi middleware `
 
 Ditangani oleh Auth API:
 - `POST /api/auth/register` — buat akun.
-- `POST /api/auth/send-verification` — kirim OTP.
+- `POST /api/auth/verify-email/resend` — kirim OTP.
 - `POST /api/auth/verify-email` — verifikasi email.
 
 Setelah email diverifikasi, frontend mengarahkan Team ke pemilihan Competition.

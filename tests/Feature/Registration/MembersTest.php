@@ -12,7 +12,6 @@ uses(LazilyRefreshDatabase::class);
 beforeEach(function (): void {
     $this->team = Team::factory()->create();
     $this->token = $this->team->createToken('auth-token')->plainTextToken;
-
     $this->competition = Competition::factory()->create([
         'status' => Competition::STATUS_REGISTRATION_OPEN,
         'type' => Competition::TYPE_OLIMPIADE,
@@ -36,58 +35,62 @@ test('can get members list', function (): void {
     $this->team->members()->create([
         'name' => 'Leader', 'role' => 'LEADER', 'email' => 'leader@test.com',
         'phone' => '08111', 'major' => 'IPA', 'faculty' => 'MIPA',
-        'student_id' => '123', 'sort_order' => 1,
+        'education_level' => 'SMA', 'student_id' => '123', 'sort_order' => 1,
     ]);
 
     $this->withToken($this->token)
         ->getJson('/api/registrations/me/members')
         ->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertJsonCount(1, 'data.members')
+        ->assertJsonPath('data.members.0.name', 'Leader');
 });
 
 test('can finalize members for OLIMPIADE', function (): void {
     $this->withToken($this->token)
         ->putJson('/api/registrations/me/members', [
-            'members' => [
-                [
-                    'name' => 'John Doe',
-                    'role' => 'LEADER',
-                    'email' => 'john@example.com',
-                    'phone' => '08123456789',
-                    'major' => 'Matematika',
-                    'faculty' => 'MIPA',
-                    'studentId' => '12345',
-                    'birthDate' => '2005-01-15',
-                ],
-            ],
+            'members' => [[
+                'name' => 'John Doe', 'role' => 'LEADER', 'email' => 'john@example.com',
+                'phone' => '08123456789', 'major' => 'Matematika', 'faculty' => 'MIPA',
+                'education_level' => 'SMA', 'student_id' => '12345', 'birth_date' => '2005-01-15',
+            ]],
         ])
         ->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.name', 'John Doe')
-        ->assertJsonPath('data.0.role', 'LEADER');
+        ->assertJsonPath('data.context.progress.membersCompleted', true)
+        ->assertJsonPath('data.redirectTo', '/registration/documents');
 
     expect($this->team->members()->count())->toBe(1);
+    expect($this->team->members()->first()->name)->toBe('John Doe');
 });
 
 test('rejects more than 1 member for OLIMPIADE', function (): void {
+    $member = fn (string $name, string $role, string $email, string $studentId): array => [
+        'name' => $name, 'role' => $role, 'email' => $email, 'phone' => '08123456789',
+        'major' => 'IPA', 'faculty' => 'MIPA', 'education_level' => 'SMA',
+        'student_id' => $studentId, 'birth_date' => '2005-01-01',
+    ];
+
     $this->withToken($this->token)
         ->putJson('/api/registrations/me/members', [
             'members' => [
-                ['name' => 'A', 'role' => 'LEADER', 'email' => 'a@test.com', 'phone' => '1', 'major' => 'X', 'faculty' => 'Y', 'studentId' => '1', 'birthDate' => '2005-01-01'],
-                ['name' => 'B', 'role' => 'MEMBER', 'email' => 'b@test.com', 'phone' => '2', 'major' => 'X', 'faculty' => 'Y', 'studentId' => '2', 'birthDate' => '2005-01-02'],
+                $member('A', 'LEADER', 'a@test.com', '1'),
+                $member('B', 'MEMBER', 'b@test.com', '2'),
             ],
         ])
-        ->assertUnprocessable();
+        ->assertUnprocessable()
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR');
 });
 
 test('requires exactly one leader', function (): void {
     $this->withToken($this->token)
         ->putJson('/api/registrations/me/members', [
-            'members' => [
-                ['name' => 'A', 'role' => 'MEMBER', 'email' => 'a@test.com', 'phone' => '1', 'major' => 'X', 'faculty' => 'Y', 'studentId' => '1', 'birthDate' => '2005-01-01'],
-            ],
+            'members' => [[
+                'name' => 'A', 'role' => 'MEMBER', 'email' => 'a@test.com', 'phone' => '08123456789',
+                'major' => 'IPA', 'faculty' => 'MIPA', 'education_level' => 'SMA',
+                'student_id' => '1', 'birth_date' => '2005-01-01',
+            ]],
         ])
-        ->assertUnprocessable();
+        ->assertUnprocessable()
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR');
 });
 
 test('members endpoints require authentication', function (): void {

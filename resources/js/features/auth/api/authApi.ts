@@ -1,4 +1,4 @@
-import { postJson } from '@/lib/api'
+import { getJson, postJson } from '@/lib/api'
 import type {
   ChangePasswordPayload,
   ChangePasswordResponse,
@@ -7,6 +7,7 @@ import type {
   LoginPayload,
   LoginResponse,
   LogoutResponse,
+  MeResponse,
   RegisterPayload,
   RegisterResponse,
   ResendVerificationResponse,
@@ -19,21 +20,13 @@ import type {
 const AUTH_API = '/api/auth'
 
 export const authApi = {
-  login: (payload: LoginPayload) =>
-    postJson<LoginResponse>(`${AUTH_API}/login`, payload),
-  register: (payload: RegisterPayload) =>
-    postJson<RegisterResponse>(`${AUTH_API}/register`, payload),
-  verifyEmail: (payload: VerifyEmailPayload) =>
-    postJson<VerifyEmailResponse>(`${AUTH_API}/verify-email`, payload),
-  resendVerification: () =>
-    postJson<ResendVerificationResponse>(
-      `${AUTH_API}/verify-email/resend`,
-    ),
-  forgotPassword: (payload: ForgotPasswordPayload) =>
-    postJson<ForgotPasswordResponse>(`${AUTH_API}/forgot-password`, payload),
-  verifyResetCode: (payload: VerifyResetCodePayload) =>
-    postJson<VerifyResetCodeResponse>(`${AUTH_API}/reset-password/verify`, payload),
-  changePassword: (payload: ChangePasswordPayload) =>
-    postJson<ChangePasswordResponse>(`${AUTH_API}/reset-password`, payload),
+  me: () => getJson<MeResponse>(`${AUTH_API}/me`),
+  login: (payload: LoginPayload) => postJson<LoginResponse>(`${AUTH_API}/login`, payload),
+  register: (payload: RegisterPayload) => postJson<RegisterResponse>(`${AUTH_API}/register`, payload),
+  verifyEmail: (payload: VerifyEmailPayload) => postJson<VerifyEmailResponse>(`${AUTH_API}/verify-email`, payload),
+  resendVerification: () => postJson<ResendVerificationResponse>(`${AUTH_API}/verify-email/resend`),
+  forgotPassword: (payload: ForgotPasswordPayload) => postJson<ForgotPasswordResponse>(`${AUTH_API}/forgot-password`, payload),
+  verifyResetCode: (payload: VerifyResetCodePayload) => postJson<VerifyResetCodeResponse>(`${AUTH_API}/reset-password/verify`, payload),
+  changePassword: (payload: ChangePasswordPayload) => postJson<ChangePasswordResponse>(`${AUTH_API}/reset-password`, payload),
   logout: () => postJson<LogoutResponse>(`${AUTH_API}/logout`),
 }

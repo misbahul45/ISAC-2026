@@ -11,7 +11,7 @@ export function useFileUpload() {
   return {
     authenticate: () => queryClient.fetchQuery({
       queryKey: ['files', 'imagekit-auth', Date.now()],
-      queryFn: fileApi.imageKitAuth,
+      queryFn: async () => (await fileApi.imageKitAuth()).data,
       staleTime: 0,
     }),
     registerFile: registerMutation.mutateAsync,

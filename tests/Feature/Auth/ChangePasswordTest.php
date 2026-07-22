@@ -216,7 +216,7 @@ test('change password rejects missing reset token', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['error' => ['details' => ['resetToken']]]);
+        ->assertJsonStructure(['error' => ['details' => ['reset_token']]]);
 });
 
 test('change password rejects short password', function (): void {

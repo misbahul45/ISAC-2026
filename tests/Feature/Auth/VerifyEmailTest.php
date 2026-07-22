@@ -72,7 +72,7 @@ test('verify email fails after max attempts', function (): void {
             'code' => $this->code,
         ]);
 
-    $response->assertStatus(401);
+    $response->assertStatus(429);
 });
 
 test('verify email requires authentication', function (): void {

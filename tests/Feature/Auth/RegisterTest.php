@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Team;
+use App\Services\AuthService;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -47,6 +49,19 @@ test('register rejects duplicate email', function (): void {
         ->assertJsonPath('status', 'error')
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
         ->assertJsonPath('error.details.email.0', 'Email sudah digunakan');
+});
+
+test('register rolls back the team when verification delivery fails', function (): void {
+    Mail::shouldReceive('to')
+        ->once()
+        ->andThrow(new RuntimeException('Mail delivery failed.'));
+
+    expect(fn () => app(AuthService::class)->register([
+        'email' => 'rollback@gmail.com',
+        'password' => 'Password123!',
+    ]))->toThrow(RuntimeException::class, 'Mail delivery failed.');
+
+    $this->assertDatabaseMissing('teams', ['email' => 'rollback@gmail.com']);
 });
 
 test('register rejects short password', function (): void {

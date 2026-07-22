@@ -6,15 +6,23 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ChangePasswordRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('reset_token') && $this->has('resetToken')) {
+            $this->merge(['reset_token' => $this->input('resetToken')]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
     }
 
+    /** @return array<string, array<int, string>> */
     public function rules(): array
     {
         return [
-            'resetToken' => ['required', 'string'],
+            'reset_token' => ['required', 'string'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required', 'string'],
         ];
@@ -23,7 +31,7 @@ class ChangePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'resetToken.required' => 'Reset token wajib diisi.',
+            'reset_token.required' => 'Reset token wajib diisi.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',

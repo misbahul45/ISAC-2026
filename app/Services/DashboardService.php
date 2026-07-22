@@ -2,21 +2,19 @@
 
 namespace App\Services;
 
-use App\Repositories\Contracts\DashboardRepositoryInterface;
+use App\Models\Team;
 
 class DashboardService
 {
-    public function __construct(
-        private readonly DashboardRepositoryInterface $dashboardRepository,
-    ) {
-        //
-    }
-
-    /**
-     * @return array{total: int, active: int, completed: int}
-     */
-    public function getSummary(): array
+    public function getSummary(Team $team): Team
     {
-        return $this->dashboardRepository->todoSummary();
+        return $team->load(
+            'members',
+            'registration.competition',
+            'registration.batch',
+            'registration.paymentProofFile',
+            'registration.paymentForStage',
+            'currentStage',
+        );
     }
 }

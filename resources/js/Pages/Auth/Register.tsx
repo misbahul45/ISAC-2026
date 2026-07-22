@@ -16,7 +16,7 @@ const Register = () => {
 
 Register.layout = (page: React.ReactNode) => (
     <AuthLayout
-        title="Register - ISAC 2026"
+        title="Register"
         description="Daftar akun untuk mengakses sistem ISAC 2026."
     >
         {page}

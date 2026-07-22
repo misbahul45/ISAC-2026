@@ -10,7 +10,7 @@ const VerifyResetPassword = () => (
 )
 
 VerifyResetPassword.layout = (page: React.ReactNode) => (
-  <AuthLayout title="Verifikasi Reset Password - ISAC 2026" description="Verifikasi kode OTP reset password." noindex>
+  <AuthLayout title="Verifikasi Reset Password" description="Verifikasi kode OTP reset password." noindex>
     {page}
   </AuthLayout>
 )

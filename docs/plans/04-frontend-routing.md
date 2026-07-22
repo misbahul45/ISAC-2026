@@ -127,6 +127,16 @@ Halaman yang ada di frontend:
 - `/auth/reset-password/verify` — Verify reset OTP.
 - `/auth/reset-password` — Change password.
 
+Route `/auth/*` menggunakan `AuthRouteMiddleware` sebagai guest guard:
+
+- Guest dapat mengakses seluruh flow auth.
+- Team terautentikasi yang belum verifikasi hanya dapat membuka `/auth/verify-email`.
+- Team terverifikasi dialihkan ke `nextRedirect`.
+- Admin terautentikasi dialihkan ke `/admin/dashboard`.
+- Selama pemulihan session `/api/auth/me`, form auth ditahan oleh loading state agar tidak tampil sesaat.
+
+Header pada seluruh `/auth/*` hanya menampilkan tombol Back di kiri dan logo resmi `/public/logo.png` di kanan.
+
 ### Protected (RequireAuth)
 - `/registration` — Pilih Competition & Batch.
 - `/registration/team` — Form data Team.

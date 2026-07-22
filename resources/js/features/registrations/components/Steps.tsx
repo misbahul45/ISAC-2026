@@ -15,7 +15,7 @@ const Steps = () => {
   const { url } = usePage()
   const contextQuery = useRegistrationContext()
   const isOlympiad =
-    contextQuery.data?.data.competition?.type === 'OLIMPIADE'
+    contextQuery.data?.data.registration?.competition.type === 'OLIMPIADE'
   const registrationSteps = getRegistrationSteps(isOlympiad)
   const pathname = url.split('?')[0]
 

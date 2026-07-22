@@ -1,8 +1,12 @@
 <?php
 
+use App\Enums\AccountType;
+use App\Enums\AuthChallengePurpose;
+use App\Mail\VerifyEmailMail;
 use App\Models\Admin;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -26,7 +30,8 @@ test('login returns token with principalType TEAM for valid team credentials', f
         ->assertJsonPath('data.tokenType', 'Bearer')
         ->assertJsonPath('data.principalType', 'TEAM')
         ->assertJsonPath('data.redirectTo', '/registration')
-        ->assertJsonStructure(['data' => ['token', 'tokenType', 'principalType', 'redirectTo', 'team' => ['id', 'code', 'email', 'status']]]);
+        ->assertJsonPath('data.emailVerificationRequired', false)
+        ->assertJsonStructure(['data' => ['token', 'tokenType', 'principalType', 'redirectTo', 'emailVerificationRequired', 'team' => ['id', 'code', 'email', 'status']]]);
 
     $plainToken = $response->json('data.token');
     expect($plainToken)->toBeString()->not->toBeEmpty();
@@ -54,7 +59,8 @@ test('login returns token with principalType ADMIN for valid admin credentials',
         ->assertJsonPath('data.principalType', 'ADMIN')
         ->assertJsonPath('data.admin.email', 'admin@isac.com')
         ->assertJsonPath('data.redirectTo', '/admin/dashboard')
-        ->assertJsonStructure(['data' => ['token', 'tokenType', 'principalType', 'redirectTo', 'admin' => ['id', 'email', 'name', 'role']]]);
+        ->assertJsonPath('data.emailVerificationRequired', false)
+        ->assertJsonStructure(['data' => ['token', 'tokenType', 'principalType', 'redirectTo', 'emailVerificationRequired', 'admin' => ['id', 'email', 'name', 'role']]]);
 });
 
 test('login rejects inactive admin', function (): void {
@@ -118,8 +124,10 @@ test('login rejects wrong password with invalid credentials', function (): void 
         ->assertJsonPath('error.code', 'INVALID_CREDENTIALS');
 });
 
-test('login rejects unverified email', function (): void {
-    Team::factory()->create([
+test('login sends a new verification email and returns a limited token for unverified team', function (): void {
+    Mail::fake();
+
+    $team = Team::factory()->create([
         'email' => 'unverified@test.com',
         'password' => 'Password123!',
         'email_verified_at' => null,
@@ -130,9 +138,25 @@ test('login rejects unverified email', function (): void {
         'password' => 'Password123!',
     ]);
 
-    $response->assertStatus(401)
-        ->assertJsonPath('status', 'error')
-        ->assertJsonPath('error.code', 'INVALID_CREDENTIALS');
+    $response->assertOk()
+        ->assertJsonPath('status', 'success')
+        ->assertJsonPath('message', 'Email belum diverifikasi. Kode verifikasi baru telah dikirim ke email kamu.')
+        ->assertJsonPath('data.principalType', 'TEAM')
+        ->assertJsonPath('data.team.id', $team->id)
+        ->assertJsonPath('data.redirectTo', '/auth/verify-email')
+        ->assertJsonPath('data.emailVerificationRequired', true)
+        ->assertJsonStructure(['data' => ['token', 'tokenType', 'principalType', 'redirectTo', 'emailVerificationRequired', 'team']]);
+
+    $this->assertDatabaseHas('auth_challenges', [
+        'account_type' => AccountType::TEAM->value,
+        'account_id' => $team->id,
+        'purpose' => AuthChallengePurpose::VERIFY_EMAIL->value,
+    ]);
+    $this->assertDatabaseHas('personal_access_tokens', [
+        'tokenable_id' => $team->id,
+        'name' => 'auth-token',
+    ]);
+    Mail::assertSent(VerifyEmailMail::class, fn (VerifyEmailMail $mail): bool => $mail->hasTo($team->email));
 });
 
 test('login rejects missing email and password', function (): void {

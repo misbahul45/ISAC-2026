@@ -82,9 +82,8 @@ Proses:
    - Return `{ token, tokenType, principalType: 'ADMIN', admin: {...}, redirectTo: '/admin/dashboard' }`.
 4. Jika ditemukan **Team**:
    - Verifikasi password.
-   - Cek `email_verified_at`.
-   - Buat Sanctum token.
-   - Return `{ token, tokenType, principalType: 'TEAM', team: {...}, redirectTo: '<canonical>' }`.
+   - Jika `email_verified_at` kosong, invalidate OTP lama, kirim OTP baru, buat Sanctum token terbatas, lalu return `redirectTo: '/auth/verify-email'` dan `emailVerificationRequired: true`.
+   - Jika email sudah terverifikasi, buat Sanctum token dan return redirect canonical registration/dashboard dengan `emailVerificationRequired: false`.
 5. Jika tidak ditemukan di kedua tabel → 401 generic.
 6. Admin dengan `is_active = false` ditolak.
 7. Pesan credential salah tetap generik.
@@ -99,7 +98,8 @@ Response sukses Team (200):
     "tokenType": "Bearer",
     "principalType": "TEAM",
     "team": { "id": "uuid", "email": "...", "status": "INCOMPLETE", ... },
-    "redirectTo": "/registration"
+    "redirectTo": "/registration",
+    "emailVerificationRequired": false
   }
 }
 ```
@@ -114,16 +114,18 @@ Response sukses Admin (200):
     "tokenType": "Bearer",
     "principalType": "ADMIN",
     "admin": { "id": "uuid", "email": "...", "name": "...", "role": "super_admin" },
-    "redirectTo": "/admin/dashboard"
+    "redirectTo": "/admin/dashboard",
+    "emailVerificationRequired": false
   }
 }
 ```
 
 Error:
 - Email/password salah → 401 generic.
-- Email belum diverifikasi (Team) → 401 dengan pesan spesifik.
 - Akun ambigu (email di Team dan Admin) → 409.
 - Admin nonaktif → 403.
+
+Login Team yang belum terverifikasi tetap mengembalikan `200` agar frontend menerima Bearer token untuk endpoint verifikasi. Response berisi pesan bahwa OTP baru telah dikirim, `emailVerificationRequired: true`, dan `redirectTo: '/auth/verify-email'`.
 
 ### Me
 

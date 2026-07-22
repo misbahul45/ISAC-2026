@@ -154,6 +154,7 @@ const FormMember = ({
                   setHasSaved(false)
                 }}
                 folder="/member-photos"
+                purpose="MEMBER_PHOTO"
                 label="Upload Foto Peserta"
                 subLabel="JPG, PNG, atau WebP maksimal 5 MB"
                 accept="image/png,image/jpeg,image/webp"

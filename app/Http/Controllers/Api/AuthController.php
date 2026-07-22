@@ -13,113 +13,71 @@ use App\Http\Resources\AdminResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\TeamAuthResource;
 use App\Models\Admin;
+use App\Models\Team;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function __construct(
-        private readonly AuthService $authService,
-    ) {
-        //
-    }
+    public function __construct(private readonly AuthService $authService) {}
 
     public function register(RegisterRequest $request): JsonResponse
     {
         $result = $this->authService->register($request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Akun team berhasil dibuat. Silakan cek email kamu untuk kode verifikasi.',
-            'data' => [
-                'token' => $result['token'],
-                'tokenType' => $result['tokenType'],
-                'principalType' => $result['principalType'],
-                'team' => new AuthResource($result['team']),
-                'redirectTo' => $result['redirectTo'],
-            ],
-            'metadata' => (object) [],
-            'error' => null,
+        return $this->success('Akun team berhasil dibuat. Silakan cek email kamu untuk kode verifikasi.', [
+            'token' => $result['token'], 'tokenType' => $result['tokenType'], 'principalType' => $result['principalType'],
+            'team' => new AuthResource($result['team']), 'redirectTo' => $result['redirectTo'],
         ], 201);
     }
 
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login($request->validated());
-
-        $userData = $result['principalType'] === 'ADMIN'
+        $principal = $result['principalType'] === 'ADMIN'
             ? ['admin' => new AdminResource($result['admin'])]
             : ['team' => new AuthResource($result['team'])];
+        $message = $result['emailVerificationRequired']
+            ? 'Email belum diverifikasi. Kode verifikasi baru telah dikirim ke email kamu.'
+            : 'Login berhasil';
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Login berhasil',
-            'data' => [
-                'token' => $result['token'],
-                'tokenType' => $result['tokenType'],
-                'principalType' => $result['principalType'],
-                ...$userData,
-                'redirectTo' => $result['redirectTo'],
-            ],
-            'metadata' => (object) [],
-            'error' => null,
-        ], 200);
+        return $this->success($message, [
+            'token' => $result['token'], 'tokenType' => $result['tokenType'], 'principalType' => $result['principalType'],
+            ...$principal, 'redirectTo' => $result['redirectTo'],
+            'emailVerificationRequired' => $result['emailVerificationRequired'],
+        ]);
     }
 
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
-
         $data = $user instanceof Admin
             ? ['principalType' => 'ADMIN', 'admin' => new AdminResource($user)]
             : ['principalType' => 'TEAM', 'team' => new TeamAuthResource($user)];
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data user berhasil diambil',
-            'data' => $data,
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Data user berhasil diambil', $data);
     }
 
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout($request->user());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Logout berhasil',
-            'data' => null,
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Logout berhasil', null);
     }
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         $this->authService->forgotPassword($request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kode reset password berhasil dikirim ke email',
-            'data' => null,
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Kode reset password berhasil dikirim ke email', null);
     }
 
     public function verifyCode(VerifyResetCodeRequest $request): JsonResponse
     {
-        $result = $this->authService->verifyCode($request->validated());
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kode berhasil diverifikasi',
-            'data' => $result,
-            'metadata' => (object) [],
-            'error' => null,
+        return $this->success('Kode berhasil diverifikasi', [
+            ...$this->authService->verifyCode($request->validated()),
+            'redirectTo' => '/auth/reset-password',
         ]);
     }
 
@@ -127,38 +85,35 @@ class AuthController extends Controller
     {
         $this->authService->changePassword($request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Password berhasil diubah',
-            'data' => null,
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Password berhasil diubah', null);
     }
 
     public function sendVerification(Request $request): JsonResponse
     {
-        $this->authService->sendVerificationCode($request->user());
+        /** @var Team $team */
+        $team = $request->user();
+        $this->authService->sendVerificationCode($team);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kode verifikasi berhasil dikirim. Silakan cek email kamu.',
-            'data' => null,
-            'metadata' => (object) [],
-            'error' => null,
-        ]);
+        return $this->success('Kode verifikasi berhasil dikirim. Silakan cek email kamu.', null);
     }
 
     public function verifyEmail(VerifyEmailRequest $request): JsonResponse
     {
-        $this->authService->verifyEmail($request->user(), $request->validated());
+        /** @var Team $team */
+        $team = $request->user();
+        $this->authService->verifyEmail($team, $request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Email berhasil diverifikasi.',
-            'data' => null,
-            'metadata' => (object) [],
-            'error' => null,
+        return $this->success('Email berhasil diverifikasi.', [
+            'team' => new AuthResource($team->fresh()),
+            'redirectTo' => '/registration',
         ]);
+    }
+
+    private function success(string $message, mixed $data, int $status = 200): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success', 'message' => $message, 'data' => $data,
+            'metadata' => (object) [], 'error' => null,
+        ], $status);
     }
 }

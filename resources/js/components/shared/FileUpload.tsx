@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { IKContext, IKUpload } from 'imagekitio-react'
 import { useFileUpload } from '@/features/files/hooks/useFileUpload'
-import type { FileReference } from '@/features/files/types/fileTypes'
+import type { FilePurpose, FileReference } from '@/features/files/types/fileTypes'
 
 export type UploadedFile = FileReference | null
 
@@ -17,6 +17,7 @@ interface FileUploadProps {
   maxSizeMB?: number
   label?: string
   subLabel?: string
+  purpose: FilePurpose;
 }
 
 export function FileUpload({
@@ -28,6 +29,7 @@ export function FileUpload({
   maxSizeMB = 10,
   label = 'Bukti Upload',
   subLabel,
+  purpose,
 }: FileUploadProps) {
   const { authenticate, registerFile, isRegistering } = useFileUpload()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -131,8 +133,9 @@ export function FileUpload({
         onSuccess={async (res:any) => {
           try {
             const response = await registerFile({
-              fileId: res.fileId,
+              file_id: res.fileId,
               url: res.url,
+              purpose,
             })
 
             onChange({

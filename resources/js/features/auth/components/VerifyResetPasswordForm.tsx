@@ -20,8 +20,9 @@ export function VerifyResetPasswordForm() {
   const handleSubmit = async (data: VerifyResetPasswordInput) => {
     setSuccessMessage(null)
     try {
-      const response = await verifyMutation.mutateAsync(data)
+      const response = await verifyMutation.mutateAsync({ ...data, email: window.sessionStorage.getItem('isac.resetEmail') ?? '' })
       setSuccessMessage(response.message)
+      window.sessionStorage.setItem('isac.resetToken', response.data.resetToken)
       router.visit(response.data.redirectTo)
     } catch {
       return

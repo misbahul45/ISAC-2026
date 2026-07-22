@@ -24,7 +24,7 @@ class TeamFactory extends Factory
         return [
             'id' => (string) Str::uuid(),
             'email' => fake()->unique()->safeEmail(),
-            'password' => bcrypt('Password123!'),
+            'password' => 'Password123!',
             'code' => 'ISAC-TM-'.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT),
             'status' => Team::STATUS_INCOMPLETE,
             'email_verified_at' => now(),

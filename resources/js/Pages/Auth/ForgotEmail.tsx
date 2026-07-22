@@ -16,7 +16,7 @@ const ForgotEmail = () => {
 
 ForgotEmail.layout = (page: React.ReactNode) => (
     <AuthLayout
-        title="Lupa Password - ISAC 2026"
+        title="Lupa Password"
         description="Masukkan email untuk menerima kode verifikasi reset password."
     >
         {page}

@@ -37,7 +37,8 @@ export function ForgotEmailForm() {
         try {
             const response = await forgotPasswordMutation.mutateAsync(data);
             setSuccessMessage(response.message);
-            router.visit(response.data.redirectTo ?? '/auth/reset-password/verify');
+            window.sessionStorage.setItem('isac.resetEmail', data.email);
+            router.visit('/auth/reset-password/verify');
         } catch {
             return;
         }

@@ -10,15 +10,14 @@ uses(LazilyRefreshDatabase::class);
 
 test('team can select competition with batch for OLIMPIADE', function (): void {
     $team = Team::factory()->create();
-    $competition = Competition::factory()->create(['status' => Competition::STATUS_REGISTRATION_OPEN]);
+    $competition = Competition::factory()->create([
+        'status' => Competition::STATUS_REGISTRATION_OPEN,
+        'type' => Competition::TYPE_OLIMPIADE,
+    ]);
     $batch = $competition->batches()->create([
-        'name' => 'Batch 1',
-        'slug' => 'batch-1',
-        'start_date' => now(),
-        'end_date' => now()->addMonth(),
-        'price' => 100000,
-        'quota' => 50,
-        'current_registrations' => 0,
+        'name' => 'Batch 1', 'slug' => 'batch-1',
+        'start_date' => now(), 'end_date' => now()->addMonth(),
+        'price' => 100000, 'quota' => 50, 'current_registrations' => 0,
         'status' => BatchStatus::OPEN,
     ]);
 
@@ -29,31 +28,26 @@ test('team can select competition with batch for OLIMPIADE', function (): void {
         ])
         ->assertOk()
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.registration.status', 'WAITING_PAYMENT')
-        ->assertJsonPath('data.registration.competition.id', $competition->id)
-        ->assertJsonPath('data.registration.batch.id', $batch->id);
+        ->assertJsonPath('data.context.registration.status', 'WAITING_PAYMENT')
+        ->assertJsonPath('data.context.registration.competition.id', $competition->id)
+        ->assertJsonPath('data.context.registration.batch.id', $batch->id)
+        ->assertJsonPath('data.redirectTo', '/registration/team');
 
     $this->assertDatabaseHas('registrations', [
         'team_id' => $team->id,
         'competition_id' => $competition->id,
         'batch_id' => $batch->id,
     ]);
-
-    $batch->refresh();
-    expect($batch->current_registrations)->toBe(1);
+    expect($batch->fresh()->current_registrations)->toBe(1);
 });
 
 test('team cannot select competition when batch is full', function (): void {
     $team = Team::factory()->create();
     $competition = Competition::factory()->create(['status' => Competition::STATUS_REGISTRATION_OPEN]);
     $batch = $competition->batches()->create([
-        'name' => 'Batch 1',
-        'slug' => 'batch-1',
-        'start_date' => now(),
-        'end_date' => now()->addMonth(),
-        'price' => 100000,
-        'quota' => 5,
-        'current_registrations' => 5,
+        'name' => 'Batch 1', 'slug' => 'batch-1',
+        'start_date' => now(), 'end_date' => now()->addMonth(),
+        'price' => 100000, 'quota' => 5, 'current_registrations' => 5,
         'status' => BatchStatus::OPEN,
     ]);
 
@@ -65,32 +59,22 @@ test('team cannot select competition when batch is full', function (): void {
         ->assertUnprocessable();
 });
 
-test('team cannot select competition they already registered for', function (): void {
+test('selecting the same competition and batch is idempotent', function (): void {
     $team = Team::factory()->create();
     $competition = Competition::factory()->create(['status' => Competition::STATUS_REGISTRATION_OPEN]);
     $batch = $competition->batches()->create([
-        'name' => 'Batch 1',
-        'slug' => 'batch-1',
-        'start_date' => now(),
-        'end_date' => now()->addMonth(),
-        'price' => 100000,
-        'quota' => 50,
-        'status' => BatchStatus::OPEN,
+        'name' => 'Batch 1', 'slug' => 'batch-1',
+        'start_date' => now(), 'end_date' => now()->addMonth(),
+        'price' => 100000, 'quota' => 50, 'status' => BatchStatus::OPEN,
     ]);
+    $payload = ['competition_id' => $competition->id, 'batch_id' => $batch->id];
+    $token = $team->createToken('auth-token')->plainTextToken;
 
-    $this->withToken($team->createToken('auth-token')->plainTextToken)
-        ->postJson('/api/registrations/me/selection', [
-            'competition_id' => $competition->id,
-            'batch_id' => $batch->id,
-        ])
-        ->assertOk();
+    $this->withToken($token)->postJson('/api/registrations/me/selection', $payload)->assertOk();
+    $this->withToken($token)->postJson('/api/registrations/me/selection', $payload)->assertOk();
 
-    $this->withToken($team->createToken('auth-token')->plainTextToken)
-        ->postJson('/api/registrations/me/selection', [
-            'competition_id' => $competition->id,
-            'batch_id' => $batch->id,
-        ])
-        ->assertUnprocessable();
+    expect($team->registration()->count())->toBe(1);
+    expect($batch->fresh()->current_registrations)->toBe(1);
 });
 
 test('selection requires authentication', function (): void {
