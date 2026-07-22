@@ -5,10 +5,7 @@ interface TeamDetailProps {
   data: {
     name: string
     phone: string
-    schoolName: string
-    province: string
-    city: string
-    address: string
+    institutionName: string
     competitionType: CompetitionType
     batchName: string
   }
@@ -36,10 +33,10 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ data, onEdit, accent }) => {
   const fields = [
     { label: 'Nama Tim', value: data.name },
     { label: 'Nomor Telepon', value: data.phone },
-    { label: 'Sekolah', value: data.schoolName },
-    { label: 'Provinsi', value: data.province },
-    { label: 'Kota', value: data.city },
-    { label: 'Alamat', value: data.address },
+    {
+      label: data.competitionType === 'BUSINESS_IT_CASE' ? 'Perguruan Tinggi' : 'Sekolah',
+      value: data.institutionName,
+    },
     { label: 'Batch', value: data.batchName },
   ]
 
@@ -64,7 +61,7 @@ const TeamDetail: React.FC<TeamDetailProps> = ({ data, onEdit, accent }) => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields.map((field) => (
-          <div key={field.label} className={`space-y-1 ${field.label === 'Alamat' ? 'sm:col-span-2' : ''}`}>
+          <div key={field.label} className="space-y-1">
             <p className="text-xs text-white/40 uppercase tracking-wider">{field.label}</p>
             <p className="text-white font-medium">{field.value}</p>
           </div>

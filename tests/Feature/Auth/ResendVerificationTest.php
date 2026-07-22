@@ -1,7 +1,12 @@
 <?php
 
+use App\Enums\AccountType;
+use App\Enums\AuthChallengePurpose;
+use App\Models\AuthChallenge;
 use App\Models\Team;
+use App\Services\AuthService;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -35,4 +40,21 @@ test('resend verification requires authentication', function (): void {
     $response = $this->postJson('/api/auth/verify-email/resend');
 
     $response->assertUnauthorized();
+});
+
+test('failed verification delivery preserves the previous valid challenge', function (): void {
+    $challenge = AuthChallenge::factory()->create([
+        'account_type' => AccountType::TEAM,
+        'account_id' => $this->team->id,
+        'purpose' => AuthChallengePurpose::VERIFY_EMAIL,
+    ]);
+
+    Mail::shouldReceive('to')
+        ->once()
+        ->andThrow(new RuntimeException('Mail delivery failed.'));
+
+    expect(fn () => app(AuthService::class)->sendVerificationCode($this->team))
+        ->toThrow(RuntimeException::class, 'Mail delivery failed.');
+
+    $this->assertDatabaseHas('auth_challenges', ['id' => $challenge->id]);
 });

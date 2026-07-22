@@ -10,7 +10,8 @@ test('me returns authenticated team data with principalType', function (): void 
     $team = Team::factory()->create([
         'name' => 'Alpha Team',
         'phone' => '081234567890',
-        'school_name' => 'SMA Negeri 1',
+        'institution_name' => 'SMA Negeri 1',
+        'institution_address' => '{"province":"Jawa Timur","city":"Surabaya","address":"Jl. Wijaya Kusuma No. 48"}',
     ]);
     $token = $team->createToken('auth-token')->plainTextToken;
 
@@ -25,13 +26,16 @@ test('me returns authenticated team data with principalType', function (): void 
         ->assertJsonPath('data.team.email', $team->email)
         ->assertJsonPath('data.team.name', 'Alpha Team')
         ->assertJsonPath('data.team.phone', '081234567890')
-        ->assertJsonPath('data.team.schoolName', 'SMA Negeri 1')
+        ->assertJsonPath('data.team.institutionName', 'SMA Negeri 1')
+        ->assertJsonPath('data.team.institutionAddress', $team->institution_address)
         ->assertJsonPath('data.team.status', 'INCOMPLETE')
         ->assertJsonPath('data.team.emailVerifiedAt', $team->email_verified_at?->toISOString())
+        ->assertJsonPath('data.team.nextRedirect', $team->next_redirect)
+        ->assertJsonPath('data.team.redirectTo', $team->next_redirect)
         ->assertJsonPath('error', null)
         ->assertJsonStructure([
             'status', 'message',
-            'data' => ['principalType', 'team' => ['id', 'code', 'email', 'name', 'phone', 'schoolName', 'status', 'emailVerifiedAt']],
+            'data' => ['principalType', 'team' => ['id', 'code', 'email', 'name', 'phone', 'institutionName', 'institutionAddress', 'status', 'emailVerifiedAt', 'nextRedirect', 'redirectTo']],
             'metadata', 'error',
         ]);
 });
@@ -63,7 +67,8 @@ test('me returns null for optional profile fields when not yet filled', function
         ->assertOk()
         ->assertJsonPath('data.team.name', null)
         ->assertJsonPath('data.team.phone', null)
-        ->assertJsonPath('data.team.schoolName', null);
+        ->assertJsonPath('data.team.institutionName', null)
+        ->assertJsonPath('data.team.institutionAddress', null);
 });
 
 test('me rejects unauthenticated request', function (): void {

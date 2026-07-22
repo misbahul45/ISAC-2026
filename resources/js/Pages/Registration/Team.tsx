@@ -2,6 +2,7 @@ import React from 'react'
 import RegistrationLayout from '../../features/registrations/components/RegistrationLayout'
 import FormRegistrasiTeam from '../../features/registrations/components/FormRegistrasiTeam'
 import { useRegistrationContext, useTeamProfile } from '@/features/registrations/hooks/useRegistration'
+import { parseInstitutionAddress } from '@/features/registrations/utils/institutionAddress'
 
 const Team = () => {
   const contextQuery = useRegistrationContext()
@@ -9,13 +10,14 @@ const Team = () => {
   const context = contextQuery.data?.data
   const team = teamQuery.data?.data
   const competitionType = context?.registration?.competition.type ?? 'OLIMPIADE'
+  const institutionAddress = parseInstitutionAddress(team?.institutionAddress)
   const defaultValues = team ? {
     name: team.name ?? '',
     phone: team.phone ?? '',
-    school_name: team.schoolName ?? '',
-    school_province: team.schoolProvince ?? '',
-    school_city: team.schoolCity ?? '',
-    school_address: team.schoolAddress ?? '',
+    institution_name: team.institutionName ?? '',
+    province: institutionAddress.province,
+    city: institutionAddress.city,
+    address: institutionAddress.address,
   } : undefined
 
   if (teamQuery.isLoading || contextQuery.isLoading) {

@@ -22,9 +22,12 @@ class TeamAuthResource extends JsonResource
             'email' => $this->email,
             'name' => $this->name,
             'phone' => $this->phone,
-            'schoolName' => $this->school_name,
+            'institutionName' => $this->institution_name,
+            'institutionAddress' => $this->institution_address,
             'status' => strtoupper((string) $this->status),
             'emailVerifiedAt' => $this->email_verified_at?->toISOString(),
+            'nextRedirect' => $this->next_redirect,
+            'redirectTo' => $this->next_redirect,
         ];
     }
 }

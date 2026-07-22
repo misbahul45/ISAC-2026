@@ -19,12 +19,9 @@ class MembersFormResource extends JsonResource
             'name' => $this->name,
             'role' => $this->role,
             'email' => $this->email,
-            'phone' => $this->phone,
             'major' => $this->major,
             'faculty' => $this->faculty,
             'studentId' => $this->student_id,
-            'birthDate' => $this->birth_date?->toISOString(),
-            'educationLevel' => $this->education_level,
             'photoFileId' => $this->photo_file_id,
             'sortOrder' => $this->sort_order,
         ];

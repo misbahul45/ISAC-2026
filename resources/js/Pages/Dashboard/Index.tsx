@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react'
 import { useEffect } from 'react'
 import { AlertCircle, CheckCircle2, Clock3, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Seo } from '@/components/seo/Seo'
 import { useAuthSession } from '@/features/auth/context/AuthProvider'
@@ -17,20 +16,29 @@ export default function DashboardIndex() {
     else if (principal?.principalType === 'ADMIN') router.visit('/admin/dashboard')
   }, [isAuthenticated, isLoading, principal])
 
+  useEffect(() => {
+    if (summary && summary.currentStep !== 'DASHBOARD') {
+      router.visit(summary.redirectTo, { replace: true })
+    }
+  }, [summary])
+
   if (summaryQuery.isLoading) {
-    return <main className="relative z-10 min-h-screen px-4 pt-28 text-center text-white">Memuat dashboard...</main>
+    return <main className="relative z-10 min-h-screen px-4 pt-12 text-center text-white">Memuat dashboard...</main>
   }
 
   if (summaryQuery.error || !summary) {
-    return <main className="relative z-10 min-h-screen px-4 pt-28 text-center text-red-400">{summaryQuery.error?.message ?? 'Dashboard tidak tersedia.'}</main>
+    return <main className="relative z-10 min-h-screen px-4 pt-12 text-center text-red-400">{summaryQuery.error?.message ?? 'Dashboard tidak tersedia.'}</main>
   }
 
-  const needsAction = summary.currentStep !== 'DASHBOARD'
+  if (summary.currentStep !== 'DASHBOARD') {
+    return <main className="relative z-10 min-h-screen px-4 pt-12 text-center text-white">Mengarahkan ke progres registrasi...</main>
+  }
+
   const statusIcon = summary.team.status === 'VERIFIED' ? CheckCircle2 : summary.team.status === 'REJECTED' ? AlertCircle : Clock3
   const StatusIcon = statusIcon
 
   return (
-    <main className="relative z-10 min-h-screen px-4 pb-16 pt-28 text-primary-foreground">
+    <main className="relative z-10 min-h-screen px-4 pb-16 pt-12 text-primary-foreground">
       <Seo title="Dashboard Team" description="Status pendaftaran Team ISAC 2026." canonical="/dashboard" noindex />
       <div className="mx-auto max-w-6xl space-y-6">
         <Card className="border-border/50 bg-background/70 backdrop-blur-md">
@@ -41,7 +49,6 @@ export default function DashboardIndex() {
             <p>{summary.nextAction}</p>
             {summary.team.verificationNote && <p className="text-amber-400">Catatan panitia: {summary.team.verificationNote}</p>}
             {summary.payment?.rejectionReason && <p className="text-red-400">Catatan pembayaran: {summary.payment.rejectionReason}</p>}
-            {needsAction && <Button onClick={() => router.visit(summary.redirectTo)}>Lanjutkan Pendaftaran</Button>}
           </CardContent>
         </Card>
 

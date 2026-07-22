@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\EmailDeliveryException;
 use App\Exceptions\InvalidCredentialException;
 use App\Exceptions\InvalidResetPasswordException;
 use App\Http\Middleware\EnsureAdminPrincipal;
@@ -54,6 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
         };
 
         $exceptions->render(fn (ValidationException $exception) => $error($exception->getMessage(), 'VALIDATION_ERROR', $exception->status, $exception->errors()));
+        $exceptions->render(fn (EmailDeliveryException $exception) => $error($exception->getMessage(), 'EMAIL_DELIVERY_FAILED', $exception->status));
         $exceptions->render(fn (InvalidCredentialException $exception) => $error($exception->getMessage(), 'INVALID_CREDENTIALS', $exception->status));
         $exceptions->render(fn (InvalidResetPasswordException $exception) => $error($exception->getMessage(), $exception->errorCode, $exception->status));
         $exceptions->render(fn (AuthenticationException $exception) => $error('Authentication required.', 'UNAUTHENTICATED', 401));

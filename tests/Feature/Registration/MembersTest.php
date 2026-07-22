@@ -34,24 +34,29 @@ beforeEach(function (): void {
 test('can get members list', function (): void {
     $this->team->members()->create([
         'name' => 'Leader', 'role' => 'LEADER', 'email' => 'leader@test.com',
-        'phone' => '08111', 'major' => 'IPA', 'faculty' => 'MIPA',
-        'education_level' => 'SMA', 'student_id' => '123', 'sort_order' => 1,
+        'student_id' => '123', 'sort_order' => 1,
     ]);
 
-    $this->withToken($this->token)
+    $response = $this->withToken($this->token)
         ->getJson('/api/registrations/me/members')
         ->assertOk()
         ->assertJsonCount(1, 'data.members')
-        ->assertJsonPath('data.members.0.name', 'Leader');
+        ->assertJsonPath('data.members.0.name', 'Leader')
+        ->assertJsonPath('data.participantCategory', 'HIGH_SCHOOL_STUDENT')
+        ->assertJsonPath('data.identityLabel', 'NISN')
+        ->assertJsonPath('data.showsLeaderRole', false);
+
+    expect($response->json('data.members.0'))
+        ->not->toHaveKeys(['phone', 'educationLevel', 'birthDate']);
 });
 
-test('can finalize members for OLIMPIADE', function (): void {
+test('can finalize an olympiad participant without leader selection or photo', function (): void {
     $this->withToken($this->token)
         ->putJson('/api/registrations/me/members', [
             'members' => [[
-                'name' => 'John Doe', 'role' => 'LEADER', 'email' => 'john@example.com',
-                'phone' => '08123456789', 'major' => 'Matematika', 'faculty' => 'MIPA',
-                'education_level' => 'SMA', 'student_id' => '12345', 'birth_date' => '2005-01-15',
+                'name' => 'John Doe', 'role' => 'MEMBER', 'email' => 'john@example.com',
+                'major' => 'Matematika', 'faculty' => 'MIPA', 'student_id' => '12345',
+                'photo_file_id' => null,
             ]],
         ])
         ->assertOk()
@@ -59,14 +64,18 @@ test('can finalize members for OLIMPIADE', function (): void {
         ->assertJsonPath('data.redirectTo', '/registration/documents');
 
     expect($this->team->members()->count())->toBe(1);
-    expect($this->team->members()->first()->name)->toBe('John Doe');
+    expect($this->team->members()->first())
+        ->name->toBe('John Doe')
+        ->role->toBe('LEADER')
+        ->major->toBeNull()
+        ->faculty->toBeNull()
+        ->photo_file_id->toBeNull();
 });
 
 test('rejects more than 1 member for OLIMPIADE', function (): void {
     $member = fn (string $name, string $role, string $email, string $studentId): array => [
-        'name' => $name, 'role' => $role, 'email' => $email, 'phone' => '08123456789',
-        'major' => 'IPA', 'faculty' => 'MIPA', 'education_level' => 'SMA',
-        'student_id' => $studentId, 'birth_date' => '2005-01-01',
+        'name' => $name, 'role' => $role, 'email' => $email,
+        'student_id' => $studentId,
     ];
 
     $this->withToken($this->token)
@@ -80,17 +89,101 @@ test('rejects more than 1 member for OLIMPIADE', function (): void {
         ->assertJsonPath('error.code', 'VALIDATION_ERROR');
 });
 
-test('requires exactly one leader', function (): void {
+test('requires exactly one leader for business plan', function (): void {
+    $this->competition->update(['type' => Competition::TYPE_BUSINESS_PLAN]);
+
     $this->withToken($this->token)
         ->putJson('/api/registrations/me/members', [
-            'members' => [[
-                'name' => 'A', 'role' => 'MEMBER', 'email' => 'a@test.com', 'phone' => '08123456789',
-                'major' => 'IPA', 'faculty' => 'MIPA', 'education_level' => 'SMA',
-                'student_id' => '1', 'birth_date' => '2005-01-01',
-            ]],
+            'members' => [
+                ['name' => 'A', 'role' => 'MEMBER', 'email' => 'a@test.com', 'student_id' => '001'],
+                ['name' => 'B', 'role' => 'MEMBER', 'email' => 'b@test.com', 'student_id' => '002'],
+                ['name' => 'C', 'role' => 'MEMBER', 'email' => 'c@test.com', 'student_id' => '003'],
+            ],
         ])
         ->assertUnprocessable()
         ->assertJsonPath('error.code', 'VALIDATION_ERROR');
+});
+
+test('business competitions require exactly three participants', function (): void {
+    $this->competition->update(['type' => Competition::TYPE_BUSINESS_PLAN]);
+
+    $this->withToken($this->token)
+        ->getJson('/api/registrations/me/members')
+        ->assertOk()
+        ->assertJsonPath('data.minMembers', 3)
+        ->assertJsonPath('data.maxMembers', 3);
+
+    $this->withToken($this->token)
+        ->putJson('/api/registrations/me/members', [
+            'members' => [
+                ['name' => 'A', 'role' => 'LEADER', 'email' => 'a@test.com', 'student_id' => '001'],
+                ['name' => 'B', 'role' => 'MEMBER', 'email' => 'b@test.com', 'student_id' => '002'],
+            ],
+        ])
+        ->assertUnprocessable()
+        ->assertJsonPath('error.details.members.0', 'Jumlah peserta harus tepat 3 orang.');
+});
+
+test('business it case requires university biodata', function (): void {
+    $this->competition->update(['type' => Competition::TYPE_BUSINESS_IT_CASE]);
+
+    $response = $this->withToken($this->token)
+        ->putJson('/api/registrations/me/members', [
+            'members' => [
+                [
+                    'name' => 'A', 'role' => 'LEADER', 'email' => 'a@test.com',
+                    'student_id' => '24001', 'major' => '', 'faculty' => '',
+                ],
+                [
+                    'name' => 'B', 'role' => 'MEMBER', 'email' => 'b@test.com',
+                    'student_id' => '24002', 'major' => 'Informatika', 'faculty' => 'Teknik',
+                ],
+                [
+                    'name' => 'C', 'role' => 'MEMBER', 'email' => 'c@test.com',
+                    'student_id' => '24003', 'major' => 'Manajemen', 'faculty' => 'Ekonomi',
+                ],
+            ],
+        ])
+        ->assertUnprocessable();
+
+    expect(array_keys($response->json('error.details')))
+        ->toContain('members.0.major', 'members.0.faculty');
+});
+
+test('business it case exposes university labels and accepts nim major and faculty', function (): void {
+    $this->competition->update(['type' => Competition::TYPE_BUSINESS_IT_CASE]);
+
+    $this->withToken($this->token)
+        ->getJson('/api/registrations/me/members')
+        ->assertOk()
+        ->assertJsonPath('data.participantCategory', 'UNIVERSITY_STUDENT')
+        ->assertJsonPath('data.identityLabel', 'NIM')
+        ->assertJsonPath('data.showsLeaderRole', true)
+        ->assertJsonPath('data.minMembers', 3)
+        ->assertJsonPath('data.maxMembers', 3);
+
+    $this->withToken($this->token)
+        ->putJson('/api/registrations/me/members', [
+            'members' => [
+                [
+                    'name' => 'A', 'role' => 'LEADER', 'email' => 'a@test.com',
+                    'student_id' => '24001', 'major' => 'Informatika', 'faculty' => 'Teknik',
+                ],
+                [
+                    'name' => 'B', 'role' => 'MEMBER', 'email' => 'b@test.com',
+                    'student_id' => '24002', 'major' => 'Sistem Informasi', 'faculty' => 'Ilmu Komputer',
+                ],
+                [
+                    'name' => 'C', 'role' => 'MEMBER', 'email' => 'c@test.com',
+                    'student_id' => '24003', 'major' => 'Manajemen', 'faculty' => 'Ekonomi',
+                ],
+            ],
+        ])
+        ->assertOk();
+
+    expect($this->team->members()->orderBy('sort_order')->get())
+        ->toHaveCount(3)
+        ->and($this->team->members()->first()->student_id)->toBe('24001');
 });
 
 test('members endpoints require authentication', function (): void {

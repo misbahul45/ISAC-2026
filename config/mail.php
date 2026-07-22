@@ -16,6 +16,8 @@ return [
 
     'default' => env('MAIL_MAILER', 'log'),
 
+    'transactional_transport' => env('TRANSACTIONAL_MAIL_TRANSPORT', 'smtp'),
+
     /*
     |--------------------------------------------------------------------------
     | Mailer Configurations

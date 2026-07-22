@@ -29,6 +29,10 @@ class DashboardSummaryResource extends JsonResource
             'payment' => $registration === null ? null : [
                 'status' => $registration->status?->value,
                 'amount' => (float) $registration->amount_paid,
+                'originalAmount' => (float) $registration->amount_paid + (float) $registration->discount_amount,
+                'promoCode' => $registration->promo_code,
+                'discountPercent' => (float) $registration->discount_percent,
+                'discountAmount' => (float) $registration->discount_amount,
                 'method' => $registration->payment_method?->value,
                 'submittedAt' => $registration->payment_submitted_at?->toISOString(),
                 'verifiedAt' => $registration->payment_verified_at?->toISOString(),

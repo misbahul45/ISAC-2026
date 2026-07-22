@@ -180,6 +180,9 @@ class AdminRegistrationService
                     'payment_verified_at' => null,
                     'paid_at' => null,
                     'amount_paid' => 0,
+                    'promo_code' => null,
+                    'discount_percent' => 0,
+                    'discount_amount' => 0,
                 ]);
             } else {
                 $team->update(['current_stage_id' => $stage->id]);

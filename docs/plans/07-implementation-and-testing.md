@@ -13,8 +13,8 @@
 
 Pekerjaan:
 
-1. Tambahkan field Team: `school_province`, `school_city`, `verification_note`, `revision_step`.
-2. Tambahkan field Member: `education_level`, `sort_order`, `photo_file_id`.
+1. Gunakan `institution_name` dan satu `institution_address` JSON string pada Team. UI membentuk string dari input province, city, dan address; pertahankan `verification_note` dan `revision_step`.
+2. Member menggunakan `student_id` dinamis untuk NISN/NIM, `major`/`faculty` untuk mahasiswa, `sort_order`, dan `photo_file_id` nullable; hapus phone, education_level, serta birth_date.
 3. Tambahkan Registration: `team_completed_at`, `members_completed_at`, `documents_completed_at`, `submitted_at`, `payment_required_at`, `payment_submitted_at`, `payment_for_stage_id`.
 4. Rename field Registration: `verified_by` → `payment_verified_by`, `verified_at` → `payment_verified_at`, `rejection_reason` → `payment_rejection_reason`.
 5. Normalisasi Competition, Batch, Team, dan Registration enum.
@@ -197,6 +197,7 @@ Implementasikan:
 - Member finalization per Competition.
 - Document Google Drive validation.
 - Olympiad payment.
+- Payment quote tanpa promo, promo valid 15%, promo invalid, dan snapshot nominal final.
 - Non-Olympiad bypass payment.
 - Revision data/payment.
 - Activation setelah dua gate verified.
@@ -241,6 +242,13 @@ Register → OTP → selection (BUSINESS_IT_CASE) → Team → 3 Member → Docu
 - Akses endpoint Admin dari Team guard.
 - Rapid login/OTP/resend.
 - Double submit.
+
+## Payment promo environment
+
+- `REGISTRATION_PROMO_CODE=ISAXOP`
+- `REGISTRATION_PROMO_DISCOUNT_PERCENT=15`
+- Endpoint quote dan submit menghitung harga dari Batch aktif di backend; nominal hasil perhitungan frontend tidak diterima sebagai input.
+- Migration menghapus `transaction_id` serta menambah `promo_code`, `discount_percent`, dan `discount_amount`.
 
 ## Quality gates
 

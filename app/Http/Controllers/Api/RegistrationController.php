@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Registration\FinalizeMembersRequest;
+use App\Http\Requests\Registration\QuotePaymentRequest;
 use App\Http\Requests\Registration\SelectCompetitionRequest;
 use App\Http\Requests\Registration\SubmitPaymentRequest;
 use App\Http\Requests\Registration\UpdateDocumentsRequest;
@@ -55,10 +56,15 @@ class RegistrationController extends Controller
     {
         $team = $this->registrationService->getMembers($request->user());
         $type = $team->registration->competition->type;
-        [$minimum, $maximum] = $type === Competition::TYPE_OLIMPIADE ? [1, 1] : [2, 3];
+        [$minimum, $maximum] = $type === Competition::TYPE_OLIMPIADE ? [1, 1] : [3, 3];
 
         return $this->success('Data anggota berhasil diambil.', [
             'competitionType' => $type,
+            'participantCategory' => $type === Competition::TYPE_BUSINESS_IT_CASE
+                ? 'UNIVERSITY_STUDENT'
+                : 'HIGH_SCHOOL_STUDENT',
+            'identityLabel' => $type === Competition::TYPE_BUSINESS_IT_CASE ? 'NIM' : 'NISN',
+            'showsLeaderRole' => $type !== Competition::TYPE_OLIMPIADE,
             'minMembers' => $minimum,
             'maxMembers' => $maximum,
             'members' => MembersFormResource::collection($team->members),
@@ -97,6 +103,16 @@ class RegistrationController extends Controller
         $team = $this->registrationService->submitPayment($request->user(), $request->validated());
 
         return $this->mutation('Pembayaran berhasil dikirim.', $team, $request);
+    }
+
+    public function quotePayment(QuotePaymentRequest $request): JsonResponse
+    {
+        $quote = $this->registrationService->quotePayment(
+            $request->user(),
+            $request->validated('promo_code'),
+        );
+
+        return $this->success('Perhitungan pembayaran berhasil diperbarui.', $quote);
     }
 
     public function summary(Request $request): JsonResponse

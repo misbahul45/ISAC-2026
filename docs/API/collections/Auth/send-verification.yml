@@ -11,12 +11,6 @@ http:
       value: application/json
     - name: ""
       value: ""
-  body:
-    type: json
-    data: |-
-      {
-          "email": "lkiokijoap@gmail.com"
-      }
   auth:
     type: bearer
     token: "{{apiToken}}"
@@ -31,14 +25,10 @@ docs: |-
   #### POST /api/auth/verify-email/resend — AuthController@sendVerification
   - **Deskripsi**: Kirim ulang OTP verifikasi email.
   - **Middleware & Auth**: auth:sanctum (throttle:1,1). Sumber: `routes/api.php:89`.
-  - **Request** (`SendVerificationRequest.php:14-19`): `email` required/email/
-    exists:teams,email.
-  - **Alur Proses** (`AuthService::sendVerificationCode`, `app/Services/AuthService.php:140-166`):
-    findByEmail (null → InvalidCredentialException) → cek status `EMAIL_UNVERIFIED`
-    (sudah diverifikasi → InvalidCredentialException) → deleteOldVerificationCodes
-    (filter type verify_email) → generate 6 digit → simpan type verify_email →
-    kirim `VerifyEmailMail`.
-  - **Database**: `password_reset_codes` DELETE (filter verify_email) + INSERT.
-  - **Efek Samping**: kirim `VerifyEmailMail`.
-  - **Response** (200): data null. (422) `VALIDATION_ERROR` (email tak terdaftar).
+  - **Request**: body kosong; Team diambil dari Bearer token.
+  - **Alur Proses**: invalidasi challenge VERIFY_EMAIL lama, simpan hash OTP baru,
+    lalu kirim melalui transactional mail provider di dalam transaksi.
+  - **Database**: `auth_challenges` UPDATE/INSERT.
+  - **Efek Samping**: kirim email OTP.
+  - **Response** (200): data null; email sudah verified menghasilkan error domain.
   - **Catatan**: Tidak ada.

@@ -1,0 +1,26 @@
+info:
+  name: teams-verify
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/teams/{{team_id}}/verify"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: X-Request-ID
+      value: bruno-team-verify
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/teams/{team}/verify
+  Verifikasi data Team. Tidak memverifikasi pembayaran; gunakan endpoint payment verify.

@@ -1,7 +1,7 @@
 info:
   name: payment-submit
   type: http
-  seq: 10
+  seq: 11
 
 http:
   method: POST
@@ -15,7 +15,9 @@ http:
     type: json
     data: |-
       {
-          "paymentProofFileId": "00000000-0000-0000-0000-000000000000"
+          "payment_proof_file_id": "{{payment_proof_file_id}}",
+          "payment_method": "QRIS",
+          "promo_code": "ISAXOP"
       }
   auth:
     type: bearer
@@ -34,7 +36,9 @@ docs: |-
   - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:72`.
   - **Request** (validasi `SubmitPaymentRequest`,
     `app/Http/Requests/Registration/SubmitPaymentRequest.php:12-17`):
-    - `paymentProofFileId`: required, uuid, exists:`files,id`
+    - `payment_proof_file_id`: required UUID file milik Team dengan purpose PAYMENT_PROOF
+    - `payment_method`: required, BANK_TRANSFER atau QRIS
+    - `promo_code`: nullable string, kode dikonfigurasi melalui environment aplikasi
   - **Alur Proses** (`RegistrationService::submitPayment`, `app/Services/RegistrationService.php:230-263`):
     1. Cek registration ada & `payment_submitted_at` null (cegah duplikat).
     2. `registration->update(...)` — set `payment_proof_file_id`, `amount_paid` (dari batch.price),

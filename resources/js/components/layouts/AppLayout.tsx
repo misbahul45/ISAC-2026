@@ -5,6 +5,7 @@ import { IMAGES } from '@/constants/general'
 import { Toaster } from '../ui/sonner'
 import MusicCursor from '../shared/MusicCursor'
 import { AuthRouteMiddleware } from '@/features/auth/components/AuthRouteMiddleware'
+import { UserDashboardRouteMiddleware } from '@/features/auth/components/UserDashboardRouteMiddleware'
 
 type AppLayoutProps = {
   children: ReactNode
@@ -25,7 +26,11 @@ export function AppLayout({ children }: AppLayoutProps) {
               backgroundImage: `url(${IMAGES.bg})`,
             }}
           /> 
-          <AuthRouteMiddleware>{children}</AuthRouteMiddleware>
+          <AuthRouteMiddleware>
+            <UserDashboardRouteMiddleware>
+              {children}
+            </UserDashboardRouteMiddleware>
+          </AuthRouteMiddleware>
         </div>
       </div>
 

@@ -7,6 +7,7 @@ export type BatchStatus = 'DRAFT' | 'OPEN' | 'CLOSED' | 'FULL'
 export type TeamStatus = 'INCOMPLETE' | 'WAITING_VERIFICATION' | 'VERIFIED' | 'REVISION_REQUIRED' | 'REJECTED'
 export type RegistrationStatus = 'WAITING_PAYMENT' | 'WAITING_VERIFICATION' | 'VERIFIED' | 'REVISION_REQUIRED' | 'REJECTED' | 'CANCELLED'
 export type MemberRole = 'LEADER' | 'MEMBER'
+export type ParticipantCategory = 'HIGH_SCHOOL_STUDENT' | 'UNIVERSITY_STUDENT'
 export type RegistrationStep = 'VERIFY_EMAIL' | 'COMPETITION' | 'TEAM' | 'BIODATA' | 'DOCUMENTS' | 'PAYMENT' | 'DASHBOARD'
 
 export type BatchSummary = {
@@ -21,7 +22,7 @@ export type CompetitionSummary = {
 export type RegistrationContext = {
   team: {
     id: string; code: string; name: string | null; email: string; status: TeamStatus
-    schoolName: string | null; schoolProvince: string | null; schoolCity: string | null
+    institutionName: string | null; institutionAddress: string | null
     emailVerifiedAt: string | null; revisionStep: 'TEAM' | 'MEMBERS' | 'DOCUMENTS' | null
     verificationNote: string | null
   }
@@ -36,36 +37,43 @@ export type RegistrationContext = {
 }
 
 export type TeamFormValues = {
-  name: string; phone: string; school_name: string; school_province: string; school_city: string; school_address: string
+  name: string; phone: string; institution_name: string; institution_address: string
 }
 export type TeamProfile = {
   id: string; code: string; email: string; name: string | null; phone: string | null
-  schoolName: string | null; schoolProvince: string | null; schoolCity: string | null; schoolAddress: string | null
+  institutionName: string | null; institutionAddress: string | null
   documentUrl: string | null; twibbonUrl: string | null; status: TeamStatus
   verificationNote: string | null; revisionStep: string | null
   competitionSummary: { id: string; name: string; type: CompetitionType } | null
 }
 export type MemberRecord = {
-  id: string; name: string; role: MemberRole; email: string; phone: string; educationLevel: string
-  major: string | null; faculty: string | null; studentId: string; birthDate: string
+  id: string; name: string; role: MemberRole; email: string
+  major: string | null; faculty: string | null; studentId: string
   photoFileId: string | null; sortOrder: number
 }
 export type MemberFormValues = {
-  id?: string; name: string; role: MemberRole; email: string; phone: string; education_level: string
-  major: string | null; faculty: string | null; student_id: string; birth_date: string
+  id?: string; name: string; role: MemberRole; email: string
+  major: string | null; faculty: string | null; student_id: string
   photo_file_id: string | null; sort_order: number
 }
 export type MembersPageData = {
   competitionType: CompetitionType; minMembers: number; maxMembers: number
+  participantCategory: ParticipantCategory; identityLabel: 'NISN' | 'NIM'; showsLeaderRole: boolean
   members: MemberRecord[]; revisionNote: string | null
 }
 export type DocumentsFormValues = { document_url: string; twibbon_url: string }
 export type DocumentsPageData = { documentUrl: string | null; twibbonUrl: string | null; revisionNote: string | null }
 export type PaymentMethod = 'BANK_TRANSFER' | 'QRIS'
 export type ExternalFile = { id: string; fileId: string; url: string; purpose?: string; name?: string }
-export type PaymentFormValues = { payment_proof_file_id: string; payment_method: PaymentMethod; transaction_id?: string }
+export type PaymentFormValues = { payment_proof_file_id: string; payment_method: PaymentMethod; promo_code?: string }
+export type PaymentQuoteData = {
+  originalAmount: number; discountPercent: number; discountAmount: number; amount: number
+  promoApplied: boolean; promoCode: string | null
+}
 export type PaymentPageData = {
-  registrationId: string; amount: number; paymentMethods: PaymentMethod[]; paymentInstructions: string | null
+  registrationId: string; originalAmount: number; amount: number; discountPercent: number
+  discountAmount: number; promoApplied: boolean; promoCode: string | null
+  paymentMethods: PaymentMethod[]; paymentInstructions: string | null
   qrImageUrl: string | null; paymentStatus: RegistrationStatus; existingProof: ExternalFile | null
   rejectionReason: string | null; paymentSubmittedAt: string | null; paymentForStage: { id: string; name: string } | null
 }
@@ -84,5 +92,6 @@ export type TeamProfileResponse = ApiResponse<TeamProfile>
 export type MembersPageResponse = ApiResponse<MembersPageData>
 export type DocumentsPageResponse = ApiResponse<DocumentsPageData>
 export type PaymentPageResponse = ApiResponse<PaymentPageData>
+export type PaymentQuoteResponse = ApiResponse<PaymentQuoteData>
 export type RegistrationSummaryResponse = ApiResponse<RegistrationSummary>
 export type RegistrationMutationResponse = ApiResponse<RegistrationMutationData>

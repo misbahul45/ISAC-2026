@@ -2,11 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   BookOpen,
   Building2,
-  CalendarDays,
-  GraduationCap,
   IdCard,
   Mail,
-  Phone,
   User,
 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
@@ -15,13 +12,14 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { FileUpload, type UploadedFile } from '@/components/shared/FileUpload'
-import { memberSchema, type MemberFormData } from '@/features/registrations/schemas/createTeamMember'
-import type { MemberFormValues, MemberRole } from '@/features/registrations/types/registrationTypes'
+import { createMemberSchema, type MemberFormData } from '@/features/registrations/schemas/createTeamMember'
+import type { MemberFormValues, MemberRole, ParticipantCategory } from '@/features/registrations/types/registrationTypes'
 
 interface FormMemberProps {
   memberId: number
   role: MemberRole
   sortOrder: number
+  participantCategory: ParticipantCategory
   defaultValues?: MemberFormValues
   onFocus?: () => void
   onSave?: (data: MemberFormValues) => void
@@ -32,12 +30,9 @@ interface FormMemberProps {
 const emptyValues: MemberFormData = {
   name: '',
   email: '',
-  phone: '',
-  education_level: '',
   major: '',
   faculty: '',
   student_id: '',
-  birth_date: '',
   photo_file_id: null,
 }
 
@@ -48,6 +43,7 @@ const FormMember = ({
   memberId,
   role,
   sortOrder,
+  participantCategory,
   defaultValues,
   onFocus,
   onSave,
@@ -58,7 +54,7 @@ const FormMember = ({
   const [photo, setPhoto] = useState<UploadedFile>(null)
   const form = useForm<MemberFormData>({
     mode: 'onChange',
-    resolver: zodResolver(memberSchema),
+    resolver: zodResolver(createMemberSchema(participantCategory)),
     defaultValues: emptyValues,
   })
 
@@ -66,12 +62,9 @@ const FormMember = ({
     form.reset(defaultValues ? {
       name: defaultValues.name,
       email: defaultValues.email,
-      phone: defaultValues.phone,
-      education_level: defaultValues.education_level,
       major: defaultValues.major ?? '',
       faculty: defaultValues.faculty ?? '',
       student_id: defaultValues.student_id,
-      birth_date: defaultValues.birth_date,
       photo_file_id: defaultValues.photo_file_id,
     } : emptyValues)
     setHasSaved(Boolean(defaultValues))
@@ -93,15 +86,29 @@ const FormMember = ({
     setHasSaved(true)
   }
 
+  const isUniversity = participantCategory === 'UNIVERSITY_STUDENT'
   const fields = [
     { name: 'name' as const, label: 'Nama Lengkap', placeholder: 'Masukkan nama lengkap', type: 'text', Icon: User },
-    { name: 'email' as const, label: 'Email Anggota', placeholder: 'Masukkan email anggota', type: 'email', Icon: Mail },
-    { name: 'phone' as const, label: 'Nomor Telepon', placeholder: 'Masukkan nomor telepon', type: 'tel', Icon: Phone },
-    { name: 'education_level' as const, label: 'Jenjang Pendidikan', placeholder: 'Contoh: SMA atau S1', type: 'text', Icon: GraduationCap },
-    { name: 'major' as const, label: 'Jurusan', placeholder: 'Masukkan jurusan jika ada', type: 'text', Icon: BookOpen },
-    { name: 'faculty' as const, label: 'Fakultas', placeholder: 'Masukkan fakultas jika ada', type: 'text', Icon: Building2 },
-    { name: 'student_id' as const, label: 'NISN / NIM', placeholder: 'Masukkan NISN atau NIM', type: 'text', Icon: IdCard },
-    { name: 'birth_date' as const, label: 'Tanggal Lahir', placeholder: '', type: 'date', Icon: CalendarDays },
+    {
+      name: 'email' as const,
+      label: isUniversity ? 'Email Mahasiswa' : 'Email Siswa',
+      placeholder: isUniversity ? 'Masukkan email mahasiswa' : 'Masukkan email siswa',
+      type: 'email',
+      Icon: Mail,
+    },
+    ...(isUniversity
+      ? [
+          { name: 'major' as const, label: 'Jurusan', placeholder: 'Masukkan jurusan', type: 'text', Icon: BookOpen },
+          { name: 'faculty' as const, label: 'Fakultas', placeholder: 'Masukkan fakultas', type: 'text', Icon: Building2 },
+        ]
+      : []),
+    {
+      name: 'student_id' as const,
+      label: isUniversity ? 'NIM' : 'NISN',
+      placeholder: isUniversity ? 'Masukkan NIM mahasiswa' : 'Masukkan NISN siswa',
+      type: 'text',
+      Icon: IdCard,
+    },
   ]
 
   return (
@@ -145,7 +152,7 @@ const FormMember = ({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel className="text-xl">Foto Peserta</FieldLabel>
+              <FieldLabel className="text-xl">Foto Peserta (Opsional)</FieldLabel>
               <FileUpload
                 value={photo}
                 onChange={(value) => {

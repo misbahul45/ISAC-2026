@@ -15,8 +15,8 @@ http:
     type: json
     data: |-
       {
-          "email": "lkiokijoap@gmail.com",
-          "code": "678106"
+          "email": "{{teamEmail}}",
+          "code": "{{otpCode}}"
       }
   auth: inherit
 
@@ -37,7 +37,7 @@ docs: |-
     expired_at>now — **tanpa filter type**) → null → throw `INVALID_OTP`;
     else `Str::random(64)` → markCodeAsVerified (reset_token, verified_at,
     expired_at+10m).
-  - **Database**: `password_reset_codes` SELECT + UPDATE.
+  - **Database**: `auth_challenges` SELECT + UPDATE reset_token_hash.
   - **Response** (200): `{resetToken}`. (422) `INVALID_OTP` / `VALIDATION_ERROR`.
   - **Catatan**: ⚠️ `findValidResetCode` tidak filter `type='reset_password'`
     (`AuthRepository.php:41-47`) → kode `verify_email` bisa dipakai dapat

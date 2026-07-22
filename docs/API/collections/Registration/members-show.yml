@@ -26,9 +26,10 @@ docs: |-
   - **Deskripsi**: Ambil daftar anggota tim untuk form biodata.
   - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:67`.
   - **Request**: Header `Authorization: Bearer <token>`.
-  - **Alur Proses**: `$team->load('members')` → `MembersFormResource::collection($team->members)`.
-    `MembersFormResource` (`app/Http/Resources/MembersFormResource.php:16-31`):
-    id, name, role, email, phone, major, faculty, studentId, birthDate, educationLevel, photoFileId, sortOrder.
+  - **Alur Proses**: memuat Competition dan members terurut. Response membawa
+    participantCategory, identityLabel, min/max Member, revisionNote, serta
+    id, name, role, email, major, faculty, studentId, photoFileId, dan sortOrder.
   - **Database yang Terkena**: `teams` — SELECT; `members` — SELECT (eager load).
   - **Efek Samping**: Tidak ada.
-  - **Response** (200): `{status, message, data: [MembersFormResource, ...], metadata, error}`.
+  - **Response** (200): envelope dengan `MembersPageData`; Business Competition
+    mengembalikan minMembers=3 dan maxMembers=3, Olimpiade 1 dan 1.

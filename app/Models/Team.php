@@ -34,9 +34,9 @@ class Team extends Model
     public const STATUSES = [self::STATUS_INCOMPLETE, self::STATUS_WAITING_VERIFICATION, self::STATUS_VERIFIED, self::STATUS_REVISION_REQUIRED, self::STATUS_REJECTED];
 
     protected $fillable = [
-        'name', 'code', 'password', 'email', 'phone', 'school_name', 'school_address', 'document_url', 'twibbon_url',
-        'current_stage_id', 'status', 'email_verified_at', 'verified_at', 'verified_by', 'school_province', 'school_city',
-        'verification_note', 'revision_step',
+        'name', 'code', 'password', 'email', 'phone', 'institution_name', 'institution_address', 'document_url', 'twibbon_url',
+        'current_stage_id', 'status', 'email_verified_at', 'verified_at', 'verified_by', 'verification_note',
+        'revision_step',
     ];
 
     protected function casts(): array
@@ -74,18 +74,14 @@ class Team extends Model
         if (! $this->isEmailVerified()) {
             return '/auth/verify-email';
         }
-        if ($this->status === self::STATUS_REVISION_REQUIRED) {
+        if ($this->status === self::STATUS_REVISION_REQUIRED && $this->revision_step !== null) {
             return match ($this->revision_step) {
                 'TEAM' => '/registration/team',
                 'MEMBERS' => '/registration/biodata',
                 'DOCUMENTS' => '/registration/documents',
-                default => '/dashboard',
+                default => '/registration',
             };
         }
-        if (in_array($this->status, [self::STATUS_WAITING_VERIFICATION, self::STATUS_VERIFIED, self::STATUS_REJECTED], true)) {
-            return '/dashboard';
-        }
-
         $registration = $this->relationLoaded('registration') ? $this->registration : $this->registration()->with('competition')->first();
         if ($registration === null) {
             return '/registration';

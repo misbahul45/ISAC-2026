@@ -40,8 +40,7 @@ test('team cannot assign another team member photo', function (): void {
         ->putJson('/api/registrations/me/members', [
             'members' => [[
                 'name' => 'Leader', 'role' => 'LEADER', 'email' => 'leader@example.test',
-                'phone' => '081234567890', 'education_level' => 'SMA',
-                'student_id' => 'STUDENT-1', 'birth_date' => '2005-01-01',
+                'student_id' => 'STUDENT-1',
                 'photo_file_id' => $photo->id,
             ]],
         ])

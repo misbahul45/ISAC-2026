@@ -29,6 +29,8 @@ const Header = () => {
   const pathname = url.split('?')[0]
   const isLanding = pathname === '/'
   const isAuthPage = pathname.startsWith('/auth')
+  const isRegistrationPage = pathname === '/registration' || pathname.startsWith('/registration/')
+  const isUserDashboard = pathname === '/dashboard'
   const isMinimalPage = isAuthPage || props.errorPage === true
   const dashboardHref = principal?.principalType === 'ADMIN' ? '/admin/dashboard' : '/dashboard'
 
@@ -105,6 +107,8 @@ const Header = () => {
     if (isLanding && !isMobileOpen && window.scrollY > 20) startHideTimer()
   }
   const navItems = Header_Nav.map((nav) => ({ ...nav, href: isLanding ? nav.href : `/${nav.href}` }))
+
+  if (isRegistrationPage || isUserDashboard) return null
 
   if (isMinimalPage) {
     return (

@@ -17,14 +17,12 @@ class Member extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'team_id', 'name', 'role', 'email', 'phone', 'major', 'faculty', 'student_id', 'birth_date', 'photo_file_id',
-        'education_level', 'sort_order',
+        'team_id', 'name', 'role', 'email', 'major', 'faculty', 'student_id', 'photo_file_id', 'sort_order',
     ];
 
     protected function casts(): array
     {
         return [
-            'birth_date' => 'date',
             'sort_order' => 'integer',
         ];
     }

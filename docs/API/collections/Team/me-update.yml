@@ -17,10 +17,10 @@ http:
       {
           "name": "Alpha Team",
           "phone": "081234567890",
-          "school_name": "SMA Negeri 1",
-          "school_address": "Jl. Pendidikan No. 1",
-          "document_file_id": "00000000-0000-0000-0000-000000000000",
-          "twibbon_file_id": "00000000-0000-0000-0000-000000000000"
+          "institution_name": "SMA Negeri 1 Surabaya",
+          "institution_address": "{\"province\":\"Jawa Timur\",\"city\":\"Surabaya\",\"address\":\"Jl. Wijaya Kusuma No. 48\"}",
+          "document_url": "https://drive.google.com/drive/folders/team-documents",
+          "twibbon_url": "https://drive.google.com/drive/folders/team-twibbon"
       }
   auth:
     type: bearer
@@ -34,24 +34,20 @@ settings:
 
 docs: |-
   #### PATCH /api/teams/me — TeamController@update
-  - **Deskripsi**: Update profil team (name, phone, school, file dokumen/twibbon).
+  - **Deskripsi**: Update parsial profil Team.
   - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:33`.
   - **Request** (validasi `UpdateTeamRequest`,
     `app/Http/Requests/Team/UpdateTeamRequest.php:17-26`):
     - `name`: sometimes, required, string, min:2, max:255
     - `phone`: sometimes, nullable, string, max:20
-    - `school_name`: sometimes, nullable, string, max:255
-    - `school_address`: sometimes, nullable, string
-    - `document_file_id`: sometimes, nullable, uuid, exists:`files,id`
-    - `twibbon_file_id`: sometimes, nullable, uuid, exists:`files,id`
+    - `institution_name`: sometimes, nullable, string, max:255
+    - `institution_address`: sometimes, nullable JSON string alamat terstruktur
+    - `document_url` dan `twibbon_url`: optional HTTPS Google Drive URL
   - **Alur Proses**: `teamService->updateProfile($user, validated)` →
     `teamRepository->update($team, $data)` (`app/Services/TeamService.php:19-23`,
     `app/Repositories/TeamRepository.php:13-18`, lalu `$team->fresh()`).
-  - **Database yang Terkena**: `teams` — UPDATE; `files` — SELECT (validasi
-    `exists:files,id`, FK `document_file_id`/`twibbon_file_id` → `files.id`,
-    migrasi `..._000006_create_teams_table.php:20-21`).
+  - **Database yang Terkena**: `teams` — UPDATE.
   - **Efek Samping**: Tidak ada.
   - **Response** (200): `{status:'success', message:'Team profile updated
     successfully.', data: TeamResource, metadata:{}, error:null}`.
-  - **Catatan**: ⚠️ `document_file_id`/`twibbon_file_id` harus sudah ada di
-    `files` (di-upload via `POST /files` dulu; tidak ada penciptaan otomatis).
+  - **Catatan**: `institution_address` divalidasi sebagai JSON string terstruktur.

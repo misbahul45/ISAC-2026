@@ -32,7 +32,7 @@ beforeEach(function (): void {
     ]);
     $this->team->members()->create([
         'name' => 'Leader', 'role' => 'LEADER', 'email' => 'leader@test.com',
-        'phone' => '08111', 'major' => 'IPA', 'faculty' => 'MIPA',
+        'major' => null, 'faculty' => null,
         'student_id' => '123', 'sort_order' => 1,
     ]);
 });

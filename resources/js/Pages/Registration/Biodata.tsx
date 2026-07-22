@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { router } from '@inertiajs/react'
-import { ChevronLeft, ChevronRight, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import RegistrationLayout from '@/features/registrations/components/RegistrationLayout'
 import FormMember from '@/features/registrations/components/FormMember'
 import { useFinalizeMembers, useMembers } from '@/features/registrations/hooks/useRegistration'
-import type { MemberFormValues, MemberRole } from '@/features/registrations/types/registrationTypes'
+import type { CompetitionType, MemberFormValues, MemberRole } from '@/features/registrations/types/registrationTypes'
 
 interface MemberSlot {
   key: number
@@ -13,11 +13,15 @@ interface MemberSlot {
   label: string
 }
 
-const createSlots = (count: number): MemberSlot[] =>
+const createSlots = (count: number, competitionType: CompetitionType): MemberSlot[] =>
   Array.from({ length: count }, (_, index) => ({
     key: index + 1,
     role: index === 0 ? 'LEADER' : 'MEMBER',
-    label: index === 0 ? 'Ketua Tim' : `Anggota ${index}`,
+    label: competitionType === 'OLIMPIADE'
+      ? 'Peserta Olimpiade'
+      : index === 0
+        ? 'Ketua Tim'
+        : `Anggota ${index}`,
   }))
 
 const Biodata = () => {
@@ -32,13 +36,12 @@ const Biodata = () => {
 
   useEffect(() => {
     if (!pageData) return
-    const count = Math.max(pageData.minMembers, pageData.members.length)
-    const slots = createSlots(count)
+    const count = pageData.maxMembers
+    const slots = createSlots(count, pageData.competitionType)
     const saved = Object.fromEntries(
       pageData.members.map((member, index) => [index + 1, {
-        id: member.id, name: member.name, role: member.role, email: member.email, phone: member.phone,
-        education_level: member.educationLevel, major: member.major, faculty: member.faculty,
-        student_id: member.studentId, birth_date: member.birthDate.slice(0, 10),
+        id: member.id, name: member.name, role: member.role, email: member.email,
+        major: member.major, faculty: member.faculty, student_id: member.studentId,
         photo_file_id: member.photoFileId, sort_order: member.sortOrder,
       }]),
     )
@@ -57,29 +60,6 @@ const Biodata = () => {
     else submitButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
-  const addMember = () => {
-    if (!pageData || members.length >= pageData.maxMembers) return
-    setMembers(createSlots(members.length + 1))
-    setActiveIndex(members.length)
-  }
-
-  const removeMember = () => {
-    if (!pageData || members.length <= pageData.minMembers) return
-    const last = members[members.length - 1]
-    setMembers(createSlots(members.length - 1))
-    setSavedData((current) => {
-      const next = { ...current }
-      delete next[last.key]
-      return next
-    })
-    setValidState((current) => {
-      const next = { ...current }
-      delete next[last.key]
-      return next
-    })
-    setActiveIndex((current) => Math.min(current, members.length - 2))
-  }
-
   const allMembersValid = members.length > 0 && members.every((member) => validState[member.key] && savedData[member.key])
 
   const handleComplete = useCallback(async () => {
@@ -93,7 +73,7 @@ const Biodata = () => {
         members: members.map((member, index) => ({
           ...savedData[member.key],
           role: index === 0 ? 'LEADER' : 'MEMBER',
-          sort_order: index,
+          sort_order: index + 1,
         })),
       })
       toast.success(response.message)
@@ -115,39 +95,15 @@ const Biodata = () => {
   }
 
   if (membersQuery.isLoading) {
-    return <div className="py-24 text-center text-muted-foreground">Memuat biodata peserta...</div>
+    return <div className="py-12 text-center text-muted-foreground">Memuat biodata peserta...</div>
   }
 
   if (membersQuery.error || !pageData) {
-    return <div className="py-24 text-center text-red-400">{membersQuery.error?.message ?? 'Data registrasi tidak tersedia.'}</div>
+    return <div className="py-12 text-center text-red-400">{membersQuery.error?.message ?? 'Data registrasi tidak tersedia.'}</div>
   }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 text-center text-primary-foreground">
-      <div className="mb-6 flex items-center justify-center gap-3">
-        {pageData.competitionType !== 'OLIMPIADE' && (
-          <>
-            <button
-              type="button"
-              onClick={addMember}
-              disabled={members.length >= pageData.maxMembers}
-              className="flex items-center gap-2 rounded-lg border border-border bg-card/80 px-4 py-2 text-sm disabled:opacity-40"
-            >
-              <Plus className="h-4 w-4" /> Tambah Anggota
-            </button>
-            <button
-              type="button"
-              onClick={removeMember}
-              disabled={members.length <= pageData.minMembers}
-              className="flex items-center gap-2 rounded-lg border border-border bg-card/80 px-4 py-2 text-sm disabled:opacity-40"
-            >
-              <Trash2 className="h-4 w-4" /> Hapus Anggota
-            </button>
-          </>
-        )}
-        <span className="text-sm text-muted-foreground">{members.length} dari maksimal {pageData.maxMembers} peserta</span>
-      </div>
-
       <div className="hidden md:flex items-center justify-center gap-4">
         <button
           onClick={() => setActiveIndex((activeIndex - 1 + members.length) % members.length)}
@@ -157,7 +113,7 @@ const Biodata = () => {
           <ChevronLeft className="w-6 h-6" />
         </button>
 
-        <div className="relative flex justify-center items-center gap-6 min-h-[1100px] perspective-[1000px] w-full max-w-4xl">
+        <div className="relative flex justify-center items-center gap-6 min-h-225 perspective-[1000px] w-full max-w-4xl">
           {members.map((member, index) => (
             <div
               key={member.key}
@@ -165,13 +121,14 @@ const Biodata = () => {
               style={getLayoutTransform(index)}
             >
               <div className="relative bg-background/80 backdrop-blur-md rounded-2xl p-6 border border-border/50 shadow-2xl shadow-secondary/30">
-                <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
-                <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
+                <span aria-hidden="true" className="auth-border-ribbon" />
+                <span aria-hidden="true" className="auth-border-diamond" />
                 <h3 className="text-xl font-semibold mb-4 relative z-10">{member.label}</h3>
                 <FormMember
                   memberId={member.key}
                   role={member.role}
                   sortOrder={index}
+                  participantCategory={pageData.participantCategory}
                   defaultValues={savedData[member.key]}
                   onFocus={() => setActiveIndex(index)}
                   onSave={handleSave(member)}
@@ -191,16 +148,17 @@ const Biodata = () => {
         </button>
       </div>
 
-      <div className="md:hidden space-y-6">
+      <div className="md:hidden space-y-6 py-16 px-4">
         {members.map((member, index) => (
-          <div key={member.key} className="relative bg-background/80 backdrop-blur-md rounded-2xl p-6 border border-border/50 shadow-lg shadow-secondary/20">
-            <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
-            <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
+          <div key={member.key} className="relative z-10 w-full rounded-xl border-0 bg-background/20 backdrop-blur-sm shadow-2xl">
+            <span aria-hidden="true" className="auth-border-ribbon" />
+            <span aria-hidden="true" className="auth-border-diamond" />
             <h3 className="text-lg font-semibold mb-4 relative z-10">{member.label}</h3>
             <FormMember
               memberId={member.key}
               role={member.role}
               sortOrder={index}
+              participantCategory={pageData.participantCategory}
               defaultValues={savedData[member.key]}
               onSave={handleSave(member)}
               onValidationChange={(valid) => setValidState((current) => ({ ...current, [member.key]: valid }))}
@@ -218,7 +176,7 @@ const Biodata = () => {
         >
           {finalizeMembers.isPending ? (
             <span className="flex items-center gap-3"><Loader2 className="w-6 h-6 animate-spin" />Menyimpan...</span>
-          ) : 'Simpan Semua Anggota ke Tim'}
+          ) : 'Simpan Semua Peserta'}
         </button>
       </div>
     </div>

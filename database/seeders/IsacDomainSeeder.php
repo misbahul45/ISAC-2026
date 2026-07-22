@@ -42,13 +42,25 @@ class IsacDomainSeeder extends Seeder
             ]);
 
             $competitions = collect([
-                ['key' => 'olympiad', 'name' => 'ISAC Olympiad', 'slug' => 'isac-olympiad', 'type' => 'OLIMPIADE', 'payment_flow' => 'UPFRONT'],
-                ['key' => 'bpc', 'name' => 'Business Plan Competition', 'slug' => 'business-plan-competition', 'type' => 'BUSINESS_PLAN', 'payment_flow' => 'SEMIFINAL'],
-                ['key' => 'bitc', 'name' => 'Business IT Case', 'slug' => 'business-it-case', 'type' => 'BUSINESS_IT_CASE', 'payment_flow' => 'SEMIFINAL'],
+                [
+                    'key' => 'olympiad', 'name' => 'ISAC Olympiad', 'slug' => 'isac-olympiad',
+                    'description' => 'Olimpiade ISAC 2026 untuk siswa SMA, SMK, atau MA sederajat.',
+                    'type' => 'OLIMPIADE', 'payment_flow' => 'UPFRONT',
+                ],
+                [
+                    'key' => 'bpc', 'name' => 'Business Plan Competition', 'slug' => 'business-plan-competition',
+                    'description' => 'Kompetisi penyusunan business plan ISAC 2026 untuk siswa SMA, SMK, atau MA sederajat.',
+                    'type' => 'BUSINESS_PLAN', 'payment_flow' => 'SEMIFINAL',
+                ],
+                [
+                    'key' => 'bitc', 'name' => 'Business IT Case', 'slug' => 'business-it-case',
+                    'description' => 'Kompetisi analisis kasus bisnis berbasis teknologi informasi ISAC 2026 untuk mahasiswa perguruan tinggi.',
+                    'type' => 'BUSINESS_IT_CASE', 'payment_flow' => 'SEMIFINAL',
+                ],
             ])->mapWithKeys(function (array $data): array {
                 $competition = Competition::query()->updateOrCreate(['slug' => $data['slug']], [
                     'name' => $data['name'],
-                    'description' => "Skenario seed untuk {$data['name']}.",
+                    'description' => $data['description'],
                     'type' => $data['type'],
                     'payment_flow' => $data['payment_flow'],
                     'start_date' => now()->subMonth()->toDateString(),
@@ -113,16 +125,20 @@ class IsacDomainSeeder extends Seeder
             foreach ($scenarioData as $index => $scenario) {
                 $number = array_search($index, array_keys($scenarioData), true) + 1;
                 $competitionKey = $scenario['competition'] ?? 'olympiad';
+                $institutionName = $competitionKey === 'bitc'
+                    ? 'Universitas Indonesia'
+                    : 'SMA Negeri 1 Surabaya';
+                $institutionAddress = json_encode($competitionKey === 'bitc'
+                    ? ['province' => 'Jawa Barat', 'city' => 'Depok', 'address' => 'Kampus Universitas Indonesia, Pondok Cina, Beji']
+                    : ['province' => 'Jawa Timur', 'city' => 'Surabaya', 'address' => 'Jl. Wijaya Kusuma No. 48'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 $completeProfile = ! in_array($index, ['unverified', 'profile'], true);
                 $team = Team::query()->updateOrCreate(['email' => "{$index}@team.isac.test"], [
                     'code' => 'ISAC-DEMO-'.str_pad((string) $number, 3, '0', STR_PAD_LEFT),
                     'password' => 'password123',
                     'name' => $completeProfile ? 'Team '.ucfirst($index) : null,
                     'phone' => $completeProfile ? '0812000000'.str_pad((string) $number, 2, '0', STR_PAD_LEFT) : null,
-                    'school_name' => $completeProfile ? 'Universitas Indonesia' : null,
-                    'school_address' => $completeProfile ? 'Depok, Jawa Barat' : null,
-                    'school_province' => $completeProfile ? 'Jawa Barat' : null,
-                    'school_city' => $completeProfile ? 'Depok' : null,
+                    'institution_name' => $completeProfile ? $institutionName : null,
+                    'institution_address' => $completeProfile ? $institutionAddress : null,
                     'document_url' => $completeProfile ? "https://drive.google.com/drive/folders/seed-{$index}" : null,
                     'twibbon_url' => $completeProfile ? "https://drive.google.com/drive/folders/twibbon-{$index}" : null,
                     'status' => $scenario['status'],
@@ -155,19 +171,25 @@ class IsacDomainSeeder extends Seeder
                         'team_id' => $team->id,
                         'name' => 'Leader '.ucfirst($index),
                         'role' => 'LEADER',
-                        'education_level' => 'S1',
-                        'phone' => '081234567890',
-                        'major' => 'Sistem Informasi',
-                        'faculty' => 'Ilmu Komputer',
-                        'student_id' => "NIM-{$number}-01",
-                        'birth_date' => '2004-01-01',
+                        'major' => $competitionKey === 'bitc' ? 'Sistem Informasi' : null,
+                        'faculty' => $competitionKey === 'bitc' ? 'Ilmu Komputer' : null,
+                        'student_id' => ($competitionKey === 'bitc' ? 'NIM' : 'NISN')."-{$number}-01",
                         'sort_order' => 1,
                     ]);
                     if ($competitionKey !== 'olympiad') {
                         Member::query()->updateOrCreate(['email' => "member.{$index}@team.isac.test"], [
                             'team_id' => $team->id, 'name' => 'Member '.ucfirst($index), 'role' => 'MEMBER',
-                            'education_level' => 'S1', 'phone' => '081234567891', 'major' => 'Manajemen',
-                            'faculty' => 'Ekonomi', 'student_id' => "NIM-{$number}-02", 'birth_date' => '2004-02-02', 'sort_order' => 2,
+                            'major' => $competitionKey === 'bitc' ? 'Manajemen' : null,
+                            'faculty' => $competitionKey === 'bitc' ? 'Ekonomi' : null,
+                            'student_id' => ($competitionKey === 'bitc' ? 'NIM' : 'NISN')."-{$number}-02",
+                            'sort_order' => 2,
+                        ]);
+                        Member::query()->updateOrCreate(['email' => "member2.{$index}@team.isac.test"], [
+                            'team_id' => $team->id, 'name' => 'Member 2 '.ucfirst($index), 'role' => 'MEMBER',
+                            'major' => $competitionKey === 'bitc' ? 'Teknik Informatika' : null,
+                            'faculty' => $competitionKey === 'bitc' ? 'Teknik' : null,
+                            'student_id' => ($competitionKey === 'bitc' ? 'NIM' : 'NISN')."-{$number}-03",
+                            'sort_order' => 3,
                         ]);
                     }
                 }
@@ -182,14 +204,19 @@ class IsacDomainSeeder extends Seeder
                 }
 
                 $submitted = in_array($index, ['review', 'revision', 'verified', 'rejected', 'cancelled'], true);
+                $usesPromo = $proof !== null && $index === 'review';
+                $discountPercent = $usesPromo ? 15 : 0;
+                $discountAmount = $usesPromo ? round((float) $batches[$competitionKey]->price * $discountPercent / 100, 2) : 0;
                 Registration::query()->updateOrCreate(['team_id' => $team->id], [
                     'competition_id' => $competitions[$competitionKey]->id,
                     'batch_id' => $batches[$competitionKey]->id,
                     'status' => $scenario['registration'],
                     'payment_proof_file_id' => $proof?->id,
-                    'amount_paid' => $proof ? $batches[$competitionKey]->price : 0,
+                    'amount_paid' => $proof ? (float) $batches[$competitionKey]->price - $discountAmount : 0,
                     'payment_method' => $proof ? 'QRIS' : null,
-                    'transaction_id' => $proof ? "SEED-{$index}" : null,
+                    'promo_code' => $usesPromo ? 'ISAXOP' : null,
+                    'discount_percent' => $discountPercent,
+                    'discount_amount' => $discountAmount,
                     'team_completed_at' => $completeProfile ? now()->subHours(4) : null,
                     'members_completed_at' => $completeProfile ? now()->subHours(3) : null,
                     'documents_completed_at' => $completeProfile ? now()->subHours(2) : null,

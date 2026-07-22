@@ -20,25 +20,31 @@ http:
                   "name": "John Doe",
                   "role": "LEADER",
                   "email": "john@example.com",
-                  "phone": "081234567891",
-                  "major": "IPA",
-                  "faculty": "MIPA",
-                  "studentId": "2023001",
-                  "birthDate": "2005-06-15",
-                  "educationLevel": "SMA",
-                  "photoFileId": null
+                  "major": "Informatika",
+                  "faculty": "Teknik",
+                  "student_id": "2023001",
+                  "photo_file_id": null,
+                  "sort_order": 1
               },
               {
                   "name": "Jane Doe",
                   "role": "MEMBER",
                   "email": "jane@example.com",
-                  "phone": "081234567892",
-                  "major": "IPA",
-                  "faculty": "MIPA",
-                  "studentId": "2023002",
-                  "birthDate": "2005-08-20",
-                  "educationLevel": "SMA",
-                  "photoFileId": null
+                  "major": "Sistem Informasi",
+                  "faculty": "Ilmu Komputer",
+                  "student_id": "2023002",
+                  "photo_file_id": null,
+                  "sort_order": 2
+              },
+              {
+                  "name": "Alex Doe",
+                  "role": "MEMBER",
+                  "email": "alex@example.com",
+                  "major": "Manajemen",
+                  "faculty": "Ekonomi",
+                  "student_id": "2023003",
+                  "photo_file_id": null,
+                  "sort_order": 3
               }
           ]
       }
@@ -62,16 +68,12 @@ docs: |-
     - `members.*.name`: required, string, max:255
     - `members.*.role`: required, string, `in:LEADER,MEMBER` (harus tepat 1 LEADER)
     - `members.*.email`: required, email, max:255
-    - `members.*.phone`: required, string, max:20
-    - `members.*.major`: required, string, max:255
-    - `members.*.faculty`: required, string, max:255
-    - `members.*.studentId`: required, string, max:50
-    - `members.*.birthDate`: required, date
-    - `members.*.educationLevel`: nullable, string, max:50
-    - `members.*.photoFileId`: nullable, uuid, exists:`files,id`
+    - `members.*.major` dan `faculty`: wajib untuk Business IT Case, null untuk SMA
+    - `members.*.student_id`: required string, max:50, distinct
+    - `members.*.photo_file_id`: nullable UUID file milik Team dengan purpose MEMBER_PHOTO
   - **Alur Proses** (`RegistrationService::finalizeMembers`, `app/Services/RegistrationService.php:119-187`):
     1. Cek registration & team_completed_at ada.
-    2. Validasi jumlah anggota sesuai tipe kompetisi: OLIMPIADE → 1 (tetap 1 orang), BUSINESS_PLAN / BUSINESS_IT_CASE → 2-3 orang.
+    2. Validasi jumlah peserta: OLIMPIADE tepat 1; BUSINESS_PLAN / BUSINESS_IT_CASE tepat 3.
     3. Validasi tepat 1 LEADER.
     4. `$team->members()->delete()` + `Member::insert(...)` (full replacement).
     5. Jika `members_completed_at` null → set `now()`.

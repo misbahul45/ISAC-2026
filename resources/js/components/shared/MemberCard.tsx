@@ -1,8 +1,9 @@
 import React from 'react'
-import type { MemberFormValues } from '@/features/registrations/types/registrationTypes'
+import type { MemberFormValues, ParticipantCategory } from '@/features/registrations/types/registrationTypes'
 
 interface MemberCardProps {
   member: MemberFormValues
+  participantCategory: ParticipantCategory
   title: string
   number: number
   onEdit?: () => void
@@ -13,16 +14,18 @@ interface MemberCardProps {
   }
 }
 
-const MemberCard: React.FC<MemberCardProps> = ({ member, title, number, onEdit, accent }) => {
+const MemberCard: React.FC<MemberCardProps> = ({ member, participantCategory, title, number, onEdit, accent }) => {
+  const isUniversity = participantCategory === 'UNIVERSITY_STUDENT'
   const fields = [
     { label: 'Nama Lengkap', value: member.name },
     { label: 'Email', value: member.email },
-    { label: 'Nomor Telepon', value: member.phone },
-    { label: 'Jenjang', value: member.education_level },
-    { label: 'Jurusan', value: member.major || '-' },
-    { label: 'Fakultas', value: member.faculty || '-' },
-    { label: 'NISN/NIM', value: member.student_id },
-    { label: 'Tanggal Lahir', value: member.birth_date },
+    ...(isUniversity
+      ? [
+          { label: 'Jurusan', value: member.major || '-' },
+          { label: 'Fakultas', value: member.faculty || '-' },
+        ]
+      : []),
+    { label: isUniversity ? 'NIM' : 'NISN', value: member.student_id },
   ]
 
   return (

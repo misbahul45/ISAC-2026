@@ -31,7 +31,6 @@ docs: |-
   - **Database yang Terkena**: `teams` — SELECT (Auth::user()).
   - **Efek Samping**: Tidak ada.
   - **Response** (200): `TeamResource` → id, code, email, name, phone,
-    schoolName(school_name), schoolAddress(school_address),
-    documentFileId(document_file_id), twibbonFileId(twibbon_file_id),
+    institutionName, institutionAddress (JSON string), documentUrl, twibbonUrl,
     status(uppercase), verifiedAt(verified_at→ISOString).
   - **Catatan**: Tidak ada.

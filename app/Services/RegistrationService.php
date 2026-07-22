@@ -11,6 +11,7 @@ use App\Models\RegistrationStatus;
 use App\Models\Team;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class RegistrationService
@@ -65,10 +66,11 @@ class RegistrationService
     {
         $registration = $this->registration($team);
         $this->assertEditable($team, $registration, 'TEAM');
+        $this->assertInstitutionMatchesCompetition($data['institution_name'], $registration->competition);
 
         DB::transaction(function () use ($team, $data, $registration): void {
             $team->update(Arr::only($data, [
-                'name', 'phone', 'school_name', 'school_address', 'school_province', 'school_city',
+                'name', 'phone', 'institution_name', 'institution_address',
             ]));
             $registration->update(['team_completed_at' => $registration->team_completed_at ?? now()]);
             $this->resolveDataRevision($team, 'TEAM');
@@ -93,23 +95,53 @@ class RegistrationService
         $competition = $registration->competition;
         [$minimum, $maximum] = match ($competition->type) {
             Competition::TYPE_OLIMPIADE => [1, 1],
-            Competition::TYPE_BUSINESS_PLAN, Competition::TYPE_BUSINESS_IT_CASE => [2, 3],
+            Competition::TYPE_BUSINESS_PLAN, Competition::TYPE_BUSINESS_IT_CASE => [3, 3],
             default => throw ValidationException::withMessages(['members' => ['Tipe kompetisi tidak valid.']]),
         };
 
-        $members = $data['members'];
+        $members = array_values($data['members']);
         if (count($members) < $minimum || count($members) > $maximum) {
-            throw ValidationException::withMessages(['members' => ["Jumlah anggota harus {$minimum} sampai {$maximum} orang."]]);
+            $message = $minimum === $maximum
+                ? "Jumlah peserta harus tepat {$minimum} orang."
+                : "Jumlah peserta harus {$minimum} sampai {$maximum} orang.";
+            throw ValidationException::withMessages(['members' => [$message]]);
         }
 
-        if (count(array_filter($members, fn (array $member): bool => $member['role'] === 'LEADER')) !== 1) {
+        $isOlympiad = $competition->type === Competition::TYPE_OLIMPIADE;
+        $isUniversity = $competition->type === Competition::TYPE_BUSINESS_IT_CASE;
+
+        if ($isOlympiad) {
+            $members[0]['role'] = 'LEADER';
+        } elseif (count(array_filter($members, fn (array $member): bool => $member['role'] === 'LEADER')) !== 1) {
             throw ValidationException::withMessages(['members' => ['Harus memiliki tepat satu ketua tim (LEADER).']]);
         }
 
-        foreach ($members as $member) {
+        $memberErrors = [];
+        foreach ($members as $index => &$member) {
+            $identityLabel = $isUniversity ? 'NIM' : 'NISN';
+            if (mb_strlen(trim($member['student_id'])) < 3) {
+                $memberErrors["members.{$index}.student_id"] = ["{$identityLabel} minimal 3 karakter."];
+            }
+
+            if ($isUniversity) {
+                foreach (['major' => 'Jurusan', 'faculty' => 'Fakultas'] as $field => $label) {
+                    if (blank($member[$field] ?? null)) {
+                        $memberErrors["members.{$index}.{$field}"] = ["{$label} wajib diisi untuk mahasiswa."];
+                    }
+                }
+            } else {
+                $member['major'] = null;
+                $member['faculty'] = null;
+            }
+
             if (! empty($member['photo_file_id'])) {
                 $this->assertOwnedFile($team, $member['photo_file_id'], 'MEMBER_PHOTO', 'photo_file_id');
             }
+        }
+        unset($member);
+
+        if ($memberErrors !== []) {
+            throw ValidationException::withMessages($memberErrors);
         }
 
         DB::transaction(function () use ($team, $members, $registration): void {
@@ -127,12 +159,9 @@ class RegistrationService
                     'name' => $payload['name'],
                     'role' => $payload['role'],
                     'email' => strtolower(trim($payload['email'])),
-                    'phone' => $payload['phone'],
-                    'education_level' => $payload['education_level'],
                     'major' => $payload['major'] ?? null,
                     'faculty' => $payload['faculty'] ?? null,
                     'student_id' => $payload['student_id'],
-                    'birth_date' => $payload['birth_date'],
                     'photo_file_id' => $payload['photo_file_id'] ?? null,
                     'sort_order' => $index + 1,
                 ];
@@ -184,6 +213,14 @@ class RegistrationService
         return $team->load('registration.batch', 'registration.paymentProofFile', 'registration.paymentForStage');
     }
 
+    /**
+     * @return array{originalAmount: float, discountPercent: int, discountAmount: float, amount: float, promoApplied: bool, promoCode: ?string}
+     */
+    public function quotePayment(Team $team, ?string $promoCode): array
+    {
+        return $this->paymentQuote($this->registration($team), $promoCode);
+    }
+
     public function submitPayment(Team $team, array $data): Team
     {
         $registration = $this->registration($team);
@@ -193,20 +230,27 @@ class RegistrationService
 
         $paymentGateActive = $registration->competition->type === Competition::TYPE_OLIMPIADE || $registration->payment_for_stage_id !== null;
         if (! $paymentGateActive || ! in_array($registration->status, [RegistrationStatus::WAITING_PAYMENT, RegistrationStatus::REVISION_REQUIRED], true)) {
-            if ($registration->payment_submitted_at !== null && $registration->payment_proof_file_id === $data['payment_proof_file_id']) {
+            $requestedPromoCode = Str::upper(trim((string) ($data['promo_code'] ?? '')));
+            $submittedPromoCode = Str::upper(trim((string) $registration->promo_code));
+            if ($registration->payment_submitted_at !== null
+                && $registration->payment_proof_file_id === $data['payment_proof_file_id']
+                && $submittedPromoCode === $requestedPromoCode) {
                 return $this->getPaymentData($team);
             }
             throw ValidationException::withMessages(['payment' => ['Pembayaran tidak tersedia pada tahap ini.']]);
         }
 
         $this->assertOwnedFile($team, $data['payment_proof_file_id'], 'PAYMENT_PROOF', 'payment_proof_file_id');
+        $quote = $this->paymentQuote($registration, $data['promo_code'] ?? null);
 
-        DB::transaction(function () use ($team, $data, $registration): void {
+        DB::transaction(function () use ($team, $data, $registration, $quote): void {
             $registration->update([
                 'payment_proof_file_id' => $data['payment_proof_file_id'],
-                'amount_paid' => $registration->batch->price,
+                'amount_paid' => $quote['amount'],
                 'payment_method' => $data['payment_method'],
-                'transaction_id' => $data['transaction_id'] ?? null,
+                'promo_code' => $quote['promoCode'],
+                'discount_percent' => $quote['discountPercent'],
+                'discount_amount' => $quote['discountAmount'],
                 'payment_submitted_at' => now(),
                 'payment_rejection_reason' => null,
                 'status' => RegistrationStatus::WAITING_VERIFICATION,
@@ -219,6 +263,40 @@ class RegistrationService
         });
 
         return $team->fresh()->load('registration.batch', 'registration.paymentProofFile', 'registration.paymentForStage');
+    }
+
+    /**
+     * @return array{originalAmount: float, discountPercent: int, discountAmount: float, amount: float, promoApplied: bool, promoCode: ?string}
+     */
+    private function paymentQuote(Registration $registration, ?string $promoCode): array
+    {
+        $originalAmount = round((float) $registration->batch->price, 2);
+        $normalizedPromoCode = Str::upper(trim((string) $promoCode));
+        $configuredPromoCode = Str::upper(trim((string) config('registration.promo.code')));
+        $promoApplied = $normalizedPromoCode !== ''
+            && $configuredPromoCode !== ''
+            && hash_equals($configuredPromoCode, $normalizedPromoCode);
+
+        if ($normalizedPromoCode !== '' && ! $promoApplied) {
+            throw ValidationException::withMessages([
+                'promo_code' => ['Kode promo tidak valid.'],
+            ]);
+        }
+
+        $discountPercent = $promoApplied
+            ? max(0, min(100, (int) config('registration.promo.discount_percent', 15)))
+            : 0;
+        $discountAmount = round($originalAmount * $discountPercent / 100, 2);
+        $amount = max(0, round($originalAmount - $discountAmount, 2));
+
+        return [
+            'originalAmount' => $originalAmount,
+            'discountPercent' => $discountPercent,
+            'discountAmount' => $discountAmount,
+            'amount' => $amount,
+            'promoApplied' => $promoApplied,
+            'promoCode' => $promoApplied ? $normalizedPromoCode : null,
+        ];
     }
 
     public function submitForVerification(Team $team): Team
@@ -254,6 +332,29 @@ class RegistrationService
         }
 
         return $registration;
+    }
+
+    private function assertInstitutionMatchesCompetition(string $institutionName, Competition $competition): void
+    {
+        $institution = Str::lower(trim($institutionName));
+        $isUniversityInstitution = collect([
+            'universitas', 'university', 'institut', 'politeknik', 'akademi', 'sekolah tinggi', 'college',
+        ])->contains(fn (string $keyword): bool => str_contains($institution, $keyword));
+        $isHighSchoolInstitution = preg_match('/\b(sma|sman|smk|smkn|ma|man|mas)\b/u', $institution) === 1
+            || str_contains($institution, 'madrasah aliyah');
+
+        if ($competition->type === Competition::TYPE_BUSINESS_IT_CASE && ! $isUniversityInstitution) {
+            throw ValidationException::withMessages([
+                'institution_name' => ['Business IT Case hanya diperuntukkan bagi mahasiswa perguruan tinggi.'],
+            ]);
+        }
+
+        if (in_array($competition->type, [Competition::TYPE_OLIMPIADE, Competition::TYPE_BUSINESS_PLAN], true)
+            && ! $isHighSchoolInstitution) {
+            throw ValidationException::withMessages([
+                'institution_name' => ['Olimpiade dan Business Plan hanya diperuntukkan bagi siswa SMA, SMK, atau MA.'],
+            ]);
+        }
     }
 
     private function assertOwnedFile(Team $team, string $fileId, string $purpose, string $field): File

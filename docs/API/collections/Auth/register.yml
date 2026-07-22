@@ -15,9 +15,9 @@ http:
     type: json
     data: |-
       {
-          "email": "lkiokijoap@gmail.com",
-          "password": "kirby1234",
-          "password_confirmation": "kirby1234"
+          "email": "{{registrationEmail}}",
+          "password": "Password123!",
+          "password_confirmation": "Password123!"
       }
   auth: inherit
 
@@ -35,15 +35,11 @@ docs: |-
     unique:teams,email; `password` required/min:8/confirmed
     (butuh `password_confirmation`).
   - **Alur Proses** (`AuthService::register`, `app/Services/AuthService.php:27-41`):
-    DB::transaction → createTeam status `EMAIL_UNVERIFIED` (password di-bcrypt via
+    DB::transaction → create Team status `INCOMPLETE` (password di-bcrypt via
     mutator `Team.php:114-119`); lalu `sendVerificationCode` (`AuthService.php:140-166`):
     cek status, hapus kode lama, generate 6 digit, simpan `type='verify_email'`,
     kirim `VerifyEmailMail`.
-  - **Database**: `teams` INSERT; `password_reset_codes` INSERT (type verify_email).
-    Migrasi `..._000006_create_teams_table.php`, `..._100851_create_password_reset_codes.php`.
+  - **Database**: `teams`, `auth_challenges`, dan `personal_access_tokens` INSERT.
   - **Efek Samping**: kirim `VerifyEmailMail`.
-  - **Response** (201): `AuthResource` → id, code, email, status (uppercase →
-    `"EMAIL_UNVERIFIED"`).
-  - **Catatan**: ⚠️ `sendVerificationCode` dijalankan di luar transaksi → bila mail
-    gagal, team sudah ada tapi OTP tak terkirim (Lampiran B #7).
-
+  - **Response** (201): token, principalType `TEAM`, Team, dan `redirectTo: /auth/verify-email`.
+  - **Catatan**: Pengiriman email berada dalam transaksi; kegagalan provider me-roll back akun.

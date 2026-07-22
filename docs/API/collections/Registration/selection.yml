@@ -15,8 +15,8 @@ http:
     type: json
     data: |-
       {
-          "competition_id": "00000000-0000-0000-0000-000000000000",
-          "batch_id": "00000000-0000-0000-0000-000000000000"
+          "competition_id": "{{competition_id}}",
+          "batch_id": "{{batch_id}}"
       }
   auth:
     type: bearer

@@ -1,0 +1,32 @@
+info:
+  name: payment-revision
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/registrations/{{registration_id}}/payment/revision"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: X-Request-ID
+      value: bruno-payment-revision
+  body:
+    type: json
+    data: |-
+      {
+          "reason": "Bukti pembayaran tidak terbaca."
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/registrations/{registration}/payment/revision
+  Meminta revisi pembayaran dengan alasan wajib maksimal 2000 karakter.

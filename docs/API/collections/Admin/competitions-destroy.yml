@@ -13,7 +13,7 @@ http:
       value: ""
   auth:
     type: bearer
-    token: "{{apiToken}}"
+    token: "{{adminToken}}"
 
 settings:
   encodeUrl: true

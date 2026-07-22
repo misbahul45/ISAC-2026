@@ -26,10 +26,9 @@ docs: |-
   - **Deskripsi**: Ambil data pembayaran (harga, bukti existing, status payment).
   - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:71`.
   - **Request**: Header `Authorization: Bearer <token>`.
-  - **Alur Proses**: `$team->load('registration.batch')` → `new PaymentFormResource($team)`.
-    `PaymentFormResource` (`app/Http/Resources/PaymentFormResource.php:23-34`):
-    price (string|from batch), paymentProofFileId, amountPaid, paymentMethod, paymentSubmittedAt,
-    paymentRequiredAt, paidAt, status.
+  - **Alur Proses**: memuat registration, Batch, proof file, dan payment Stage.
+    Resource membawa originalAmount, amount final, discount, promo, methods,
+    instructions, status, proof existing, rejectionReason, dan submittedAt.
   - **Database yang Terkena**: `teams` — SELECT; `registrations` — SELECT (eager load); `batches` — SELECT (eager load).
   - **Efek Samping**: Tidak ada.
   - **Response** (200): `{status, message, data: PaymentFormResource, metadata, error}`.

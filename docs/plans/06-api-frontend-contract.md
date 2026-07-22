@@ -95,10 +95,19 @@ type AuthTeam = {
   code: string
   email: string
   name: string | null
+  phone: string | null
+  institutionName: string | null
   status: TeamStatus
   emailVerifiedAt: string | null
+  nextRedirect: string
+  redirectTo: string
 }
 ```
+
+`GET /api/auth/me` memakai kontrak `AuthTeam` yang sama. Frontend wajib memakai
+`nextRedirect` sebagai source of truth untuk guard `/dashboard`: Team yang belum
+menyelesaikan registrasi diarahkan ke step registrasi aktual, sedangkan Admin
+diarahkan ke `/admin/dashboard`.
 
 Response Admin:
 ```typescript
@@ -302,10 +311,7 @@ Response:
 type TeamProfileData = {
   name: string | null
   phone: string | null
-  school_name: string | null
-  school_province: string | null
-  school_city: string | null
-  school_address: string | null
+  institutionName: string | null
   competition_summary: { name: string, type: string }
 }
 ```
@@ -319,12 +325,14 @@ Input:
 type TeamFormValues = {
   name: string
   phone: string
-  school_name: string
-  school_province: string
-  school_city: string
-  school_address: string
+  institution_name: string
+  institution_address: string
 }
 ```
+
+`institution_address` adalah hasil `JSON.stringify({ province, city, address })`.
+UI menampilkan enam input dalam dua kolom pada desktop (tiga identitas di kiri,
+tiga alamat di kanan) dan satu kolom pada layar kecil.
 
 ### Members
 
@@ -334,6 +342,9 @@ Response:
 ```typescript
 type MembersPageData = {
   competitionType: string
+  participantCategory: 'HIGH_SCHOOL_STUDENT' | 'UNIVERSITY_STUDENT'
+  identityLabel: 'NISN' | 'NIM'
+  showsLeaderRole: boolean
   minMembers: number
   maxMembers: number
   members: Array<MemberData>
@@ -345,12 +356,9 @@ type MemberData = {
   name: string
   role: 'LEADER' | 'MEMBER'
   email: string
-  phone: string
-  education_level: string
   major: string | null
   faculty: string | null
   student_id: string
-  birth_date: string
   photo_file_id: string | null
   sort_order: number
 }
@@ -366,6 +374,12 @@ type FinalizeMembersPayload = {
   members: Array<MemberFormValues>
 }
 ```
+
+`MemberFormValues` tidak memiliki phone, education_level, atau birth_date. `student_id` berisi NISN untuk SMA/SMK/MA dan NIM untuk mahasiswa. Foto nullable; major dan faculty hanya wajib untuk BUSINESS_IT_CASE.
+
+Business Plan dan Business IT Case selalu mengirim tepat tiga Member. Frontend
+langsung menyediakan tiga slot tetap tanpa tombol tambah atau hapus; Olimpiade
+menyediakan satu slot peserta.
 
 ### Documents
 
@@ -399,14 +413,21 @@ type DocumentsFormValues = {
 Response:
 ```typescript
 type PaymentPageData = {
+  originalAmount: number
   amount: number
-  payment_methods: string[]
-  payment_instructions: string
-  payment_status: string
-  existing_proof: FileData | null
-  rejection_reason: string | null
+  discountPercent: number
+  discountAmount: number
+  promoApplied: boolean
+  promoCode: string | null
+  paymentMethods: string[]
+  paymentInstructions: string
+  paymentStatus: string
+  existingProof: FileData | null
+  rejectionReason: string | null
 }
 ```
+
+`POST /api/registrations/me/payment/quote` menerima `promo_code` nullable dan mengembalikan `originalAmount`, `discountPercent`, `discountAmount`, `amount`, `promoApplied`, serta `promoCode`.
 
 ### Submit Payment
 
@@ -417,7 +438,7 @@ Input:
 type PaymentFormValues = {
   payment_proof_file_id: string
   payment_method: string
-  transaction_id?: string
+  promo_code?: string
 }
 ```
 

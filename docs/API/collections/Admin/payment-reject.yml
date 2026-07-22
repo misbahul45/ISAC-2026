@@ -1,0 +1,32 @@
+info:
+  name: payment-reject
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/registrations/{{registration_id}}/payment/reject"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: X-Request-ID
+      value: bruno-payment-reject
+  body:
+    type: json
+    data: |-
+      {
+          "reason": "Pembayaran tidak valid."
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/registrations/{registration}/payment/reject
+  Menolak pembayaran dengan alasan wajib maksimal 2000 karakter.

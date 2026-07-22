@@ -136,10 +136,8 @@ Response:
   "data": {
     "name": null,
     "phone": null,
-    "school_name": null,
-    "school_province": null,
-    "school_city": null,
-    "school_address": null,
+    "institutionName": null,
+    "institutionAddress": null,
     "competition_summary": { "name": "OLIMPIADE", "type": "OLIMPIADE" }
   }
 }
@@ -152,10 +150,8 @@ Input:
 {
   "name": "Team Alpha",
   "phone": "08123456789",
-  "school_name": "SMA Negeri 1",
-  "school_province": "Jawa Timur",
-  "school_city": "Surabaya",
-  "school_address": "Jl. Contoh No. 1"
+  "institution_name": "SMA Negeri 1",
+  "institution_address": "{\"province\":\"Jawa Timur\",\"city\":\"Surabaya\",\"address\":\"Jl. Wijaya Kusuma No. 48\"}"
 }
 ```
 
@@ -190,6 +186,9 @@ Response:
   "status": "success",
   "data": {
     "competitionType": "OLIMPIADE",
+    "participantCategory": "HIGH_SCHOOL_STUDENT",
+    "identityLabel": "NISN",
+    "showsLeaderRole": false,
     "minMembers": 1,
     "maxMembers": 1,
     "members": [],
@@ -209,12 +208,10 @@ Input — seluruh daftar final Member, bukan incremental:
       "name": "John Doe",
       "role": "LEADER",
       "email": "john@example.com",
-      "phone": "08123456789",
-      "education_level": "SMA/SMK",
-      "major": "IPA",
+      "major": null,
       "faculty": null,
       "student_id": "12345",
-      "birth_date": "2006-01-15",
+      "photo_file_id": null,
       "sort_order": 1
     }
   ]
@@ -223,10 +220,16 @@ Input — seluruh daftar final Member, bukan incremental:
 
 Jumlah Member:
 - OLIMPIADE: tepat 1.
-- BUSINESS_PLAN: 2 atau 3.
-- BUSINESS_IT_CASE: 2 atau 3.
+- BUSINESS_PLAN: tepat 3.
+- BUSINESS_IT_CASE: tepat 3.
 
-Role: tepat satu LEADER, sisanya MEMBER.
+Role: Business Plan dan Business IT Case tepat satu LEADER, sisanya MEMBER. Untuk Olimpiade, UI hanya menampilkan "Peserta Olimpiade" dan backend menormalisasi peserta tunggal sebagai LEADER.
+
+Profil peserta:
+- OLIMPIADE dan BUSINESS_PLAN menggunakan kategori siswa SMA/SMK/MA serta label NISN; major dan faculty disimpan null.
+- BUSINESS_IT_CASE menggunakan kategori mahasiswa serta label NIM; major dan faculty wajib.
+- NISN/NIM diperlakukan sebagai string 3–50 karakter agar format identitas institusi tidak rusak.
+- Foto peserta opsional. Nomor telepon hanya diminta sekali pada fase Team.
 
 Backend dalam transaction:
 1. Pastikan fase Team selesai (team_completed_at terisi).
@@ -308,15 +311,29 @@ Response:
 {
   "status": "success",
   "data": {
+    "originalAmount": 50000,
     "amount": 50000,
-    "payment_methods": [ "BANK_TRANSFER", "QRIS" ],
-    "payment_instructions": "Transfer ke BNI 123456 a.n. ISAC",
-    "payment_status": "WAITING_PAYMENT",
-    "existing_proof": null,
-    "rejection_reason": null
+    "discountPercent": 0,
+    "discountAmount": 0,
+    "promoApplied": false,
+    "promoCode": null,
+    "paymentMethods": [ "BANK_TRANSFER", "QRIS" ],
+    "paymentInstructions": "Transfer ke BNI 123456 a.n. ISAC",
+    "paymentStatus": "WAITING_PAYMENT",
+    "existingProof": null,
+    "rejectionReason": null
   }
 }
 ```
+
+#### POST /api/registrations/me/payment/quote
+
+Input:
+```json
+{ "promo_code": "ISAXOP" }
+```
+
+Backend memvalidasi kode terhadap `REGISTRATION_PROMO_CODE` dan menghitung ulang harga Batch aktif. Promo `ISAXOP` dengan konfigurasi 15% mengubah harga 50000 menjadi 42500. Kode tidak pernah dipercaya atau dihitung hanya dari frontend.
 
 #### POST /api/registrations/me/payment
 
@@ -325,15 +342,15 @@ Input:
 {
   "payment_proof_file_id": "uuid",
   "payment_method": "BANK_TRANSFER",
-  "transaction_id": "TRX12345"
+  "promo_code": "ISAXOP"
 }
 ```
 
 Backend:
 1. Pastikan payment gate aktif.
 2. Pastikan File record ada.
-3. Ambil harga dari Batch (abaikan nominal client).
-4. Set amount_paid, payment_submitted_at.
+3. Ambil harga dari Batch dan hitung ulang promo dari konfigurasi server (abaikan nominal client).
+4. Simpan promo_code, discount_percent, discount_amount, amount_paid, dan payment_submitted_at.
 5. Set status WAITING_VERIFICATION.
 6. Untuk Olympiad initial: isi submitted_at dan ubah Team.status jadi WAITING_VERIFICATION.
 
@@ -407,7 +424,7 @@ Service memilih Stage ber-order paling awal pada Competition terkait.
 2. GET /api/competitions → POST /api/registrations/me/selection
 3. Registration langsung VERIFIED (payment gate)
 4. PATCH /api/registrations/me/team
-5. PUT /api/registrations/me/members (2-3 Member)
+5. PUT /api/registrations/me/members (tepat 3 Member)
 6. PATCH /api/registrations/me/documents → auto finalisasi
 7. WAITING_VERIFICATION (tanpa payment)
 8. Admin verifikasi data

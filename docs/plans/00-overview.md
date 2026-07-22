@@ -47,8 +47,8 @@ Dokumen ini adalah planning. Implementasi aplikasi belum dianggap selesai hanya 
 | Competition | Jumlah Member | Pembayaran awal | Registration status awal |
 |---|---:|---|---|
 | OLIMPIADE | Tepat 1 | Wajib | WAITING_PAYMENT |
-| BUSINESS_PLAN | 2 atau 3 | Tidak ada | VERIFIED |
-| BUSINESS_IT_CASE | 2 atau 3 | Tidak ada | VERIFIED |
+| BUSINESS_PLAN | Tepat 3 | Tidak ada | VERIFIED |
+| BUSINESS_IT_CASE | Tepat 3 | Tidak ada | VERIFIED |
 
 Business Plan dan Business IT Case baru menggunakan UI pembayaran ketika Team dinyatakan lolos menuju Semifinal.
 

@@ -1,15 +1,27 @@
 import { z } from 'zod'
+import type { ParticipantCategory } from '../types/registrationTypes'
 
-export const memberSchema = z.object({
-  name: z.string().trim().min(3, 'Nama minimal 3 karakter'),
-  email: z.string().trim().email('Email tidak valid'),
-  phone: z.string().trim().min(10, 'Nomor telepon minimal 10 digit'),
-  education_level: z.string().trim().min(2, 'Jenjang pendidikan wajib diisi'),
-  major: z.string().trim(),
-  faculty: z.string().trim(),
-  student_id: z.string().trim().min(3, 'NISN atau NIM wajib diisi'),
-  birth_date: z.string().min(1, 'Tanggal lahir wajib diisi'),
-  photo_file_id: z.string().nullable(),
-})
+export const createMemberSchema = (participantCategory: ParticipantCategory) => {
+  const isUniversity = participantCategory === 'UNIVERSITY_STUDENT'
+  const identityLabel = isUniversity ? 'NIM' : 'NISN'
+  const identitySchema = z
+    .string()
+    .trim()
+    .min(3, `${identityLabel} minimal 3 karakter`)
+    .max(50, `${identityLabel} maksimal 50 karakter`)
 
-export type MemberFormData = z.infer<typeof memberSchema>
+  return z.object({
+    name: z.string().trim().min(3, 'Nama lengkap minimal 3 karakter'),
+    email: z.string().trim().min(1, 'Email peserta wajib diisi').email('Format email tidak valid'),
+    major: isUniversity
+      ? z.string().trim().min(2, 'Jurusan wajib diisi untuk mahasiswa')
+      : z.string().trim(),
+    faculty: isUniversity
+      ? z.string().trim().min(2, 'Fakultas wajib diisi untuk mahasiswa')
+      : z.string().trim(),
+    student_id: identitySchema,
+    photo_file_id: z.string().nullable(),
+  })
+}
+
+export type MemberFormData = z.infer<ReturnType<typeof createMemberSchema>>

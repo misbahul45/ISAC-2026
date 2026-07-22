@@ -1,0 +1,32 @@
+info:
+  name: payment-quote
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/registrations/me/payment/quote"
+  headers:
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "promo_code": "ISAXOP"
+      }
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/registrations/me/payment/quote
+  Menghitung harga Batch aktif, promo, diskon, dan total final tanpa menyimpan
+  pembayaran. `promo_code` nullable; kode tidak valid menghasilkan 422.
+  Middleware: `auth:sanctum`, `principal.team`, `team.verified`.

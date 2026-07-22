@@ -24,7 +24,10 @@ export const registrationKeys = {
 function useInvalidateRegistration() {
   const queryClient = useQueryClient()
 
-  return () => queryClient.invalidateQueries({ queryKey: registrationKeys.all })
+  return () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: registrationKeys.all }),
+    queryClient.invalidateQueries({ queryKey: ['auth'] }),
+  ])
 }
 
 export function useCompetitions(query: CompetitionQuery = {}) {
@@ -119,6 +122,12 @@ export function useSubmitPayment() {
   })
 }
 
+export function usePaymentQuote() {
+  return useMutation({
+    mutationFn: (promoCode?: string) => registrationApi.quotePayment(promoCode),
+  })
+}
+
 export function useRegistrationSummary() {
   return useQuery({
     queryKey: registrationKeys.summary(),
@@ -134,4 +143,3 @@ export function useSubmitRegistrationVerification() {
     onSuccess: invalidate,
   })
 }
-

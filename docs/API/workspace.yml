@@ -27,73 +27,16 @@ collections:
 specs:
 
 docs: |-
-  # ISAC-2026 API Report (Bruno / OpenCollection)
+  # ISAC 2026 API Workspace
 
-  Laporan seluruh API JSON Laravel `ISAC-2026`. Disusun dari baca langsung
-  file sumber; setiap klaim merujuk file+baris. Aturan main:
-  1. Tidak ada asumsi — semua dari file dibaca.
-  2. Ketidakpastian ditandai: `⚠️ Tidak dapat dipastikan / perlu verifikasi manual.`
-  3. Middleware default group `api` = hanya `SubstituteBindings`
-     (`vendor/laravel/framework/.../Middleware.php:495-499`).
+  Workspace Bruno/OpenCollection ini mencakup seluruh 50 route JSON API yang
+  aktif. Kontrak canonical, endpoint matrix, environment, payload, auth, file,
+  payment, dan urutan pengujian tersedia di `README.md`.
 
-  ## Ringkasan Endpoint (40)
-  - System    : GET  /api/system/status                           (publik)
-  - Dashboard : GET  /api/dashboard/summary                       (publik)
-  - Auth      : POST /api/auth/register                           (publik, throttle:3,1)
-  - Auth      : POST /api/auth/login                              (publik, throttle:5,1)
-  - Auth      : POST /api/auth/forgot-password                    (publik, throttle:3,15)
-  - Auth      : POST /api/auth/reset-password/verify              (publik, throttle:5,15)
-  - Auth      : POST /api/auth/reset-password                     (publik, throttle:3,15)
-  - Auth      : POST /api/auth/logout                             (auth:sanctum, throttle:10,1)
-  - Auth      : GET  /api/auth/me                                 (auth:sanctum)
-  - Auth      : POST /api/auth/verify-email/resend                (auth:sanctum, throttle:1,1)
-  - Auth      : POST /api/auth/verify-email                       (auth:sanctum, throttle:6,10)
-  - Team      : GET  /api/teams/me                                (auth:sanctum)
-  - Team      : PATCH /api/teams/me                               (auth:sanctum)
-  - File      : POST /api/files                                   (auth:sanctum)
-  - File      : GET  /api/files/{file} (name: files.show)         (auth:sanctum)
-  - ImageKit  : GET  /api/imagekit-auth                           (auth:sanctum)
-  - Competitions: GET  /api/competitions                          (publik)
-  - Competitions: GET  /api/competitions/open                     (publik)
-  - Competitions: GET  /api/competitions/{competition}            (publik)
-  - Competitions: GET  /api/competitions/{competition}/batches/open (publik)
-  - Registration: GET  /api/registrations/me/context              (auth:sanctum)
-  - Registration: POST /api/registrations/me/selection            (auth:sanctum)
-  - Registration: GET  /api/registrations/me/team                 (auth:sanctum)
-  - Registration: PATCH /api/registrations/me/team                (auth:sanctum)
-  - Registration: GET  /api/registrations/me/members              (auth:sanctum)
-  - Registration: PUT  /api/registrations/me/members              (auth:sanctum)
-  - Registration: GET  /api/registrations/me/documents            (auth:sanctum)
-  - Registration: PATCH /api/registrations/me/documents           (auth:sanctum)
-  - Registration: GET  /api/registrations/me/payment              (auth:sanctum)
-  - Registration: POST /api/registrations/me/payment              (auth:sanctum)
-  - Registration: GET  /api/registrations/me/summary              (auth:sanctum)
-  - Registration: POST /api/registrations/me/submit-verification  (auth:sanctum)
-  - Admin     : POST /api/admin/competitions                      (auth:admins)
-  - Admin     : PATCH /api/admin/competitions/{competition}       (auth:admins)
-  - Admin     : DELETE /api/admin/competitions/{competition}      (auth:admins)
-  - Admin     : GET  /api/admin/batches                           (auth:admins)
-  - Admin     : POST /api/admin/batches                           (auth:admins)
-  - Admin     : GET  /api/admin/batches/{batch}                   (auth:admins)
-  - Admin     : PATCH /api/admin/batches/{batch}                  (auth:admins)
-  - Admin     : DELETE /api/admin/batches/{batch}                 (auth:admins)
+  Gunakan environment Local:
+  - baseUrl: http://localhost:8080
+  - apiToken: token Team dari Auth/login
+  - adminToken: token Admin dari Auth/login
 
-  Detail tiap endpoint ada di blok `docs` masing-masing file koleksi.
-
-  ## Environment (variabel, agar mudah di-track)
-  URL & token tidak di-hardcode per-request, melainkan diambil dari environment
-  Bruno `Local` (`environments/local.yaml`):
-  - `baseUrl`   : base URL API, default `http://127.0.0.1:8000`
-  - `apiToken`  : bearer token contoh (sanctum), `1|hOixlBJ3...`
-  Di tiap request: `url: "{{baseUrl}}/api/..."` dan `auth.token: "{{apiToken}}"`.
-  Ganti `baseUrl`/token di satu tempat (file environment) → berlaku ke semua
-  request. (Catatan: environment tidak di-ignore git; file `.env*` lokal
-  di-ignore per `docs/API/.gitignore`.)
-
-  ## Lampiran B — Ketidakpastian & Bug (didokumentasikan, belum direpair)
-  1. OTP `verify-code` tidak filter `type` (`AuthRepository.php:41-47`) → kode
-     verifikasi email bisa dipakai dapat `resetToken` reset password.
-  2. `forgot-password` hapus OTP verifikasi email (`AuthRepository.php:34-37`).
-  3. Inkonsistensi response envelope (Auth vs Todo — sudah dihapus).
-  4. `register` kirim mail di luar transaksi DB (`AuthService.php:38-40`).
-  5. `verify-email` tidak cek status sebelum `ACTIVE` (`AuthService.php:188-191`).
+  Request memakai snake_case, response memakai camelCase, dan semua response
+  aplikasi menggunakan envelope status/message/data/metadata/error.

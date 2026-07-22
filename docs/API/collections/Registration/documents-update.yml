@@ -15,8 +15,8 @@ http:
     type: json
     data: |-
       {
-          "documentUrl": "https://storage.example.com/documents/team-x.pdf",
-          "twibbonUrl": "https://instagram.com/p/xxx"
+          "document_url": "https://drive.google.com/drive/folders/team-documents",
+          "twibbon_url": "https://drive.google.com/drive/folders/team-twibbon"
       }
   auth:
     type: bearer
@@ -34,8 +34,8 @@ docs: |-
   - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:70`.
   - **Request** (validasi `UpdateDocumentsRequest`,
     `app/Http/Requests/Registration/UpdateDocumentsRequest.php:12-17`):
-    - `documentUrl`: required, url, max:2048
-    - `twibbonUrl`: required, url, max:2048
+    - `document_url`: required HTTPS Google Drive URL, max:2048
+    - `twibbon_url`: required HTTPS Google Drive URL, max:2048
   - **Alur Proses** (`RegistrationService::updateDocuments`, `app/Services/RegistrationService.php:194-223`):
     1. Cek registration ada.
     2. `$team->update(...)` — update `document_url`, `twibbon_url`.

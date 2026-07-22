@@ -1,0 +1,32 @@
+info:
+  name: teams-reject
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/teams/{{team_id}}/reject"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: X-Request-ID
+      value: bruno-team-reject
+  body:
+    type: json
+    data: |-
+      {
+          "reason": "Data pendaftaran tidak memenuhi ketentuan."
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/teams/{team}/reject
+  Menolak data Team dengan `reason` wajib, maksimal 2000 karakter.

@@ -1,7 +1,7 @@
 import { getJson, patchJson, postJson, putJson } from '@/lib/api'
 import type {
   CompetitionListResponse, CompetitionQuery, DocumentsFormValues, DocumentsPageResponse,
-  FinalizeMembersPayload, MembersPageResponse, PaymentFormValues, PaymentPageResponse,
+  FinalizeMembersPayload, MembersPageResponse, PaymentFormValues, PaymentPageResponse, PaymentQuoteResponse,
   RegistrationContextResponse, RegistrationMutationResponse, RegistrationSummaryResponse,
   SelectCompetitionPayload, TeamFormValues, TeamProfileResponse,
 } from '../types/registrationTypes'
@@ -19,6 +19,7 @@ export const registrationApi = {
   documents: () => getJson<DocumentsPageResponse>(`${REGISTRATION_API}/documents`),
   updateDocuments: (payload: DocumentsFormValues) => patchJson<RegistrationMutationResponse>(`${REGISTRATION_API}/documents`, payload),
   payment: () => getJson<PaymentPageResponse>(`${REGISTRATION_API}/payment`),
+  quotePayment: (promoCode?: string) => postJson<PaymentQuoteResponse>(`${REGISTRATION_API}/payment/quote`, { promo_code: promoCode || null }),
   submitPayment: (payload: PaymentFormValues) => postJson<RegistrationMutationResponse>(`${REGISTRATION_API}/payment`, payload),
   summary: () => getJson<RegistrationSummaryResponse>(`${REGISTRATION_API}/summary`),
   submitForVerification: () => postJson<RegistrationMutationResponse>(`${REGISTRATION_API}/submit-verification`),

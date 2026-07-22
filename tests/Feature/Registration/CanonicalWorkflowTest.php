@@ -47,10 +47,12 @@ test('canonical olympiad workflow runs from selection through admin activation',
     $this->withToken($teamToken)->patchJson('/api/registrations/me/team', [
         'name' => 'Canonical Team',
         'phone' => '081234567890',
-        'school_name' => 'SMA Canonical',
-        'school_province' => 'Jawa Timur',
-        'school_city' => 'Surabaya',
-        'school_address' => 'Jl. Workflow No. 1',
+        'institution_name' => 'SMA Canonical',
+        'institution_address' => json_encode([
+            'province' => 'Jawa Timur',
+            'city' => 'Surabaya',
+            'address' => 'Jl. Canonical No. 1',
+        ], JSON_THROW_ON_ERROR),
     ])->assertOk()->assertJsonPath('data.redirectTo', '/registration/biodata');
 
     $this->withToken($teamToken)->putJson('/api/registrations/me/members', [
@@ -58,12 +60,9 @@ test('canonical olympiad workflow runs from selection through admin activation',
             'name' => 'Canonical Leader',
             'role' => 'LEADER',
             'email' => 'leader@canonical.test',
-            'phone' => '081234567890',
-            'education_level' => 'SMA/SMK',
-            'major' => 'IPA',
+            'major' => null,
             'faculty' => null,
             'student_id' => 'CANONICAL-001',
-            'birth_date' => '2006-01-15',
             'photo_file_id' => null,
             'sort_order' => 1,
         ]],
@@ -83,7 +82,6 @@ test('canonical olympiad workflow runs from selection through admin activation',
     $this->withToken($teamToken)->postJson('/api/registrations/me/payment', [
         'payment_proof_file_id' => $proof->id,
         'payment_method' => 'QRIS',
-        'transaction_id' => 'CANONICAL-TX',
     ])->assertOk()
         ->assertJsonPath('data.context.registration.status', RegistrationStatus::WAITING_VERIFICATION->value)
         ->assertJsonPath('data.redirectTo', '/dashboard');

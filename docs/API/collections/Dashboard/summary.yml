@@ -11,7 +11,9 @@ http:
       value: application/json
     - name: ""
       value: ""
-  auth: inherit
+  auth:
+    type: bearer
+    token: "{{apiToken}}"
 
 settings:
   encodeUrl: true
@@ -21,20 +23,12 @@ settings:
 
 docs: |-
   #### GET /api/dashboard/summary — DashboardController@summary
-  - **Deskripsi**: Ringkasan jumlah todo (total, aktif=belum selesai, selesai).
-  - **Middleware & Auth**: Publik. Sumber: `routes/api.php:29`.
+  - **Deskripsi**: Ringkasan status Team, registrasi, peserta, pembayaran, dan current Stage.
+  - **Middleware & Auth**: `auth:sanctum`, `principal.team`, `team.verified`.
   - **Request**: Tidak ada.
-  - **Alur Proses** (`DashboardService::getSummary` → `DashboardRepository::todoSummary`,
-    `app/Repositories/DashboardRepository.php:13-23`):
-    1. `Todo::count()` → total.
-    2. `Todo::where('is_completed', true)->count()` → completed.
-    3. `active = total - completed`.
-    Dibungkus `DashboardSummaryResource` (`app/Http/Resources/DashboardSummaryResource.php`).
-  - **Database yang Terkena**: `todos` — 2× SELECT COUNT
-    (⚠️ lihat Lampiran B #1: tabel `todos` belum punya migration).
+  - **Alur Proses**: `DashboardService` memuat Team beserta members, registration,
+    competition, batch, payment proof, payment stage, dan current Stage.
+  - **Database yang Terkena**: teams, members, registrations, competitions, batches,
+    files, dan stages (read only).
   - **Efek Samping**: Tidak ada.
-  - **Response** (200): `{status:'success', message:'Dashboard summary retrieved
-    successfully.', data:{total, active, completed}}`.
-  - **Catatan**: ⚠️ Hanya menghitung `todos`, padahal aplikasi punya domain
-    Competition/Registration/Submission/Exam yang jauh lebih luas — kemungkinan
-    placeholder. Perlu verifikasi manual.
+  - **Response** (200): envelope canonical dengan `DashboardSummaryResource`.

@@ -1,0 +1,33 @@
+info:
+  name: teams-revision
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/teams/{{team_id}}/revision"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: X-Request-ID
+      value: bruno-team-revision
+  body:
+    type: json
+    data: |-
+      {
+          "revision_step": "TEAM",
+          "verification_note": "Perbaiki data tim sesuai dokumen resmi."
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/teams/{team}/revision
+  `revision_step` wajib salah satu TEAM, MEMBERS, atau DOCUMENTS. Catatan maksimal 2000 karakter.

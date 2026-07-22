@@ -79,6 +79,7 @@ Route::prefix('registrations')->middleware(['auth:sanctum', 'principal.team', 't
     Route::get('/me/documents', [RegistrationController::class, 'getDocuments']);
     Route::patch('/me/documents', [RegistrationController::class, 'updateDocuments']);
     Route::get('/me/payment', [RegistrationController::class, 'getPayment']);
+    Route::post('/me/payment/quote', [RegistrationController::class, 'quotePayment']);
     Route::post('/me/payment', [RegistrationController::class, 'submitPayment']);
     Route::get('/me/summary', [RegistrationController::class, 'summary']);
     Route::post('/me/submit-verification', [RegistrationController::class, 'submitVerification']);

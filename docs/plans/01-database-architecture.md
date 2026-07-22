@@ -18,9 +18,7 @@ Team menyimpan identitas akun, data institusi, URL dokumen, status verifikasi da
 ### Field
 
 - id (UUID), code, email, password, email_verified_at.
-- name, phone, school_name, school_address.
-- school_province, nullable.
-- school_city, nullable.
+- name, phone, institution_name, institution_address (JSON string berisi province, city, address).
 - document_url, twibbon_url.
 - current_stage_id.
 - status, verified_by, verified_at.
@@ -59,18 +57,19 @@ Team memiliki satu-ke-banyak Member.
 ### Field
 
 - id (UUID), team_id.
-- name, role, email, phone.
-- education_level, major, faculty, student_id, birth_date.
-- photo_file_id jika fitur foto digunakan.
+- name, role, email.
+- major dan faculty untuk peserta mahasiswa; null untuk peserta SMA/SMK/MA.
+- student_id menyimpan NISN atau NIM sesuai Competition.
+- photo_file_id nullable karena foto peserta opsional.
 - sort_order.
 - timestamps dan soft delete.
 
 ### Perubahan
 
 - Model Member menggunakan UUID generation.
-- Tambahkan education_level agar sesuai kebutuhan biodata UI.
 - Tambahkan sort_order untuk Ketua, Anggota 1, dan Anggota 2.
 - Normalisasi role menjadi LEADER dan MEMBER.
+- Data nomor telepon hanya disimpan pada Team; Member tidak menyimpan phone, education_level, atau birth_date.
 - Pertahankan unique email global pada tahap awal agar satu peserta tidak berada di dua Team aktif.
 
 ### Constraint domain
@@ -78,13 +77,14 @@ Team memiliki satu-ke-banyak Member.
 Constraint berikut ditegakkan dalam service transaction:
 
 - OLIMPIADE tepat satu Member.
-- BUSINESS_PLAN dua atau tiga Member.
-- BUSINESS_IT_CASE dua atau tiga Member.
-- Setiap Team tepat satu LEADER.
+- BUSINESS_PLAN tepat tiga Member.
+- BUSINESS_IT_CASE tepat tiga Member.
+- BUSINESS_PLAN dan BUSINESS_IT_CASE tepat satu LEADER.
+- Member tunggal OLIMPIADE dinormalisasi sebagai LEADER oleh backend tanpa pilihan ketua pada UI.
 - sort_order unique dalam satu Team.
 - Semua Member pada request harus milik Team authenticated.
 
-Fase Member hanya selesai setelah user menekan finalisasi. Jumlah row saja tidak cukup karena dua Member adalah jumlah final yang valid sekaligus dapat berarti form ketiga belum diisi.
+Fase Member hanya selesai setelah user menekan finalisasi. Backend memastikan BUSINESS_PLAN dan BUSINESS_IT_CASE memiliki tepat tiga Member, sedangkan OLIMPIADE tepat satu Member.
 
 ## Registration
 
@@ -95,7 +95,8 @@ Registration menghubungkan Team, Competition, dan Batch; menyimpan progress onbo
 - id (UUID), team_id, competition_id, batch_id.
 - status.
 - payment_proof_file_id.
-- amount_paid, payment_method, transaction_id, paid_at.
+- amount_paid, payment_method, paid_at.
+- promo_code, discount_percent, discount_amount sebagai snapshot promo saat pembayaran disubmit.
 - payment_required_at, payment_submitted_at.
 - payment_verified_by, payment_verified_at.
 - payment_rejection_reason.

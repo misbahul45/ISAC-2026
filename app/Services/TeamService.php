@@ -14,7 +14,7 @@ class TeamService
     }
 
     /**
-     * @param  array{name?: string, phone?: string|null, school_name?: string|null, school_address?: string|null, document_url?: string|null, twibbon_url?: string|null}  $data
+     * @param  array{name?: string, phone?: string|null, institution_name?: string|null, institution_address?: string|null, document_url?: string|null, twibbon_url?: string|null}  $data
      */
     public function updateProfile(Team $team, array $data): Team
     {

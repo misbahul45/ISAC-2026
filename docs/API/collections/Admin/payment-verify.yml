@@ -1,0 +1,26 @@
+info:
+  name: payment-verify
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/registrations/{{registration_id}}/payment/verify"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: X-Request-ID
+      value: bruno-payment-verify
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/registrations/{registration}/payment/verify
+  Verifikasi pembayaran yang telah diajukan. Memerlukan admin pembayaran atau super admin.

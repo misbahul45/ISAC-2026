@@ -10,11 +10,8 @@ export type CompetitionType = z.infer<typeof competitionTypeSchema>
 
 export const teamDetailSchema = z.object({
   name: z.string().min(1, 'Nama tim wajib diisi'),
-  school_name: z.string().min(1, 'Nama institusi wajib diisi'),
-  province: z.string().min(1, 'Provinsi wajib diisi'),
-  city: z.string().min(1, 'Kota wajib diisi'),
-  address: z.string().min(1, 'Alamat wajib diisi'),
-  competition_type: competitionTypeSchema,
+  phone: z.string().min(10, 'Nomor telepon minimal 10 digit'),
+  institution_name: z.string().min(1, 'Nama institusi wajib diisi'),
 })
 
 export type TeamDetailInput = z.infer<typeof teamDetailSchema>
@@ -22,8 +19,10 @@ export type TeamDetailInput = z.infer<typeof teamDetailSchema>
 export const memberDetailSchema = z.object({
   id: z.number(),
   namaLengkap: z.string().min(1, 'Nama lengkap wajib diisi'),
-  nomorTelepon: z.string().min(1, 'Nomor telepon wajib diisi'),
-  jenjangPendidikan: z.string().min(1, 'Jenjang pendidikan wajib diisi'),
+  email: z.string().email('Email tidak valid'),
+  nomorIdentitas: z.string().min(1, 'NISN atau NIM wajib diisi'),
+  jurusan: z.string().nullable(),
+  fakultas: z.string().nullable(),
 })
 
 export type MemberDetailInput = z.infer<typeof memberDetailSchema>

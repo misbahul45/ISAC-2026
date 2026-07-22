@@ -17,10 +17,8 @@ http:
       {
           "name": "Alpha Team",
           "phone": "081234567890",
-          "school_name": "SMA Negeri 1 Jakarta",
-          "school_address": "Jl. Pendidikan No. 1",
-          "school_province": "DKI Jakarta",
-          "school_city": "Jakarta Pusat"
+          "institution_name": "SMA Negeri 1 Surabaya",
+          "institution_address": "{\"province\":\"Jawa Timur\",\"city\":\"Surabaya\",\"address\":\"Jl. Wijaya Kusuma No. 48\"}"
       }
   auth:
     type: bearer
@@ -40,10 +38,8 @@ docs: |-
     `app/Http/Requests/Registration/UpdateTeamRequest.php:12-22`):
     - `name`: required, string, max:255
     - `phone`: required, string, max:20
-    - `school_name`: required, string, max:255
-    - `school_address`: required, string, max:500
-    - `school_province`: required, string, max:100
-    - `school_city`: required, string, max:100
+    - `institution_name`: required, string, min:3, max:255
+    - `institution_address`: required JSON string dengan key `province`, `city`, dan `address`
   - **Alur Proses** (`RegistrationService::updateTeamData`, `app/Services/RegistrationService.php:78-112`):
     1. Cek registration ada.
     2. `$team->update(...)` — update kolom.

@@ -15,8 +15,7 @@ http:
     type: json
     data: |-
       {
-          "email": "lkiokijoap@gmail.com",
-          "code": "559317"
+          "code": "{{otpCode}}"
       }
   auth:
     type: bearer
@@ -30,15 +29,11 @@ settings:
 
 docs: |-
   #### POST /api/auth/verify-email — AuthController@verifyEmail
-  - **Deskripsi**: Verifikasi email → ubah status menjadi `ACTIVE`.
+  - **Deskripsi**: Verifikasi email Team lalu arahkan ke pemilihan kompetisi.
   - **Middleware & Auth**: auth:sanctum (throttle:6,10). Sumber: `routes/api.php:90`.
-  - **Request** (`VerifyEmailRequest.php:14-19`): `email` required/email/
-    exists:teams,email; `code` required/string/size:6.
-  - **Alur Proses** (`AuthService::verifyEmail`, `app/Services/AuthService.php:171-192`):
-    findValidVerificationCode (type verify_email, used_at null, expired_at>now) →
-    findByEmail → DB::transaction: markTokenAsUsed + updateTeamStatus(`ACTIVE`).
-  - **Database**: `password_reset_codes` SELECT+UPDATE; `teams` UPDATE status.
+  - **Request**: `code` required/string/size:6; Team diambil dari Bearer token.
+  - **Alur Proses**: cari challenge VERIFY_EMAIL aktif milik Team, tandai single-use,
+    lalu isi `teams.email_verified_at` dalam transaction.
+  - **Database**: `auth_challenges` SELECT/UPDATE; `teams` UPDATE.
   - **Efek Samping**: Tidak ada.
-  - **Response** (200): data null. (401) `INVALID_CREDENTIALS`; (422) `VALIDATION_ERROR`.
-  - **Catatan**: ⚠️ Tidak cek ulang bahwa team masih `EMAIL_UNVERIFIED` sebelum
-    update `ACTIVE` (Lampiran B #9).
+  - **Response** (200): Team terbaru dan `redirectTo: /registration`.

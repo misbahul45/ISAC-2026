@@ -15,8 +15,8 @@ http:
     type: json
     data: |-
       {
-          "email": "lkiokijoap@gmail.com",
-          "password": "kirby1234"
+          "email": "{{teamEmail}}",
+          "password": "{{teamPassword}}"
       }
   auth: inherit
 
@@ -28,20 +28,16 @@ settings:
 
 docs: |-
   #### POST /api/auth/login — AuthController@login
-  - **Deskripsi**: Autentikasi team, terbitkan Sanctum token (Bearer).
+  - **Deskripsi**: Shared login Team/Admin dan penerbitan Sanctum Bearer token.
   - **Middleware & Auth**: Publik + `throttle:5,1` (maks 5 req/menit per IP).
     Sumber: `routes/api.php:81`.
   - **Request** (`LoginRequest.php:17-23`): `email` required/email;
     `password` required/string.
-  - **Alur Proses** (`AuthService::login`, `app/Services/AuthService.php:47-68`):
-    findByEmail → Hash::check (gagal → InvalidCredentialException) → cek status
-    `EMAIL_UNVERIFIED` (gagal → InvalidCredentialException) → `tokens()->delete()`
-    → `createToken('auth-token')`.
-  - **Database**: `teams` SELECT; `personal_access_tokens` DELETE (token lama) +
-    INSERT. Migrasi `..._235056_create_personal_access_tokens_table.php`.
-  - **Efek Samping**: hapus seluruh Sanctum token team (force re-login semua device).
-  - **Response** (200): `{token, tokenType:'Bearer', team: AuthResource}`.
+  - **Alur Proses**: cari Team/Admin, validasi password dan status Admin, revoke
+    token lama, lalu buat token baru. Team belum verifikasi mendapat OTP baru.
+  - **Database**: teams/admins, auth_challenges, dan personal_access_tokens.
+  - **Efek Samping**: revoke token lama; login Team belum verifikasi mengirim email.
+  - **Response** (200): token, principalType, principal, redirectTo, dan
+    emailVerificationRequired.
     (401) `INVALID_CREDENTIALS`; (422) `VALIDATION_ERROR`.
-  - **Catatan**: ⚠️ `throttle:5,1` mengembalikan 429 tanpa envelope kustom
-    (Lampiran B #6).
-
+  - **Catatan**: 429 memakai envelope API dan header Retry-After.

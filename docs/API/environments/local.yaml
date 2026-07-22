@@ -1,4 +1,21 @@
 name: Local
 vars:
-  baseUrl: http://127.0.0.1:8000
-  apiToken: 1|hOixlBJ3oZdkkHn1HLArB15GGwkHS36SzZuXSpD7b41814ee
+  baseUrl: http://localhost:8080
+  apiToken: ""
+  adminToken: ""
+  teamEmail: profile@team.isac.test
+  teamPassword: password123
+  adminEmail: superadmin@isac.test
+  adminPassword: password123
+  registrationEmail: ""
+  otpCode: "000000"
+  resetToken: ""
+  competition_id: ""
+  batch_id: ""
+  team_id: ""
+  registration_id: ""
+  stage_id: ""
+  file_id: ""
+  payment_proof_file_id: ""
+  imagekit_file_id: ""
+  imagekit_url: ""

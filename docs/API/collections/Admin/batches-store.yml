@@ -15,7 +15,7 @@ http:
     type: json
     data: |-
       {
-          "competition_id": "00000000-0000-0000-0000-000000000000",
+          "competition_id": "{{competition_id}}",
           "name": "Batch 1",
           "slug": "batch-1",
           "start_date": "2026-01-01T00:00:00Z",
@@ -26,7 +26,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{apiToken}}"
+    token: "{{adminToken}}"
 
 settings:
   encodeUrl: true

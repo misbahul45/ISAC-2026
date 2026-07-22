@@ -18,7 +18,21 @@ class SubmitPaymentRequest extends FormRequest
         return [
             'payment_proof_file_id' => ['required', 'uuid', 'exists:files,id'],
             'payment_method' => ['required', Rule::in(['BANK_TRANSFER', 'QRIS'])],
-            'transaction_id' => ['nullable', 'string', 'max:255'],
+            'promo_code' => ['nullable', 'string', 'max:50'],
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $promoCode = strtoupper(trim((string) $this->input('promo_code', '')));
+        $this->merge(['promo_code' => $promoCode === '' ? null : $promoCode]);
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'promo_code.max' => 'Kode promo maksimal 50 karakter.',
         ];
     }
 }

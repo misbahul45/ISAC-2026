@@ -19,9 +19,6 @@ const Index = () => {
   const competitions = competitionsQuery.data?.data ?? []
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [selectedBatches, setSelectedBatches] = useState<
-    Record<string, string>
-  >({})
   const containerRef = useRef<HTMLDivElement>(null)
   const mobileRef = useRef<HTMLDivElement>(null)
 
@@ -55,8 +52,7 @@ const Index = () => {
 
   const handleSelect = async (competitionId: string) => {
     const competition = competitions.find((item) => item.id === competitionId)
-    const batchId =
-      selectedBatches[competitionId] ?? competition?.openBatches[0]?.id
+    const batchId = competition?.openBatches[0]?.id
 
     if (!batchId) return
 
@@ -113,31 +109,6 @@ const Index = () => {
     }
   }
 
-  const batchSelect = (competitionId: string) => {
-    const competition = competitions.find((item) => item.id === competitionId)
-    const value =
-      selectedBatches[competitionId] ?? competition?.openBatches[0]?.id ?? ''
-
-    return (
-      <select
-        value={value}
-        onChange={(event) =>
-          setSelectedBatches((current) => ({
-            ...current,
-            [competitionId]: event.target.value,
-          }))
-        }
-        className="mt-5 w-full rounded-xl border border-border/50 bg-background/70 px-4 py-3 text-foreground"
-      >
-        {competition?.openBatches.map((batch) => (
-          <option key={batch.id} value={batch.id}>
-            {batch.name} · Rp{Number(batch.price).toLocaleString('id-ID')}
-          </option>
-        ))}
-      </select>
-    )
-  }
-
   if (competitionsQuery.isLoading) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
@@ -190,7 +161,6 @@ const Index = () => {
                       <p className="flex-1 text-sm md:text-base text-primary-foreground/80">
                         {competition.description}
                       </p>
-                      {batchSelect(competition.id)}
                       <Button
                         className="mt-6 w-full rounded-xl font-semibold bg-primary hover:bg-primary/80 text-white"
                         disabled={
@@ -242,7 +212,6 @@ const Index = () => {
               <p className="text-sm text-primary-foreground/80 mb-6">
                 {competition.description}
               </p>
-              {batchSelect(competition.id)}
               <Button
                 className="mt-6 w-full rounded-xl font-semibold bg-primary hover:bg-primary/80 text-white py-3"
                 disabled={

@@ -22,8 +22,7 @@ const TeamAccount = () => {
         <span aria-hidden="true" className="header-border-track" /><span aria-hidden="true" className="header-border-spin" />
         <div className="relative z-10 rounded-[inherit] bg-background/20 backdrop-blur-sm p-6">
           <TeamDetail data={{
-            name: summary.team.name ?? '-', phone: summary.team.phone ?? '-', schoolName: summary.team.schoolName ?? '-',
-            province: summary.team.schoolProvince ?? '-', city: summary.team.schoolCity ?? '-', address: summary.team.schoolAddress ?? '-',
+            name: summary.team.name ?? '-', phone: summary.team.phone ?? '-', institutionName: summary.team.institutionName ?? '-',
             competitionType: registration?.competition.type ?? 'OLIMPIADE', batchName: registration?.batch.name ?? '-',
           }} accent={accentColors[0]} />
         </div>
@@ -36,12 +35,16 @@ const TeamAccount = () => {
             <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-15 pointer-events-none" style={{ background: `radial-gradient(circle, ${accentColors[index % accentColors.length].glow} 0%, transparent 70%)`, transform: 'translate(40%, -40%)' }} />
             <MemberCard
               member={{
-                id: member.id, name: member.name, role: member.role, email: member.email, phone: member.phone,
-                education_level: member.educationLevel, major: member.major, faculty: member.faculty,
-                student_id: member.studentId, birth_date: member.birthDate.slice(0, 10),
+                id: member.id, name: member.name, role: member.role, email: member.email,
+                major: member.major, faculty: member.faculty, student_id: member.studentId,
                 photo_file_id: member.photoFileId, sort_order: member.sortOrder,
               }}
-              title={member.role === 'LEADER' ? 'Ketua Tim' : `Anggota ${index}`}
+              participantCategory={registration?.competition.type === 'BUSINESS_IT_CASE' ? 'UNIVERSITY_STUDENT' : 'HIGH_SCHOOL_STUDENT'}
+              title={registration?.competition.type === 'OLIMPIADE'
+                ? 'Peserta Olimpiade'
+                : member.role === 'LEADER'
+                  ? 'Ketua Tim'
+                  : `Anggota ${index}`}
               number={index + 1}
               accent={accentColors[index % accentColors.length]}
             />

@@ -1,0 +1,25 @@
+info:
+  name: teams-index
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/admin/teams"
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/admin/teams
+  Daftar Team paginated. Query opsional: `status`, `competition_id`, `batch_id`,
+  dan `per_page` (default 15). Memerlukan role admin yang boleh melihat Team.

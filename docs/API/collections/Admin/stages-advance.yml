@@ -1,0 +1,27 @@
+info:
+  name: stages-advance
+  type: http
+  seq: 17
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/admin/teams/{{team_id}}/stages/{{stage_id}}/advance"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: X-Request-ID
+      value: bruno-stage-advance
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### POST /api/admin/teams/{team}/stages/{stage}/advance
+  Memproses perpindahan Team ke Stage berikutnya secara berurutan. Payment gate
+  Stage tetap diterapkan oleh service dan policy.

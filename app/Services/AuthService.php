@@ -6,14 +6,12 @@ use App\Enums\AccountType;
 use App\Enums\AuthChallengePurpose;
 use App\Exceptions\InvalidCredentialException;
 use App\Exceptions\InvalidResetPasswordException;
-use App\Mail\ResetPasswordMail;
-use App\Mail\VerifyEmailMail;
 use App\Models\Admin;
 use App\Models\Team;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use App\Services\Mail\TransactionalMailService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class AuthService
@@ -21,6 +19,7 @@ class AuthService
     public function __construct(
         private readonly AuthRepositoryInterface $authRepository,
         private readonly SecurityAuditService $audit,
+        private readonly TransactionalMailService $mail,
     ) {}
 
     public function register(array $data): array
@@ -141,18 +140,20 @@ class AuthService
             return;
         }
 
-        $this->authRepository->invalidateChallenges($team->id, AccountType::TEAM->value, AuthChallengePurpose::RESET_PASSWORD);
-        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $this->authRepository->createChallenge([
-            'account_type' => AccountType::TEAM,
-            'account_id' => $team->id,
-            'purpose' => AuthChallengePurpose::RESET_PASSWORD,
-            'code_hash' => bcrypt($code),
-            'expired_at' => now()->addMinutes(5),
-            'sent_at' => now(),
-        ]);
+        DB::transaction(function () use ($team): void {
+            $this->authRepository->invalidateChallenges($team->id, AccountType::TEAM->value, AuthChallengePurpose::RESET_PASSWORD);
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $this->authRepository->createChallenge([
+                'account_type' => AccountType::TEAM,
+                'account_id' => $team->id,
+                'purpose' => AuthChallengePurpose::RESET_PASSWORD,
+                'code_hash' => bcrypt($code),
+                'expired_at' => now()->addMinutes(5),
+                'sent_at' => now(),
+            ]);
 
-        Mail::to($team->email)->send(new ResetPasswordMail($code));
+            $this->mail->sendResetPasswordCode($team->email, $code);
+        });
         $this->audit->record('auth.password_reset_requested', $team);
     }
 
@@ -212,18 +213,20 @@ class AuthService
             throw new InvalidCredentialException('Email sudah diverifikasi.');
         }
 
-        $this->authRepository->invalidateChallenges($team->id, AccountType::TEAM->value, AuthChallengePurpose::VERIFY_EMAIL);
-        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $this->authRepository->createChallenge([
-            'account_type' => AccountType::TEAM,
-            'account_id' => $team->id,
-            'purpose' => AuthChallengePurpose::VERIFY_EMAIL,
-            'code_hash' => bcrypt($code),
-            'expired_at' => now()->addMinutes(5),
-            'sent_at' => now(),
-        ]);
+        DB::transaction(function () use ($team): void {
+            $this->authRepository->invalidateChallenges($team->id, AccountType::TEAM->value, AuthChallengePurpose::VERIFY_EMAIL);
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $this->authRepository->createChallenge([
+                'account_type' => AccountType::TEAM,
+                'account_id' => $team->id,
+                'purpose' => AuthChallengePurpose::VERIFY_EMAIL,
+                'code_hash' => bcrypt($code),
+                'expired_at' => now()->addMinutes(5),
+                'sent_at' => now(),
+            ]);
 
-        Mail::to($team->email)->send(new VerifyEmailMail($code));
+            $this->mail->sendVerificationCode($team->email, $code);
+        });
         $this->audit->record('auth.otp_sent', $team, ['purpose' => AuthChallengePurpose::VERIFY_EMAIL->value]);
     }
 

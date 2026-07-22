@@ -12,10 +12,13 @@ http:
     - name: ""
       value: ""
   body:
-    type: formUrlEncoded
-    data:
-      - name: collection
-        value: documents
+    type: json
+    data: |-
+      {
+          "file_id": "{{imagekit_file_id}}",
+          "url": "{{imagekit_url}}",
+          "purpose": "PAYMENT_PROOF"
+      }
   auth:
     type: bearer
     token: "{{apiToken}}"
@@ -28,15 +31,13 @@ settings:
 
 docs: |-
   #### POST /api/files — FileController@store
-  - **Deskripsi**: Upload file (pdf/jpg/jpeg/png, maks 5 MB) ke disk `local`,
-    simpan metadata ke tabel `files`.
+  - **Deskripsi**: Daftarkan metadata file yang sudah di-upload langsung ke ImageKit.
   - **Middleware & Auth**: `auth:sanctum`. Sumber: `routes/api.php:37`.
   - **Request** (validasi `StoreFileRequest`,
     `app/Http/Requests/File/StoreFileRequest.php:17-22`):
-    - `file`: required, file, max:5120 (KB), mimes:pdf,jpg,jpeg,png
-    - `collection`: sometimes, nullable, string, max:100
-    (Catatan: di Bruno, set body type `multipartFormData` dan lampirkan file
-    pada field `file`; di sini `collection` ditulis sebagai contoh.)
+    - `file_id`: required string, unique
+    - `url`: required HTTPS URL dari host ImageKit yang dikonfigurasi
+    - `purpose`: PAYMENT_PROOF, MEMBER_PHOTO, SUBMISSION, atau BATCH_MODULE sesuai principal
   - **Alur Proses** (`FileService::upload`, `app/Services/FileService.php:20-36`):
     1. `storedName = Str::uuid().'.'.$clientExt`.
     2. `folder = $collection ?: 'uploads'`.
