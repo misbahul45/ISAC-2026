@@ -112,7 +112,7 @@ const Header = () => {
 
   if (isMinimalPage) {
     return (
-      <header className='fixed z-50 top-0 left-0 w-full'>
+      <header className='fixed z-50 top-0 left-0 w-full max-w-7xl'>
         <div className='max-w-7xl mx-auto px-4 md:px-6 py-3'>
           <div className='flex items-center justify-between'>
             <Link href='/' className='flex items-center gap-2 p-2 bg-background/10 backdrop-blur-md rounded-full px-4 border-2 border-white/20 text-white hover:text-primary transition-colors'>
@@ -128,7 +128,7 @@ const Header = () => {
   }
 
   return (
-    <header onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className={'fixed z-50 left-1/2 -translate-x-1/2 w-full transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] will-change-transform ' + (isVisible ? 'top-0' : '-top-24') + ' ' + (isScrolled ? 'md:scale-x-[0.9] scale-x-[0.94]' : 'scale-x-100')}>
+    <header onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className={'fixed z-50 left-1/2 -translate-x-1/2 w-full max-w-7xl transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] will-change-transform ' + (isVisible ? 'top-0' : '-top-24') + ' ' + (isScrolled ? 'md:scale-x-[0.9] scale-x-[0.94]' : 'scale-x-100')}>
       <div className={'relative isolate overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] ' + (isScrolled ? 'rounded-2xl header-glow' : 'rounded-none')}>
         {isScrolled && <><span aria-hidden='true' className='header-border-track' /><span aria-hidden='true' className='header-border-spin' /></>}
         <div className={'relative z-10 transition-colors duration-700 ' + (isScrolled || isMobileOpen ? 'rounded-[inherit] bg-card/40 backdrop-blur-md' : 'rounded-[inherit] bg-transparent')}>
