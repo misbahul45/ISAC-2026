@@ -6,6 +6,7 @@ import Sound1 from '../../../components/shared/Sound1'
 import Sound2 from '../../../components/shared/Sound2'
 import { useAuthSession } from '@/features/auth/context/AuthProvider'
 import { useRegistrationContext } from '../hooks/useRegistration'
+import { IMAGES } from '@/constants/general'
 
 const SOUND_POSITIONS_TOP = [
   { component: 'sound1' as const, className: 'absolute -top-10 left-2 md:-top-8 md:left-0 w-10 h-10 sm:w-14 sm:h-14 md:w-20 md:h-20' },
@@ -70,7 +71,15 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
             </React.Fragment>
           ))}
         </div>
-        <div className="w-full max-w-7xl responsive z-10">{children}</div>
+        <div className="w-full max-w-7xl responsive">
+          <div
+            className="fixed top-0 left-0 w-full h-full max-h-full z-0 bg-cover bg-no-repeat bg-center"
+            style={{
+              backgroundImage: `url(${IMAGES.bg})`,
+            }}
+          /> 
+          {children}
+        </div>
       </div>
     </>
   )

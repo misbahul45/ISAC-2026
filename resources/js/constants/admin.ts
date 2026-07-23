@@ -11,7 +11,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-type NavigationItem = {
+export type NavigationItem = {
   label: string
   href: string
   icon: LucideIcon
@@ -22,7 +22,7 @@ export const allRoles: AdminRole[] = ['super_admin', 'admin_registration', 'admi
 export const navigation: NavigationItem[] = [
   { label: 'Ringkasan', href: '/admin/dashboard', icon: Gauge, roles: allRoles },
   { label: 'Verifikasi Tim', href: '/admin/teams', icon: Users, roles: ['super_admin', 'admin_registration', 'admin_payment'] },
-  { label: 'Pembayaran', href: '/admin/payments', icon: Banknote, roles: ['super_admin', 'admin_payment'], comingSoon: true },
+  { label: 'Pembayaran', href: '/admin/payments', icon: Banknote, roles: ['super_admin', 'admin_payment'],},
   { label: 'Kompetisi', href: '/admin/competitions', icon: Layers3, roles: allRoles },
   { label: 'Batch', href: '/admin/batches', icon: Boxes, roles: allRoles },
   { label: 'Tahapan', href: '/admin/stages', icon: ClipboardList, roles: ['super_admin', 'admin_registration'], comingSoon: true },
