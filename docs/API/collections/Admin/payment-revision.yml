@@ -1,7 +1,7 @@
 info:
   name: payment-revision
   type: http
-  seq: 15
+  seq: 17
 
 http:
   method: POST

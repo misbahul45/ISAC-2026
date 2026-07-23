@@ -78,7 +78,7 @@ Status penting: `401` unauthenticated, `403` policy/principal salah, `404`
 resource tidak ditemukan, `409` account ambigu, `422` validasi/domain, `429`
 rate limit, dan `503 EMAIL_DELIVERY_FAILED` ketika provider email gagal.
 
-## Daftar endpoint lengkap (50)
+## Daftar endpoint lengkap (52)
 
 ### System, dashboard, Team, file, dan ImageKit
 
@@ -142,6 +142,8 @@ rate limit, dan `503 EMAIL_DELIVERY_FAILED` ketika provider email gagal.
 | POST | `/api/admin/teams/{team}/verify` | Admin | Verifikasi data Team |
 | POST | `/api/admin/teams/{team}/revision` | Admin | Minta revisi TEAM/MEMBERS/DOCUMENTS |
 | POST | `/api/admin/teams/{team}/reject` | Admin | Tolak data Team |
+| GET | `/api/admin/payments` | Admin | Antrean pembayaran paginated dengan filter |
+| GET | `/api/admin/payments/{registration}` | Admin | Detail pembayaran untuk review |
 | POST | `/api/admin/registrations/{registration}/payment/verify` | Admin | Verifikasi pembayaran |
 | POST | `/api/admin/registrations/{registration}/payment/revision` | Admin | Minta revisi pembayaran |
 | POST | `/api/admin/registrations/{registration}/payment/reject` | Admin | Tolak pembayaran |
@@ -228,6 +230,65 @@ Pembayaran:
 
 Promo di-quote lewat `/payment/quote`; total final dihitung ulang oleh backend
 dan disimpan sebagai snapshot. Client tidak mengirim nominal atau ID transaksi.
+
+### Admin pembayaran
+
+**Payment gate eligibility:**
+- Competition tipe `UPFRONT`: seluruh Registration masuk antrean.
+- Competition tipe `SEMIFINAL`: hanya Registration dengan `payment_required_at`
+  terisi yang masuk antrean. Business yang belum mencapai gate semifinal tidak
+  dianggap "belum bayar".
+
+**Role matrix:**
+
+| Aksi | super_admin | admin_payment | admin_registration | judge |
+|---|---|---|---|---|
+| Lihat antrean & detail | ✅ | ✅ | ✅ | ✅ |
+| Verify payment | ✅ | ✅ | ❌ | ❌ |
+| Revision payment | ✅ | ✅ | ❌ | ❌ |
+| Reject payment | ✅ | ✅ | ❌ | ❌ |
+
+**Filter antrean (`GET /api/admin/payments`):**
+- `search` — cari kode/nama/email/institusi Team.
+- `status` — RegistrationStatus (WAITING_PAYMENT, WAITING_VERIFICATION, VERIFIED,
+  REJECTED, REVISION_REQUIRED, CANCELLED).
+- `competition_id`, `batch_id` — UUID.
+- `payment_method` — BANK_TRANSFER atau QRIS.
+- `page`, `per_page` — pagination (maks 100).
+
+Urutan prioritas: WAITING_VERIFICATION > REVISION_REQUIRED > WAITING_PAYMENT >
+REJECTED > VERIFIED > CANCELLED, lalu createdAt descending.
+
+**State transition pembayaran:**
+
+```mermaid
+stateDiagram-v2
+  WAITING_PAYMENT --> WAITING_VERIFICATION : submit bukti
+  WAITING_VERIFICATION --> VERIFIED : verify
+  WAITING_VERIFICATION --> REVISION_REQUIRED : revision
+  WAITING_VERIFICATION --> REJECTED : reject
+  REVISION_REQUIRED --> WAITING_VERIFICATION : resubmit
+```
+
+**Response detail (`GET /api/admin/payments/{registration}`) — AdminPaymentResource:**
+- `registrationId`, `status`, `paymentContext` (REGISTRATION/SEMIFINAL).
+- `isSubmitted`, `canBeReviewed` — status kelengkapan dan eligibility review.
+- `team` — id, code, name, email, phone, institutionName.
+- `competition` — id, name, type, category.
+- `batch` — id, name, price, startDate, endDate.
+- `targetStage` — stage yang akan diaktifkan setelah verify.
+- `payment` — originalAmount, amount, method, promoCode, discountPercent,
+  discountAmount, proof (FileResource), submittedAt, paidAt, reviewedAt,
+  reviewedBy, rejectionReason.
+- `timeline` — array riwayat status beserta timestamp.
+
+**Mutation payment:**
+- Verify/Revision/Reject hanya berlaku pada status `WAITING_VERIFICATION` dengan
+  bukti pembayaran.
+- Reason untuk revision/reject: wajib 1–2000 karakter.
+- Semua mutation menggunakan transaction + row locking untuk cegah konflik.
+- Response memakai `AdminPaymentResource` yang sama.
+- Audit log dengan `X-Request-ID` dicatat untuk setiap transisi.
 
 ## Workflow pengujian end-to-end
 

@@ -1,0 +1,44 @@
+info:
+  name: payment-list
+  type: http
+  seq: 14
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/admin/payments"
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/admin/payments
+  Antrean pembayaran paginated dengan prioritas WAITING_VERIFICATION.
+
+  **Filter query opsional:**
+  - `search` — cari kode/nama/email/institusi Team.
+  - `status` — filter RegistrationStatus (WAITING_PAYMENT, WAITING_VERIFICATION,
+    VERIFIED, REJECTED, REVISION_REQUIRED, CANCELLED).
+  - `competition_id` — UUID Competition.
+  - `batch_id` — UUID Batch.
+  - `payment_method` — BANK_TRANSFER atau QRIS.
+  - `page` — nomor halaman (default 1).
+  - `per_page` — jumlah per halaman (default 15, maks 100).
+
+  **Aturan data:**
+  - Competition UPFRONT: seluruh Registration termasuk WAITING_PAYMENT.
+  - Competition SEMIFINAL: hanya Registration dengan payment_required_at terisi.
+  - Default menampilkan seluruh status.
+  - Urutan: WAITING_VERIFICATION > REVISION_REQUIRED > WAITING_PAYMENT > REJECTED
+    > VERIFIED > CANCELLED, lalu data terbaru.
+
+  **Response** menggunakan pagination Laravel di dalam envelope standar.
+  Data item memakai struktur camelCase yang sama dengan payment-detail.

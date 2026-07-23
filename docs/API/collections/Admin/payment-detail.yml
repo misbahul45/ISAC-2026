@@ -1,0 +1,44 @@
+info:
+  name: payment-detail
+  type: http
+  seq: 15
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/admin/payments/{{registration_id}}"
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  #### GET /api/admin/payments/{registration}
+  Detail pembayaran untuk review Admin. Hanya menerima Registration yang sudah
+  masuk payment gate (UPFRONT atau SEMIFINAL dengan payment_required_at terisi).
+
+  **Response camelCase (AdminPaymentResource):**
+  - `registrationId`, `status`, `paymentContext` (REGISTRATION/SEMIFINAL).
+  - `isSubmitted`, `canBeReviewed` — status kelengkapan dan eligibility review.
+  - `team` — id, code, name, email, phone, institutionName.
+  - `competition` — id, name, type, category.
+  - `batch` — id, name, price, startDate, endDate.
+  - `targetStage` — stage yang akan diaktifkan setelah verify (jika ada).
+  - `payment`:
+    - `originalAmount`, `amount`, `method`, `promoCode`, `discountPercent`,
+      `discountAmount`.
+    - `proof` — FileResource (id, url, name).
+    - `submittedAt`, `paidAt`, `reviewedAt`, `reviewedBy`.
+    - `rejectionReason` — alasan revision/reject.
+  - `timeline` — array riwayat status beserta timestamp.
+
+  **Role:**
+  - Semua role Admin dapat membaca.
+  - Hanya super_admin dan admin_payment dapat melakukan verify/revision/reject.

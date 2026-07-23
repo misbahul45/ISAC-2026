@@ -1,7 +1,7 @@
 info:
   name: stages-advance
   type: http
-  seq: 17
+  seq: 19
 
 http:
   method: POST
