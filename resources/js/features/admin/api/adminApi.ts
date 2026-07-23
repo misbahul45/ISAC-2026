@@ -4,6 +4,9 @@ import type {
   AdminBatchesResponse,
   AdminCompetitionResponse,
   AdminCompetitionsResponse,
+  AdminPaymentFilters,
+  AdminPaymentResponse,
+  AdminPaymentsResponse,
   AdminTeamFilters,
   AdminTeamResponse,
   AdminTeamsResponse,
@@ -30,5 +33,10 @@ export const adminApi = {
   createBatch: (payload: BatchPayload) => postJson<AdminBatchResponse>('/api/admin/batches', payload),
   updateBatch: (id: string, payload: Omit<BatchPayload, 'competition_id'>) => patchJson<AdminBatchResponse>(`/api/admin/batches/${id}`, payload),
   deleteBatch: (id: string) => deleteJson<DeleteResponse>(`/api/admin/batches/${id}`),
+  payments: (filters: AdminPaymentFilters) => getJson<AdminPaymentsResponse>(`/api/admin/payments${toSearchParams(filters)}`),
+  payment: (registrationId: string) => getJson<AdminPaymentResponse>(`/api/admin/payments/${registrationId}`),
+  verifyPayment: (registrationId: string) => postJson<AdminPaymentResponse>(`/api/admin/registrations/${registrationId}/payment/verify`, undefined, { headers: requestHeaders() }),
+  revisePayment: (registrationId: string, reason: string) => postJson<AdminPaymentResponse>(`/api/admin/registrations/${registrationId}/payment/revision`, { reason }, { headers: requestHeaders() }),
+  rejectPayment: (registrationId: string, reason: string) => postJson<AdminPaymentResponse>(`/api/admin/registrations/${registrationId}/payment/reject`, { reason }, { headers: requestHeaders() }),
 }
 

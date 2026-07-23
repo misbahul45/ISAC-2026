@@ -8,22 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-enum RegistrationStatus: string
-{
-    case WAITING_PAYMENT = 'WAITING_PAYMENT';
-    case WAITING_VERIFICATION = 'WAITING_VERIFICATION';
-    case VERIFIED = 'VERIFIED';
-    case REJECTED = 'REJECTED';
-    case REVISION_REQUIRED = 'REVISION_REQUIRED';
-    case CANCELLED = 'CANCELLED';
-}
-
-enum PaymentMethod: string
-{
-    case BANK_TRANSFER = 'BANK_TRANSFER';
-    case QRIS = 'QRIS';
-}
-
 class Registration extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;

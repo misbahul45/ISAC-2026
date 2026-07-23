@@ -127,6 +127,81 @@ export type TeamRevisionPayload = {
   verification_note: string
 }
 
+export type PaymentMethod = 'BANK_TRANSFER' | 'QRIS'
+export type PaymentContext = 'REGISTRATION' | 'SEMIFINAL'
+
+export type AdminPaymentProof = {
+  id: string
+  fileId: string
+  url: string
+  purpose?: string
+  name?: string
+}
+
+export type AdminPaymentTeam = {
+  id: string
+  code: string
+  name: string | null
+  email: string
+  phone: string | null
+  institutionName: string | null
+  institutionAddress: string | null
+  status: string
+  currentStage: { id: string; name: string } | null
+}
+
+export type AdminPaymentCompetition = {
+  id: string
+  name: string
+  type: CompetitionType
+  paymentFlow: PaymentFlow
+}
+
+export type AdminPaymentBatch = {
+  id: string
+  name: string
+  price: string
+}
+
+export type AdminPaymentDetail = {
+  method: PaymentMethod | null
+  originalAmount: string
+  amountPaid: string
+  promoCode: string | null
+  discountPercent: string
+  discountAmount: string
+  proof: AdminPaymentProof | null
+  requiredAt: string | null
+  submittedAt: string | null
+  reviewedAt: string | null
+  paidAt: string | null
+  rejectionReason: string | null
+  targetStage: { id: string; name: string } | null
+  reviewedBy: { id: string; name: string } | null
+}
+
+export type AdminPayment = {
+  registrationId: string
+  status: RegistrationStatus
+  paymentContext: PaymentContext
+  isSubmitted: boolean
+  canBeReviewed: boolean
+  team: AdminPaymentTeam
+  competition: AdminPaymentCompetition
+  batch: AdminPaymentBatch
+  payment: AdminPaymentDetail
+}
+
+export type AdminPaymentFilters = {
+  page?: number
+  per_page?: number
+  search?: string
+  status?: RegistrationStatus | ''
+  competition_id?: string
+  batch_id?: string
+  payment_method?: PaymentMethod | ''
+}
+
 export type AdminTeamsResponse = ApiResponse<LaravelPagination<AdminTeamSummary>>
 export type AdminTeamResponse = ApiResponse<AdminTeamSummary>
 export type AdminCompetitionsResponse = ApiResponse<AdminCompetition[]> & {
@@ -136,4 +211,6 @@ export type AdminCompetitionResponse = ApiResponse<AdminCompetition>
 export type AdminBatchesResponse = ApiResponse<AdminBatch[]>
 export type AdminBatchResponse = ApiResponse<AdminBatch>
 export type DeleteResponse = ApiResponse<null>
+export type AdminPaymentsResponse = ApiResponse<LaravelPagination<AdminPayment>>
+export type AdminPaymentResponse = ApiResponse<AdminPayment>
 

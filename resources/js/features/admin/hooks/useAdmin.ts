@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../api/adminApi'
-import type { AdminTeamFilters, BatchPayload, CompetitionFilters, CompetitionPayload, TeamRevisionPayload } from '../types/adminTypes'
+import type { AdminPaymentFilters, AdminTeamFilters, BatchPayload, CompetitionFilters, CompetitionPayload, TeamRevisionPayload } from '../types/adminTypes'
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -8,6 +8,8 @@ export const adminKeys = {
   team: (teamId: string) => [...adminKeys.all, 'team', teamId] as const,
   competitions: (filters?: CompetitionFilters) => [...adminKeys.all, 'competitions', filters] as const,
   batches: (competitionId?: string) => [...adminKeys.all, 'batches', competitionId] as const,
+  payments: (filters?: AdminPaymentFilters) => [...adminKeys.all, 'payments', filters] as const,
+  payment: (registrationId: string) => [...adminKeys.all, 'payment', registrationId] as const,
 }
 
 export function useAdminTeams(filters: AdminTeamFilters) {
@@ -87,4 +89,45 @@ export function useUpdateBatch() {
 export function useDeleteBatch() {
   const client = useQueryClient()
   return useMutation({ mutationFn: (id: string) => adminApi.deleteBatch(id), onSuccess: () => client.invalidateQueries({ queryKey: [...adminKeys.all, 'batches'] }) })
+}
+
+export function useAdminPayments(filters: AdminPaymentFilters) {
+  return useQuery({ queryKey: adminKeys.payments(filters), queryFn: () => adminApi.payments(filters) })
+}
+
+export function useAdminPayment(registrationId: string) {
+  return useQuery({ queryKey: adminKeys.payment(registrationId), queryFn: () => adminApi.payment(registrationId), enabled: Boolean(registrationId) })
+}
+
+export function useVerifyAdminPayment(registrationId: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => adminApi.verifyPayment(registrationId),
+    onSuccess: () => Promise.all([
+      client.invalidateQueries({ queryKey: [...adminKeys.all, 'payments'] }),
+      client.invalidateQueries({ queryKey: adminKeys.payment(registrationId) }),
+    ]),
+  })
+}
+
+export function useReviseAdminPayment(registrationId: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (reason: string) => adminApi.revisePayment(registrationId, reason),
+    onSuccess: () => Promise.all([
+      client.invalidateQueries({ queryKey: [...adminKeys.all, 'payments'] }),
+      client.invalidateQueries({ queryKey: adminKeys.payment(registrationId) }),
+    ]),
+  })
+}
+
+export function useRejectAdminPayment(registrationId: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (reason: string) => adminApi.rejectPayment(registrationId, reason),
+    onSuccess: () => Promise.all([
+      client.invalidateQueries({ queryKey: [...adminKeys.all, 'payments'] }),
+      client.invalidateQueries({ queryKey: adminKeys.payment(registrationId) }),
+    ]),
+  })
 }

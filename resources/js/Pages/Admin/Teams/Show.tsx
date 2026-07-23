@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { ArrowLeft, CheckCircle2, ExternalLink, FileText, Mail, MapPin, Phone, RotateCcw, ShieldX, UserRound } from 'lucide-react'
+import { ArrowLeft, Banknote, CheckCircle2, ExternalLink, FileText, Mail, MapPin, Phone, RotateCcw, ShieldX, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { Seo } from '@/components/seo/Seo'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -96,7 +96,16 @@ export default function AdminTeamShow({ teamId }: { teamId: string }) {
             </CardContent>
           </Card>
 
-          <Card className="border-dashed border-border bg-card/45"><CardContent className="p-4 text-sm"><p className="font-medium">Pembayaran & Tahapan</p><p className="mt-1 text-muted-foreground">Menunggu endpoint detail payment proof dan daftar next-stage. Tidak ada action yang ditampilkan agar keputusan admin tetap aman.</p></CardContent></Card>
+          {data.registration && (
+            <Card className="border-border/60 bg-card/70 backdrop-blur-md">
+              <CardHeader><CardTitle>Pembayaran</CardTitle></CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div><p className="text-xs text-muted-foreground">Status registrasi</p><div className="mt-1"><AdminStatusBadge status={data.registration.status} /></div></div>
+                {data.registration.paymentRequiredAt && <div><p className="text-xs text-muted-foreground">Pembayaran diwajibkan</p><p className="mt-1">{new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(data.registration.paymentRequiredAt))}</p></div>}
+                <Link href={`/admin/payments/${data.registration.id}`} className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}><Banknote />Detail Pembayaran</Link>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
