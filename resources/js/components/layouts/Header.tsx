@@ -119,7 +119,7 @@ const Header = () => {
               <ArrowLeft className='w-5 h-5' /><span className='text-base font-medium'>Back</span>
             </Link>
             <Link href='/' aria-label='Kembali ke beranda ISAC 2026'>
-              <Image src={IMAGES.logo} alt='Logo ISAC 2026' height={45} width={126} className='h-auto w-24 md:w-[126px]' />
+              <Image src={IMAGES.logo} alt='Logo ISAC 2026' height={45} width={126} className='h-auto w-24' />
             </Link>
           </div>
         </div>
