@@ -114,12 +114,12 @@ const Header = () => {
     return (
       <header className='fixed z-50 top-0 left-0 w-full max-w-7xl'>
         <div className='max-w-7xl mx-auto px-4 md:px-6 py-3'>
-          <div className='flex items-center justify-between'>
+          <div className='flex items-center justify-between w-full'>
             <Link href='/' className='flex items-center gap-2 p-2 bg-background/10 backdrop-blur-md rounded-full px-4 border-2 border-white/20 text-white hover:text-primary transition-colors'>
               <ArrowLeft className='w-5 h-5' /><span className='text-base font-medium'>Back</span>
             </Link>
             <Link href='/' aria-label='Kembali ke beranda ISAC 2026'>
-              <Image src={IMAGES.logo} alt='Logo ISAC 2026' height={45} width={126} className='h-auto w-24 md:w-[126px]' />
+              <Image src={IMAGES.logo} alt='Logo ISAC 2026' height={45} width={126} className='h-auto w-24' />
             </Link>
           </div>
         </div>

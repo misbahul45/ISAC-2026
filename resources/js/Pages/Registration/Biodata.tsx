@@ -113,7 +113,7 @@ const Biodata = () => {
           <ChevronLeft className="w-6 h-6" />
         </button>
 
-        <div className="relative flex justify-center items-center gap-6 min-h-225 perspective-[1000px] w-full max-w-4xl">
+        <div className={`relative flex justify-center items-center gap-6 ${pageData.competitionType === 'BUSINESS_IT_CASE'?'min-h-300':'min-h-225'} perspective-[1000px] w-full max-w-4xl`}>
           {members.map((member, index) => (
             <div
               key={member.key}
