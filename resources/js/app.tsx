@@ -18,9 +18,10 @@ createInertiaApp({
   resolve: (name) => {
     const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx', { eager: true })
     const page = pages[`./Pages/${name}.tsx`].default
-    const layout = page.layout ?? ((pageNode: React.ReactNode) => pageNode)
-    page.layout = (pageNode: React.ReactNode) => <AppLayout>{layout(pageNode)}</AppLayout>
-    return { default: page }
+    if (page.layout === undefined) {
+      page.layout = (pageNode: React.ReactNode) => <AppLayout>{pageNode}</AppLayout>
+    }
+    return page
   },
   setup({ el, App, props }) {
     createRoot(el).render(

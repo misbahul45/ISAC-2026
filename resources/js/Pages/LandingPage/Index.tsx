@@ -6,28 +6,34 @@ import { AnimatedBackground } from '@/components/shared/AnimatedBackground'
 import { Hero } from "./sections/Hero";
 import { Competitions } from "./sections/Competitions";
 import { Timeline } from "./sections/Timeline";
+import { Talkshow } from "./sections/Talkshow";
+import { SponsorPartner } from "./sections/SponsorPartner";
+import { Faq } from "./sections/Faq";
 import { LandingBackground } from '@/components/shared/LandingBackground';
 
 const Index = () => {
   return (
     <>
-        <Seo
-            description='Platform resmi pendaftaran kompetisi ISAC 2026 untuk Olimpiade, Business Plan, dan Business IT Case.'
-            canonical='/'
-            image='/logo.png'
-            imageAlt='Logo ISAC 2026'
-            keywords={['ISAC 2026', 'Olimpiade', 'Business Plan', 'Business IT Case']}
-            author='ISAC 2026'
-            jsonLd={createWebsiteJsonLd()}
-        />
+      <Seo
+        description='Platform resmi pendaftaran kompetisi ISAC 2026 untuk Olimpiade, Business Plan, dan Business IT Case.'
+        canonical='/'
+        image='/logo.png'
+        imageAlt='Logo ISAC 2026'
+        keywords={['ISAC 2026', 'Olimpiade', 'Business Plan', 'Business IT Case']}
+        author='ISAC 2026'
+        jsonLd={createWebsiteJsonLd()}
+      />
 
-        <LandingBackground />
+      <LandingBackground />
 
-        <main className="relative">
-            <Hero />
-            <Competitions />
-            <Timeline />
-        </main>
+      <main className="relative">
+        <Hero />
+        <Competitions />
+        <Timeline />
+        <Talkshow />
+        <SponsorPartner />
+        <Faq />
+      </main>
     </>
   )
 }
