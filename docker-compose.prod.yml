@@ -1,0 +1,102 @@
+name: ${COMPOSE_PROJECT_NAME:-isac-2026-prod}
+
+x-frontend-build-args: &frontend-build-args
+  VITE_APP_NAME: ${VITE_APP_NAME:-ISAC 2026}
+  VITE_APP_URL: ${VITE_APP_URL:-}
+  VITE_IMAGEKIT_PUBLIC_KEY: ${VITE_IMAGEKIT_PUBLIC_KEY:-}
+  VITE_IMAGEKIT_URL_ENDPOINT: ${VITE_IMAGEKIT_URL_ENDPOINT:-}
+
+x-app-runtime: &app-runtime
+  build:
+    context: .
+    dockerfile: Dockerfile.prod
+    target: app
+    args: *frontend-build-args
+  image: isac2026-app-prod
+  env_file:
+    - ${PROD_ENV_FILE:-.env.production}
+  environment:
+    APP_ENV: production
+    APP_DEBUG: "false"
+    APP_KEY: ${APP_KEY:?Set APP_KEY in .env.production}
+    DB_CONNECTION: mysql
+    DB_HOST: mysql
+    DB_PORT: 3306
+  restart: unless-stopped
+  init: true
+  depends_on:
+    mysql:
+      condition: service_healthy
+  networks:
+    - app_network
+  volumes:
+    - app_storage:/var/www/html/storage
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      target: nginx
+      args: *frontend-build-args
+    image: isac2026-nginx-prod
+    restart: unless-stopped
+    entrypoint: ["nginx", "-g", "daemon off;"]
+    read_only: true
+    ports:
+      - "${APP_PORT:-80}:80"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - app_network
+    volumes:
+      - app_storage:/var/www/html/storage:ro
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+
+  app:
+    <<: *app-runtime
+    healthcheck:
+      test: ["CMD", "php", "-r", "$$socket = @fsockopen('127.0.0.1', 9000); exit($$socket ? 0 : 1);"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  queue:
+    <<: *app-runtime
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=90", "--no-interaction"]
+    stop_grace_period: 2m
+
+  scheduler:
+    <<: *app-runtime
+    command: ["php", "artisan", "schedule:work", "--no-interaction"]
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:?Set DB_DATABASE in .env.production}
+      MYSQL_USER: ${DB_USERNAME:?Set DB_USERNAME in .env.production}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.production}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in .env.production}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  app_storage:
+  mysql_data:

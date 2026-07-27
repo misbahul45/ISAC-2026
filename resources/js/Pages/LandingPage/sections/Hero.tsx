@@ -3,11 +3,6 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/constants/routes'
 import { IMAGES } from '@/constants/general'
-import Sound1 from '@/components/shared/Sound1'
-import Sound2 from '@/components/shared/Sound2'
-import Sound3 from '@/components/shared/Sound3'
-import Sound4 from '@/components/shared/Sound4'
-import { AnimatedBackground } from '@/components/shared/AnimatedBackground'
 import { FloatingIcons } from '@/components/shared/FloatingIcons'
 import { AUTH_PAGE_CONFIGS } from '@/constants/auth'
 
@@ -20,7 +15,7 @@ const CUBES = [
 
 export function Hero() {
   return (
-    <section id="home" className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-12 text-center">
+    <section id="home" className="relative flex md:min-h-screen pt-28 flex-col items-center justify-center overflow-hidden px-12 text-center">
         <div className="pointer-events-none absolute inset-0 z-0">
             <img
                 src={IMAGES.bgHero}

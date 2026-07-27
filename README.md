@@ -22,6 +22,27 @@ Laravel 13 + React/Inertia + TanStack Query + Vite + MySQL + Nginx + Docker Comp
 - API Status: http://localhost:8080/api/system/status
 - MySQL Host Port: 3307
 
+## Dua mode Docker
+
+- Development tetap memakai `docker-compose.yml`, bind mount, dan Compose Watch.
+- Production memakai `docker-compose.prod.yml` serta `Dockerfile.prod`; source, dependency production, dan asset frontend dibundel ke image.
+- Panduan arsitektur, deployment, backup, dan troubleshooting tersedia di [`docs/docker.md`](docs/docker.md).
+
+Mode development:
+
+```bash
+docker compose down --remove-orphans
+docker compose up --build --watch
+```
+
+Mode production:
+
+```bash
+# Salin lalu isi semua placeholder, domain, password, dan APP_KEY.
+cp .env.production.example .env.production
+env PROD_ENV_FILE=.env.production docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+```
+
 ## Setup
 
 ```bash
@@ -74,6 +95,17 @@ docker compose exec mysql mysql -uisac -pisac_password isac2026
 ```
 
 ## Troubleshooting
+
+### Nginx upstream `app` tidak ditemukan
+
+Jika muncul `host not found in upstream "app"`, recreate container dan network tanpa menghapus volume:
+
+```bash
+docker compose down --remove-orphans
+docker compose up --build --watch
+```
+
+Config development memakai network eksplisit, healthcheck PHP-FPM, dan resolver DNS Docker agar Nginx tidak crash saat upstream belum siap. Pesan read-only dari entrypoint Nginx hanya informasional karena config memang di-mount `:ro`.
 
 ### Nginx rebuild error
 

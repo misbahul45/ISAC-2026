@@ -52,7 +52,7 @@ export function LandingBackground() {
           src={IMAGES.vector}
           alt=""
           aria-hidden="true"
-          className={`w-125 absolute rounded-2xl opacity-80 ${v.className}`}
+          className={`w-12 md:w-16 absolute rounded-2xl opacity-80 ${v.className}`}
           style={{ transform: `translateY(calc(var(--scroll, 0) * ${v.factor}px)) rotate(${v.rotate}deg)` }}
         />
       ))}

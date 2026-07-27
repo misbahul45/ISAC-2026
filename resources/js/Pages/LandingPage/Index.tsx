@@ -1,4 +1,7 @@
-import React from 'react'
+import React, { useRef } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Seo } from '@/components/seo/Seo'
 import { createWebsiteJsonLd } from '@/lib/seo'
 import { AnimatedBackground } from '@/components/shared/AnimatedBackground'
@@ -11,7 +14,37 @@ import { SponsorPartner } from "./sections/SponsorPartner";
 import { Faq } from "./sections/Faq";
 import { LandingBackground } from '@/components/shared/LandingBackground';
 
+gsap.registerPlugin(useGSAP, ScrollTrigger)
+
 const Index = () => {
+  const mainRef = useRef<HTMLElement>(null)
+
+  useGSAP(() => {
+    if (!mainRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
+
+    const sections = gsap.utils.toArray<HTMLElement>(
+      ':scope > section',
+      mainRef.current,
+    )
+
+    sections.forEach((section) => {
+      gsap.from(section, {
+        autoAlpha: 0,
+        y: 64,
+        duration: 0.9,
+        ease: 'power3.out',
+        clearProps: 'opacity,transform,visibility',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          once: true,
+        },
+      })
+    })
+  }, { scope: mainRef })
+
   return (
     <>
       <Seo
@@ -26,7 +59,7 @@ const Index = () => {
 
       <LandingBackground />
 
-      <main className="relative">
+      <main ref={mainRef} className="relative">
         <Hero />
         <Competitions />
         <Timeline />
