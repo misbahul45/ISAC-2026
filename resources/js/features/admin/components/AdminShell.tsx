@@ -164,6 +164,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
   )
 }
 
-export function adminPageLayout(page: ReactNode) {
-  return <AdminShell>{page}</AdminShell>
-}
+export const adminPageLayout = (page: ReactNode) => (
+  <AdminShell>{page}</AdminShell>
+)
