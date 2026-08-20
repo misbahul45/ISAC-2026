@@ -95,7 +95,11 @@ class Team extends Model
         if ($registration->documents_completed_at === null) {
             return '/registration/documents';
         }
-        if ($registration->status === RegistrationStatus::WAITING_PAYMENT || $registration->status === RegistrationStatus::REVISION_REQUIRED) {
+        $isStagePaymentCheckpoint = $registration->payment_for_stage_id !== null;
+        if (
+            ! $isStagePaymentCheckpoint
+            && ($registration->status === RegistrationStatus::WAITING_PAYMENT || $registration->status === RegistrationStatus::REVISION_REQUIRED)
+        ) {
             return '/registration/payment';
         }
 

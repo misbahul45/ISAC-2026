@@ -24,12 +24,18 @@ class DashboardSummaryResource extends JsonResource
                     'id' => $this->resource->currentStage->id,
                     'name' => $this->resource->currentStage->name,
                     'type' => $this->resource->currentStage->type,
+                    'order' => $this->resource->currentStage->order,
+                    'description' => $this->resource->currentStage->description,
+                    'startDate' => $this->resource->currentStage->start_date?->toISOString(),
+                    'endDate' => $this->resource->currentStage->end_date?->toISOString(),
                 ],
             ],
             'payment' => $registration === null ? null : [
                 'status' => $registration->status?->value,
-                'amount' => (float) $registration->amount_paid,
-                'originalAmount' => (float) $registration->amount_paid + (float) $registration->discount_amount,
+                'amount' => $registration->payment_submitted_at === null
+                    ? (float) $registration->batch->price
+                    : (float) $registration->amount_paid,
+                'originalAmount' => (float) $registration->batch->price,
                 'promoCode' => $registration->promo_code,
                 'discountPercent' => (float) $registration->discount_percent,
                 'discountAmount' => (float) $registration->discount_amount,
@@ -37,6 +43,24 @@ class DashboardSummaryResource extends JsonResource
                 'submittedAt' => $registration->payment_submitted_at?->toISOString(),
                 'verifiedAt' => $registration->payment_verified_at?->toISOString(),
                 'rejectionReason' => $registration->payment_rejection_reason,
+                'proof' => $registration->paymentProofFile === null ? null : [
+                    'id' => $registration->paymentProofFile->id,
+                    'url' => $registration->paymentProofFile->url,
+                    'downloadUrl' => route('files.show', ['file' => $registration->paymentProofFile->id]),
+                ],
+            ],
+            'activities' => [
+                'exams' => $this->resource->currentStage === null
+                    ? []
+                    : $this->resource->currentStage->exams->map(fn ($exam): array => [
+                        'id' => $exam->id,
+                        'title' => $exam->title,
+                        'description' => $exam->description,
+                        'startDate' => $exam->start_date?->toISOString(),
+                        'endDate' => $exam->end_date?->toISOString(),
+                        'duration' => $exam->duration,
+                        'maxAttempts' => $exam->max_attempts,
+                    ])->values()->all(),
             ],
             'nextAction' => $context['currentStep'] === 'DASHBOARD'
                 ? $this->statusMessage($this->resource)

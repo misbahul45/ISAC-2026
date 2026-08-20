@@ -2,13 +2,17 @@
 
 namespace App\Providers;
 
+use App\Models\AdminOperation;
 use App\Models\Batch;
 use App\Models\Competition;
+use App\Models\Exam;
 use App\Models\Registration;
 use App\Models\Stage;
 use App\Models\Team;
+use App\Policies\AdminOperationPolicy;
 use App\Policies\BatchPolicy;
 use App\Policies\CompetitionPolicy;
+use App\Policies\ExamPolicy;
 use App\Policies\RegistrationPolicy;
 use App\Policies\StagePolicy;
 use App\Policies\TeamPolicy;
@@ -52,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(Competition::class, CompetitionPolicy::class);
         Gate::policy(Batch::class, BatchPolicy::class);
+        Gate::policy(AdminOperation::class, AdminOperationPolicy::class);
+        Gate::policy(Exam::class, ExamPolicy::class);
         Gate::policy(Team::class, TeamPolicy::class);
         Gate::policy(Registration::class, RegistrationPolicy::class);
         Gate::policy(Stage::class, StagePolicy::class);

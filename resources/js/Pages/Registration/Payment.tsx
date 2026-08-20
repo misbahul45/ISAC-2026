@@ -17,7 +17,7 @@ const Payment = () => {
     try {
       const response = await submitPayment.mutateAsync(values)
       toast.success(response.message)
-      router.visit(response.data.redirectTo)
+      router.visit(response.data.redirectTo, { replace: true })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Gagal mengirim pembayaran')
     }
@@ -49,8 +49,8 @@ const Payment = () => {
       {step === 'account' && (
         <div className="space-y-8 w-full">
           <TeamAccount />
-          <div className="flex justify-center">
-            <button onClick={() => setStep('payment')} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#8B5CFF] to-[#5B3FBF] text-white hover:shadow-[0_0_24px_-4px_rgba(139,92,255,0.5)] hover:scale-[1.02] transition-all duration-300 font-semibold">
+          <div className="relative z-30 flex justify-center">
+            <button type="button" onClick={() => setStep('payment')} className="relative z-30 flex cursor-pointer items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#8B5CFF] to-[#5B3FBF] text-white hover:shadow-[0_0_24px_-4px_rgba(139,92,255,0.5)] hover:scale-[1.02] transition-all duration-300 font-semibold">
               <span>Lanjut ke Pembayaran</span>
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -76,7 +76,7 @@ const Payment = () => {
             onSubmit={handleSubmit}
           />
           <div className="flex justify-center">
-            <button onClick={() => setStep('account')} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-[#171B3B]/80 border border-[rgba(254,254,254,0.1)] text-[#8891BB] hover:text-white hover:border-[rgba(254,254,254,0.2)] transition-all duration-300 font-semibold">
+            <button type="button" onClick={() => setStep('account')} className="flex cursor-pointer items-center gap-2 px-8 py-4 rounded-xl bg-[#171B3B]/80 border border-[rgba(254,254,254,0.1)] text-[#8891BB] hover:text-white hover:border-[rgba(254,254,254,0.2)] transition-all duration-300 font-semibold">
               <ArrowLeft className="w-5 h-5" />
               <span>Kembali ke Data Tim</span>
             </button>

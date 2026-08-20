@@ -29,11 +29,17 @@ export type RegistrationContext = {
   registration: null | {
     id: string; status: RegistrationStatus; competition: CompetitionSummary; batch: BatchSummary
     paymentRequiredAt: string | null; paymentSubmittedAt: string | null; paymentRejectionReason: string | null
+    paymentForStage: StageSummary | null
   }
   progress: { teamCompleted: boolean; membersCompleted: boolean; documentsCompleted: boolean; submitted: boolean }
   currentStep: RegistrationStep
   allowedActions: string[]
   redirectTo: string
+}
+
+export type StageSummary = {
+  id: string; name: string; type: string; order: number; description: string | null
+  startDate: string | null; endDate: string | null
 }
 
 export type TeamFormValues = {
@@ -82,7 +88,7 @@ export type RegistrationSummary = {
   registration: null | { id: string; status: RegistrationStatus; competition: CompetitionSummary; batch: BatchSummary }
 }
 export type CompetitionQuery = { status?: CompetitionStatus }
-export type SelectCompetitionPayload = { competition_id: string; batch_id: string }
+export type SelectCompetitionPayload = { competition_id: string }
 export type FinalizeMembersPayload = { members: MemberFormValues[] }
 export type RegistrationMutationData = RedirectData & { context: RegistrationContext }
 

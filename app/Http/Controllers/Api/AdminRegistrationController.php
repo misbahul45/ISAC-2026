@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ListPaymentsRequest;
 use App\Http\Requests\Admin\ReviewReasonRequest;
 use App\Http\Requests\Admin\TeamRevisionRequest;
+use App\Http\Requests\Admin\UpdateTeamRegistrationRequest;
 use App\Http\Resources\AdminPaymentResource;
 use App\Http\Resources\RegistrationSummaryResource;
 use App\Models\Admin;
@@ -34,6 +35,20 @@ class AdminRegistrationController extends Controller
         $this->authorize($request, 'view', $team);
 
         return $this->success('Detail team berhasil diambil.', new RegistrationSummaryResource($this->service->detail($team)));
+    }
+
+    public function updateTeamRegistration(UpdateTeamRegistrationRequest $request, Team $team): JsonResponse
+    {
+        $this->authorize($request, 'updateData', $team);
+
+        return $this->success('Data team dan seluruh member berhasil diperbarui.', new RegistrationSummaryResource(
+            $this->service->updateTeamRegistration(
+                $this->admin($request),
+                $team,
+                $request->validated(),
+                $request->header('X-Request-ID'),
+            ),
+        ));
     }
 
     public function payments(ListPaymentsRequest $request): JsonResponse

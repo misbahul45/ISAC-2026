@@ -1,6 +1,8 @@
 import TeamDetail from './TeamDetail'
+import { ExternalLink, FileText, Image } from 'lucide-react'
 import MemberCard from './MemberCard'
 import { useRegistrationSummary } from '@/features/registrations/hooks/useRegistration'
+import { formatCurrency } from '@/lib/formatters'
 
 const accentColors = [
   { bg: 'rgba(139, 92, 246, 0.15)', border: 'rgba(139, 92, 246, 0.3)', glow: 'rgba(139, 92, 246, 0.4)' },
@@ -28,6 +30,14 @@ const TeamAccount = () => {
         </div>
       </div>
 
+      {registration && (
+        <div className="grid gap-4 rounded-2xl border border-white/10 bg-card/45 p-5 backdrop-blur-md sm:grid-cols-3">
+          <div><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Competition</p><p className="mt-2 font-semibold text-foreground">{registration.competition.name}</p></div>
+          <div><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Batch terpilih</p><p className="mt-2 font-semibold text-foreground">{registration.batch.name} · {formatCurrency(registration.batch.price)}</p></div>
+          <div><p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Waktu pembayaran</p><p className="mt-2 font-semibold text-foreground">{registration.competition.paymentFlow === 'UPFRONT' ? 'Saat pendaftaran' : 'Jika lolos Semifinal'}</p></div>
+        </div>
+      )}
+
       {summary.members.map((member, index) => (
         <div key={member.id} className="relative isolate overflow-hidden rounded-2xl">
           <span aria-hidden="true" className="header-border-track" /><span aria-hidden="true" className="header-border-spin" />
@@ -53,8 +63,32 @@ const TeamAccount = () => {
       ))}
 
       <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
-        <a href={summary.team.documentUrl ?? '#'} target="_blank" rel="noreferrer" className="rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-white transition-all hover:bg-white/10">Dokumen Kelengkapan</a>
-        <a href={summary.team.twibbonUrl ?? '#'} target="_blank" rel="noreferrer" className="rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-white transition-all hover:bg-white/10">Twibbon Peserta</a>
+        {[
+          {
+            href: summary.team.documentUrl,
+            Icon: FileText,
+            title: 'Dokumen Kelengkapan',
+            description: 'Buka folder atau berkas dokumen yang dikirimkan Team.',
+            iconClassName: 'bg-primary/15 text-primary',
+          },
+          {
+            href: summary.team.twibbonUrl,
+            Icon: Image,
+            title: 'Twibbon Peserta',
+            description: 'Buka tautan unggahan Twibbon Team.',
+            iconClassName: 'bg-secondary/15 text-secondary',
+          },
+        ].map(({ href, Icon, title, description, iconClassName }) => {
+          const content = <>
+            <span className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}><Icon className="size-5" /></span>
+            <span className="min-w-0 flex-1 text-left"><span className="block font-semibold text-foreground">{title}</span><span className="mt-1 block text-sm leading-5 text-muted-foreground">{description}</span></span>
+            <ExternalLink className="size-5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+          </>
+
+          return href
+            ? <a key={title} href={href} target="_blank" rel="noreferrer" className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white/10">{content}</a>
+            : <div key={title} aria-disabled="true" className="flex cursor-not-allowed items-center gap-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5 opacity-60"><span className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}><Icon className="size-5" /></span><span className="min-w-0 flex-1 text-left"><span className="block font-semibold text-foreground">{title}</span><span className="mt-1 block text-sm leading-5 text-muted-foreground">Tautan belum ditambahkan.</span></span></div>
+        })}
       </div>
     </div>
   )

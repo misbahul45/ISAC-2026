@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react'
-import { ArrowLeft, Banknote, CheckCircle2, ExternalLink, FileText, Mail, MapPin, Phone, RotateCcw, ShieldX, UserRound } from 'lucide-react'
+import { ArrowLeft, Banknote, CheckCircle2, ExternalLink, FileText, Mail, MapPin, Pencil, Phone, RotateCcw, ShieldX, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { Seo } from '@/components/seo/Seo'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { AdminPageHeader } from '@/features/admin/components/AdminPageHeader'
 import { adminPageLayout } from '@/features/admin/components/AdminShell'
 import { AdminStatusBadge } from '@/features/admin/components/AdminStatusBadge'
 import { AdminErrorState, AdminLoadingState } from '@/features/admin/components/AdminStates'
+import { AdminTeamEditDialog } from '@/features/admin/components/AdminTeamEditDialog'
 import { TeamReviewDialog } from '@/features/admin/components/TeamReviewDialog'
 import { useAdminTeam } from '@/features/admin/hooks/useAdmin'
 import { useAuthSession } from '@/features/auth/context/AuthProvider'
@@ -29,7 +30,9 @@ export default function AdminTeamShow({ teamId }: { teamId: string }) {
   const [reviewAction, setReviewAction] = useState<'verify' | 'revise' | 'reject' | null>(null)
   const data = query.data?.data
   const role = principal?.principalType === 'ADMIN' ? principal.admin.role : null
+  const [editOpen, setEditOpen] = useState(false)
   const canReview = role === 'super_admin' || role === 'admin_registration'
+  const canEdit = role === 'super_admin' || role === 'admin_registration'
   const waitingReview = data?.team.status === 'WAITING_VERIFICATION'
 
   if (query.isLoading) return <AdminLoadingState label="Memuat detail tim..." />
@@ -41,7 +44,7 @@ export default function AdminTeamShow({ teamId }: { teamId: string }) {
       <AdminPageHeader
         title={data.team.name ?? data.team.code}
         description={`${data.team.code} · ${data.registration?.competition.name ?? 'Belum memilih kompetisi'}`}
-        action={<Link href="/admin/teams" className={cn(buttonVariants({ variant: 'outline' }))}><ArrowLeft />Kembali</Link>}
+        action={<div className="flex flex-wrap gap-2"><Link href="/admin/teams" className={cn(buttonVariants({ variant: 'outline' }))}><ArrowLeft />Kembali</Link>{canEdit && data.registration && <Button variant="outline" onClick={() => setEditOpen(true)}><Pencil />Edit Data</Button>}</div>}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_.7fr]">
@@ -110,6 +113,7 @@ export default function AdminTeamShow({ teamId }: { teamId: string }) {
       </div>
 
       {reviewAction && <TeamReviewDialog teamId={teamId} action={reviewAction} open onOpenChange={(open) => { if (!open) setReviewAction(null) }} />}
+      {data.registration && <AdminTeamEditDialog data={data} open={editOpen} onOpenChange={setEditOpen} />}
     </>
   )
 }

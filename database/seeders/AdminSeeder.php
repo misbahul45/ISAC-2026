@@ -9,11 +9,11 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        Admin::create([
+        Admin::query()->updateOrCreate(['email' => 'admin@isac.com'], [
             'name' => 'Admin ISAC',
-            'email' => 'admin@isac.com',
             'password' => 'password',
             'role' => 'super_admin',
+            'is_active' => true,
         ]);
     }
 }

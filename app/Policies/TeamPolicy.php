@@ -27,6 +27,11 @@ class TeamPolicy
         return $admin->role === 'admin_registration';
     }
 
+    public function updateData(Admin $admin, Team $team): bool
+    {
+        return $admin->role === 'admin_registration';
+    }
+
     public function requestRevision(Admin $admin, Team $team): bool
     {
         return $this->verifyData($admin, $team);

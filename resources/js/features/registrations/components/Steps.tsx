@@ -21,6 +21,10 @@ const Steps = () => {
 
   const rawStep = registrationSteps.findIndex((step, index) => pathname === getStepPath(index, step.name))
   const currentStep = rawStep === -1 ? 0 : rawStep
+  const furthestAvailableStep = registrationSteps.findIndex(
+    (step, index) => contextQuery.data?.data.redirectTo === getStepPath(index, step.name),
+  )
+  const lastAccessibleStep = Math.max(currentStep, furthestAvailableStep)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const circleRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -73,7 +77,10 @@ const Steps = () => {
 
   return (
     <div ref={containerRef} className='flex gap-2 sm:gap-3 md:gap-4 lg:gap-6 items-center justify-center z-50'>
-      {registrationSteps.map((step, index) => (
+      {registrationSteps.map((step, index) => {
+        const isAccessible = index <= lastAccessibleStep
+
+        return (
         <div key={index} className='flex items-center gap-2 sm:gap-3 md:gap-4'>
           <div
             className={cn(
@@ -83,14 +90,13 @@ const Steps = () => {
           >
             <Link
               href={getStepPath(index, step.name)}
-              onClick={(e) => {
-                if (currentStep < index) {
-                  e.preventDefault()
-                }
+              onClick={(event) => {
+                if (!isAccessible) event.preventDefault()
               }}
+              aria-disabled={!isAccessible}
               className={cn(
                 'flex items-center justify-center',
-                currentStep >= index ? 'cursor-pointer' : 'cursor-not-allowed'
+                isAccessible ? 'cursor-pointer' : 'cursor-not-allowed'
               )}
             >
               <div
@@ -152,7 +158,8 @@ const Steps = () => {
             </div>
           )}
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

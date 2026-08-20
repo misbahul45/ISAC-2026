@@ -24,16 +24,16 @@ class CompetitionPolicy
 
     public function create(Admin $admin): bool
     {
-        return false;
+        return $admin->role === 'admin_registration';
     }
 
     public function update(Admin $admin, Competition $competition): bool
     {
-        return false;
+        return $this->create($admin);
     }
 
     public function delete(Admin $admin, Competition $competition): bool
     {
-        return false;
+        return $this->create($admin);
     }
 }

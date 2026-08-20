@@ -13,7 +13,6 @@ class SelectCompetitionRequest extends FormRequest
     {
         return [
             'competition_id' => ['required', 'uuid', 'exists:competitions,id'],
-            'batch_id' => ['required', 'uuid', 'exists:batches,id'],
         ];
     }
 
@@ -26,9 +25,6 @@ class SelectCompetitionRequest extends FormRequest
             'competition_id.required' => 'Kompetisi wajib dipilih.',
             'competition_id.uuid' => 'ID kompetisi tidak valid.',
             'competition_id.exists' => 'Kompetisi tidak ditemukan.',
-            'batch_id.required' => 'Batch wajib dipilih.',
-            'batch_id.uuid' => 'ID batch tidak valid.',
-            'batch_id.exists' => 'Batch tidak ditemukan.',
         ];
     }
 }

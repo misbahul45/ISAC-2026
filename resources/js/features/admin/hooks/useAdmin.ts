@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../api/adminApi'
-import type { AdminPaymentFilters, AdminTeamFilters, BatchPayload, CompetitionFilters, CompetitionPayload, TeamRevisionPayload } from '../types/adminTypes'
+import type { AdminPaymentFilters, AdminTeamFilters, AdminTeamUpdatePayload, BatchPayload, CompetitionFilters, CompetitionPayload, TeamRevisionPayload } from '../types/adminTypes'
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -128,6 +128,17 @@ export function useRejectAdminPayment(registrationId: string) {
     onSuccess: () => Promise.all([
       client.invalidateQueries({ queryKey: [...adminKeys.all, 'payments'] }),
       client.invalidateQueries({ queryKey: adminKeys.payment(registrationId) }),
+    ]),
+  })
+}
+
+export function useUpdateAdminTeam(teamId: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: AdminTeamUpdatePayload) => adminApi.updateTeamRegistration(teamId, payload),
+    onSuccess: () => Promise.all([
+      client.invalidateQueries({ queryKey: [...adminKeys.all, 'teams'] }),
+      client.invalidateQueries({ queryKey: adminKeys.team(teamId) }),
     ]),
   })
 }

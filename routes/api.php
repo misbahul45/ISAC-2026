@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AdminOperationController;
+use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminExamController;
 use App\Http\Controllers\Api\AdminRegistrationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BatchController;
@@ -28,6 +31,10 @@ Route::get('/system/status', function () {
 });
 
 Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->middleware(['auth:sanctum', 'principal.team', 'team.verified']);
+Route::prefix('dashboard')->middleware(['auth:sanctum', 'principal.team', 'team.verified'])->group(function (): void {
+    Route::get('/exams/{exam}', [DashboardController::class, 'exam'])->whereUuid('exam');
+    Route::get('/stages/{stage}', [DashboardController::class, 'stage'])->whereUuid('stage');
+});
 
 Route::prefix('teams')->middleware(['auth:sanctum', 'principal.team', 'team.verified'])->group(function (): void {
     Route::get('/me', [TeamController::class, 'show']);
@@ -49,6 +56,7 @@ Route::get('/competitions/{competition}', [CompetitionController::class, 'show']
 Route::prefix('admin')->middleware(['auth:admins', 'principal.admin'])->group(function (): void {
     Route::get('/teams', [AdminRegistrationController::class, 'index']);
     Route::get('/teams/{team}', [AdminRegistrationController::class, 'show'])->whereUuid('team');
+    Route::patch('/teams/{team}/registration', [AdminRegistrationController::class, 'updateTeamRegistration'])->whereUuid('team');
     Route::post('/teams/{team}/verify', [AdminRegistrationController::class, 'verifyTeam'])->whereUuid('team');
     Route::post('/teams/{team}/revision', [AdminRegistrationController::class, 'reviseTeam'])->whereUuid('team');
     Route::post('/teams/{team}/reject', [AdminRegistrationController::class, 'rejectTeam'])->whereUuid('team');
@@ -69,17 +77,26 @@ Route::prefix('admin')->middleware(['auth:admins', 'principal.admin'])->group(fu
         Route::patch('/{batch}', [BatchController::class, 'update']);
         Route::delete('/{batch}', [BatchController::class, 'destroy']);
     });
+    Route::get('/operations', [AdminOperationController::class, 'index']);
+    Route::post('/operations', [AdminOperationController::class, 'store']);
+    Route::get('/operations/{operation}', [AdminOperationController::class, 'show'])->whereUuid('operation');
+    Route::post('/operations/{operation}/retry-spreadsheet', [AdminOperationController::class, 'retrySpreadsheet'])->whereUuid('operation');
+    Route::get('/dashboard/summary', [AdminDashboardController::class, 'summary']);
+    Route::get('/exam-stages', [AdminExamController::class, 'stages']);
+    Route::get('/exams', [AdminExamController::class, 'exams']);
+    Route::get('/exams/{exam}', [AdminExamController::class, 'show'])->whereUuid('exam');
+    Route::post('/exams/{exam}/questions', [AdminExamController::class, 'storeQuestion'])->whereUuid('exam');
 });
 
 Route::prefix('registrations')->middleware(['auth:sanctum', 'principal.team', 'team.verified'])->group(function (): void {
     Route::get('/me/context', [RegistrationController::class, 'context']);
-    Route::post('/me/selection', [RegistrationController::class, 'selection']);
+    Route::put('/me/selection', [RegistrationController::class, 'selection']);
     Route::get('/me/team', [RegistrationController::class, 'getTeam']);
-    Route::patch('/me/team', [RegistrationController::class, 'updateTeam']);
+    Route::put('/me/team', [RegistrationController::class, 'updateTeam']);
     Route::get('/me/members', [RegistrationController::class, 'getMembers']);
     Route::put('/me/members', [RegistrationController::class, 'updateMembers']);
     Route::get('/me/documents', [RegistrationController::class, 'getDocuments']);
-    Route::patch('/me/documents', [RegistrationController::class, 'updateDocuments']);
+    Route::put('/me/documents', [RegistrationController::class, 'updateDocuments']);
     Route::get('/me/payment', [RegistrationController::class, 'getPayment']);
     Route::post('/me/payment/quote', [RegistrationController::class, 'quotePayment']);
     Route::post('/me/payment', [RegistrationController::class, 'submitPayment']);

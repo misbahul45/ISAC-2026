@@ -9,6 +9,7 @@ import { uploadPaymentSchema, type UploadPaymentInput } from '../schemas/uploadP
 import type { ExternalFile, PaymentFormValues, PaymentMethod, PaymentQuoteData } from '../types/registrationTypes'
 import { usePaymentQuote } from '../hooks/useRegistration'
 import { ApiClientError } from '@/lib/api'
+import { formatCurrency } from '@/lib/formatters'
 
 type Props = {
   qrImageUrl: string | null
@@ -29,13 +30,6 @@ const methodLabels: Record<PaymentMethod, string> = {
   BANK_TRANSFER: 'Transfer Bank',
   QRIS: 'QRIS',
 }
-
-const formatRupiah = (value: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(value)
 
 const FormPayment = ({
   qrImageUrl,
@@ -165,14 +159,14 @@ const FormPayment = ({
               <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-foreground">Total Biaya Pendaftaran</p>
               {pricing.promoApplied && (
                 <div className="mb-3 flex flex-wrap items-center justify-center gap-2 text-sm">
-                  <span className="text-muted-foreground line-through">{formatRupiah(pricing.originalAmount)}</span>
+                  <span className="text-muted-foreground line-through">{formatCurrency(pricing.originalAmount)}</span>
                   <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-semibold text-emerald-400">
-                    Diskon {pricing.discountPercent}% · Hemat {formatRupiah(pricing.discountAmount)}
+                    Diskon {pricing.discountPercent}% · Hemat {formatCurrency(pricing.discountAmount)}
                   </span>
                 </div>
               )}
               <div className="inline-block rounded-full bg-primary px-8 py-3">
-                <span className="text-2xl font-bold text-primary-foreground">{formatRupiah(pricing.amount)}</span>
+                <span className="text-2xl font-bold text-primary-foreground">{formatCurrency(pricing.amount)}</span>
               </div>
               {instructions && <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">{instructions}</p>}
             </div>

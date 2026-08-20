@@ -90,7 +90,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/competitions', fn () => Inertia::render('Admin/Competitions', ['title' => 'Kompetisi']))->name('competitions');
     Route::get('/batches', fn () => Inertia::render('Admin/Batches', ['title' => 'Batch']))->name('batches');
     Route::get('/stages', fn () => Inertia::render('Admin/Stages', ['title' => 'Tahapan']))->name('stages');
-    Route::get('/audit-logs', fn () => Inertia::render('Admin/AuditLogs', ['title' => 'Audit Aktivitas']))->name('audit-logs');
+    Route::get('/questions', fn () => Inertia::render('Admin/Questions', ['title' => 'Buat Soal']))->name('questions');
     Route::get('/judging', fn () => Inertia::render('Admin/Judging', ['title' => 'Penilaian']))->name('judging');
 });
 
@@ -99,6 +99,20 @@ Route::get('/dashboard', function () {
         'title' => 'Dashboard',
     ]);
 })->name('dashboard.index');
+
+Route::get('/dashboard/olimpiade/{exam}', function (string $exam) {
+    return Inertia::render('Dashboard/Olympiad/Show', [
+        'title' => 'Detail Ujian',
+        'examId' => $exam,
+    ]);
+})->whereUuid('exam')->name('dashboard.olympiad.show');
+
+Route::get('/dashboard/submission/{stage}', function (string $stage) {
+    return Inertia::render('Dashboard/Submission/Show', [
+        'title' => 'Tahap Pengumpulan',
+        'stageId' => $stage,
+    ]);
+})->whereUuid('stage')->name('dashboard.submission.show');
 
 Route::get('/todos', function () {
     return Inertia::render('Todos/Index', [

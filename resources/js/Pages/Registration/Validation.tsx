@@ -13,7 +13,7 @@ const Validation = () => {
     try {
       const response = await submitMutation.mutateAsync()
       toast.success(response.message)
-      router.visit(response.data.redirectTo)
+      router.visit(response.data.redirectTo, { replace: true })
     } catch (error) {
       toast.error(
         error instanceof Error

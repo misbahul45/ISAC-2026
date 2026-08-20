@@ -21,42 +21,49 @@ class RegistrationService
         return DB::transaction(function () use ($team, $data): Registration {
             $existing = Registration::query()->where('team_id', $team->id)->lockForUpdate()->first();
             if ($existing !== null) {
-                if ($existing->competition_id === $data['competition_id'] && $existing->batch_id === $data['batch_id']) {
+                if ($existing->competition_id === $data['competition_id']) {
                     return $existing;
                 }
 
-                throw ValidationException::withMessages(['batch_id' => ['Tim sudah terdaftar pada kompetisi lain.']]);
+                throw ValidationException::withMessages(['competition_id' => ['Tim sudah terdaftar pada kompetisi lain.']]);
             }
 
-            $batch = Batch::query()->with('competition')->whereKey($data['batch_id'])->lockForUpdate()->firstOrFail();
-            if ($batch->competition_id !== $data['competition_id']) {
-                throw ValidationException::withMessages(['batch_id' => ['Batch tidak terdaftar pada kompetisi yang dipilih.']]);
-            }
-
-            $competition = $batch->competition;
+            $competition = Competition::query()->lockForUpdate()->findOrFail($data['competition_id']);
             if ($competition->status !== Competition::STATUS_REGISTRATION_OPEN) {
                 throw ValidationException::withMessages(['competition_id' => ['Pendaftaran kompetisi belum dibuka.']]);
             }
 
-            if ($batch->status !== BatchStatus::OPEN || now()->lt($batch->start_date) || now()->gt($batch->end_date)) {
-                throw ValidationException::withMessages(['batch_id' => ['Batch tidak sedang menerima pendaftaran.']]);
-            }
+            // Batch is resolved at the exact registration time on the server.
+            // The latest valid opening is selected, so client input can never
+            // bind a Team to a closed, full, or unrelated Batch.
+            $batch = Batch::query()
+                ->where('competition_id', $competition->id)
+                ->where('status', BatchStatus::OPEN)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->where(fn ($query) => $query->whereNull('quota')->orWhereColumn('current_registrations', '<', 'quota'))
+                ->orderByDesc('start_date')
+                ->lockForUpdate()
+                ->first();
 
-            if ($batch->quota !== null && $batch->current_registrations >= $batch->quota) {
-                throw ValidationException::withMessages(['batch_id' => ['Kuota batch sudah penuh.']]);
+            if ($batch === null) {
+                throw ValidationException::withMessages(['competition_id' => ['Belum ada Batch aktif dengan kuota tersedia untuk kompetisi ini.']]);
             }
 
             $isOlympiad = $competition->type === Competition::TYPE_OLIMPIADE;
-            $registration = Registration::query()->create([
+            // A Team owns exactly one Registration. Repeating the save is
+            // idempotent and must never assign a different Batch or price.
+            $registration = Registration::query()->updateOrCreate(['team_id' => $team->id], [
                 'competition_id' => $competition->id,
                 'batch_id' => $batch->id,
-                'team_id' => $team->id,
                 'status' => $isOlympiad ? RegistrationStatus::WAITING_PAYMENT : RegistrationStatus::VERIFIED,
                 'payment_required_at' => $isOlympiad ? now() : null,
                 'payment_verified_at' => $isOlympiad ? null : now(),
             ]);
 
-            $batch->increment('current_registrations');
+            if ($registration->wasRecentlyCreated) {
+                $batch->increment('current_registrations');
+            }
 
             return $registration;
         });
@@ -69,7 +76,7 @@ class RegistrationService
         $this->assertInstitutionMatchesCompetition($data['institution_name'], $registration->competition);
 
         DB::transaction(function () use ($team, $data, $registration): void {
-            $team->update(Arr::only($data, [
+            Team::query()->updateOrCreate(['id' => $team->id], Arr::only($data, [
                 'name', 'phone', 'institution_name', 'institution_address',
             ]));
             $registration->update(['team_completed_at' => $registration->team_completed_at ?? now()]);
@@ -77,6 +84,144 @@ class RegistrationService
         });
 
         return $team->fresh()->load('registration.competition');
+    }
+
+    /**
+     * Update every registration data section from an Admin correction flow.
+     *
+     * This intentionally bypasses the Team-facing edit lock. The Admin policy
+     * and audit log are the controls for this path; the competition-specific
+     * member validation remains the same as the public registration flow.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function updateByAdmin(Team $team, array $data): Team
+    {
+        $registration = $this->registration($team);
+        $teamData = $data['team'];
+        $documentData = $data['documents'] ?? [];
+        $this->assertInstitutionMatchesCompetition($teamData['institution_name'], $registration->competition);
+
+        $competition = $registration->competition;
+        [$minimum, $maximum] = match ($competition->type) {
+            Competition::TYPE_OLIMPIADE => [1, 1],
+            Competition::TYPE_BUSINESS_PLAN, Competition::TYPE_BUSINESS_IT_CASE => [3, 3],
+            default => throw ValidationException::withMessages(['members' => ['Tipe kompetisi tidak valid.']]),
+        };
+
+        $members = array_values($data['members']);
+        if (count($members) < $minimum || count($members) > $maximum) {
+            $message = $minimum === $maximum
+                ? "Jumlah peserta harus tepat {$minimum} orang."
+                : "Jumlah peserta harus {$minimum} sampai {$maximum} orang.";
+            throw ValidationException::withMessages(['members' => [$message]]);
+        }
+
+        $isOlympiad = $competition->type === Competition::TYPE_OLIMPIADE;
+        $isUniversity = $competition->type === Competition::TYPE_BUSINESS_IT_CASE;
+
+        if ($isOlympiad) {
+            $members[0]['role'] = 'LEADER';
+        } elseif (count(array_filter($members, fn (array $member): bool => $member['role'] === 'LEADER')) !== 1) {
+            throw ValidationException::withMessages(['members' => ['Harus memiliki tepat satu ketua tim (LEADER).']]);
+        }
+
+        $memberErrors = [];
+        foreach ($members as $index => &$member) {
+            $identityLabel = $isUniversity ? 'NIM' : 'NISN';
+            if (mb_strlen(trim($member['student_id'])) < 3) {
+                $memberErrors["members.{$index}.student_id"] = ["{$identityLabel} minimal 3 karakter."];
+            }
+
+            if ($isUniversity) {
+                foreach (['major' => 'Jurusan', 'faculty' => 'Fakultas'] as $field => $label) {
+                    if (blank($member[$field] ?? null)) {
+                        $memberErrors["members.{$index}.{$field}"] = ["{$label} wajib diisi untuk mahasiswa."];
+                    }
+                }
+            } else {
+                $member['major'] = null;
+                $member['faculty'] = null;
+            }
+
+            if (! empty($member['photo_file_id'])) {
+                $this->assertAdminMemberPhoto($team, $member['photo_file_id'], 'photo_file_id');
+            }
+        }
+        unset($member);
+
+        if ($memberErrors !== []) {
+            throw ValidationException::withMessages($memberErrors);
+        }
+
+        DB::transaction(function () use ($team, $teamData, $documentData, $members, $registration): void {
+            $team->update(Arr::only($teamData, [
+                'name', 'phone', 'institution_name', 'institution_address',
+            ]));
+
+            $keptIds = [];
+            foreach (array_values($members) as $index => $payload) {
+                $member = null;
+                if (! empty($payload['id'])) {
+                    $member = $team->members()->whereKey($payload['id'])->first();
+                    if ($member === null) {
+                        throw ValidationException::withMessages(['members' => ['Anggota tidak dimiliki oleh Team ini.']]);
+                    }
+                }
+
+                $photoFileId = array_key_exists('photo_file_id', $payload)
+                    ? ($payload['photo_file_id'] ?: null)
+                    : $member?->photo_file_id;
+                $attributes = [
+                    'name' => $payload['name'],
+                    'role' => $payload['role'],
+                    'email' => strtolower(trim($payload['email'])),
+                    'major' => $payload['major'] ?? null,
+                    'faculty' => $payload['faculty'] ?? null,
+                    'student_id' => $payload['student_id'],
+                    'photo_file_id' => $photoFileId,
+                    'sort_order' => $index + 1,
+                ];
+
+                if ($member === null) {
+                    $member = $team->members()->create($attributes);
+                } else {
+                    $member->update($attributes);
+                }
+                $keptIds[] = $member->id;
+            }
+
+            $team->members()->whereNotIn('id', $keptIds)->delete();
+            $documentUpdates = Arr::only($documentData, ['document_url', 'twibbon_url']);
+            if ($documentUpdates !== []) {
+                $team->update($documentUpdates);
+            }
+            $team->refresh();
+            $documentsCompleted = filled($team->document_url) && filled($team->twibbon_url);
+
+            if ($team->status === Team::STATUS_REVISION_REQUIRED && $documentsCompleted) {
+                $team->update([
+                    'status' => Team::STATUS_WAITING_VERIFICATION,
+                    'verified_at' => null,
+                    'verified_by' => null,
+                    'verification_note' => null,
+                    'revision_step' => null,
+                ]);
+            }
+            $registration->update([
+                'team_completed_at' => $registration->team_completed_at ?? now(),
+                'members_completed_at' => $registration->members_completed_at ?? now(),
+                'documents_completed_at' => $documentsCompleted ? ($registration->documents_completed_at ?? now()) : null,
+            ]);
+        });
+
+        return $team->fresh()->load([
+            'members' => fn ($query) => $query->orderBy('sort_order'),
+            'registration.competition',
+            'registration.batch',
+            'registration.paymentProofFile',
+            'currentStage',
+        ]);
     }
 
     public function getMembers(Team $team): Team
@@ -145,12 +290,9 @@ class RegistrationService
         }
 
         DB::transaction(function () use ($team, $members, $registration): void {
-            $keptIds = [];
             foreach (array_values($members) as $index => $payload) {
-                $member = null;
                 if (! empty($payload['id'])) {
-                    $member = $team->members()->whereKey($payload['id'])->first();
-                    if ($member === null) {
+                    if (! $team->members()->whereKey($payload['id'])->exists()) {
                         throw ValidationException::withMessages(['members' => ['Anggota tidak dimiliki oleh Team ini.']]);
                     }
                 }
@@ -166,16 +308,10 @@ class RegistrationService
                     'sort_order' => $index + 1,
                 ];
 
-                if ($member === null) {
-                    $member = $team->members()->create($attributes);
-                } else {
-                    $member->update($attributes);
-                }
-                $keptIds[] = $member->id;
+                $team->members()->updateOrCreate(['sort_order' => $index + 1], $attributes);
             }
 
-            $team->members()->whereNotIn('id', $keptIds)->delete();
-            $registration->update(['members_completed_at' => now()]);
+            $registration->update(['members_completed_at' => $registration->members_completed_at ?? now()]);
             $this->resolveDataRevision($team, 'MEMBERS');
         });
 
@@ -191,11 +327,11 @@ class RegistrationService
         }
 
         DB::transaction(function () use ($team, $data, $registration): void {
-            $team->update([
+            Team::query()->updateOrCreate(['id' => $team->id], [
                 'document_url' => $data['document_url'],
                 'twibbon_url' => $data['twibbon_url'],
             ]);
-            $registration->update(['documents_completed_at' => now()]);
+            $registration->update(['documents_completed_at' => $registration->documents_completed_at ?? now()]);
 
             if ($registration->competition->type !== Competition::TYPE_OLIMPIADE) {
                 $registration->update(['submitted_at' => $registration->submitted_at ?? now()]);
@@ -362,6 +498,18 @@ class RegistrationService
         $file = File::query()->find($fileId);
         if ($file === null || $file->uploaded_by !== $team->id || $file->purpose !== $purpose) {
             throw ValidationException::withMessages([$field => ['File tidak valid atau bukan milik Team ini.']]);
+        }
+
+        return $file;
+    }
+
+    private function assertAdminMemberPhoto(Team $team, string $fileId, string $field): File
+    {
+        $file = File::query()->find($fileId);
+        if ($file === null
+            || $file->purpose !== 'MEMBER_PHOTO'
+            || ($file->uploaded_by !== null && $file->uploaded_by !== $team->id)) {
+            throw ValidationException::withMessages([$field => ['Foto member tidak valid atau bukan milik Team ini.']]);
         }
 
         return $file;

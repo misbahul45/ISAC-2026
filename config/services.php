@@ -50,4 +50,12 @@ return [
         'url_endpoint' => env('IMAGEKIT_URL_ENDPOINT', env('VITE_IMAGEKIT_URL_ENDPOINT')),
     ],
 
+    'google_sheet' => [
+        'url' => env('GOOGLE_SHEET_API_URL'),
+        'key' => env('GOOGLE_SHEET_API_KEY'),
+        'timeout' => (int) env('GOOGLE_SHEET_API_TIMEOUT', 15),
+        'retries' => (int) env('GOOGLE_SHEET_API_RETRIES', 3),
+        'enabled' => (bool) env('GOOGLE_SHEET_API_ENABLED', false),
+    ],
+
 ];

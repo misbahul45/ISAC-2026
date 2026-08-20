@@ -11,11 +11,14 @@ use App\Models\Stage;
 use App\Models\Team;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AdminRegistrationService
 {
+    public function __construct(private readonly RegistrationService $registrationService) {}
+
     /** @param array<string, mixed> $filters */
     public function payments(array $filters, int $perPage = 15): LengthAwarePaginator
     {
@@ -61,6 +64,33 @@ class AdminRegistrationService
     public function detail(Team $team): Team
     {
         return $team->load('members', 'registration.competition', 'registration.batch', 'registration.paymentProofFile', 'currentStage');
+    }
+
+    /**
+     * Apply an Admin correction to the complete registration payload.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function updateTeamRegistration(Admin $admin, Team $team, array $data, ?string $requestId): Team
+    {
+        return DB::transaction(function () use ($admin, $team, $data, $requestId): Team {
+            $team = Team::query()->lockForUpdate()->findOrFail($team->id);
+            $before = $this->registrationSnapshot($team);
+            $updated = $this->registrationService->updateByAdmin($team, $data);
+            $after = $this->registrationSnapshot($updated);
+
+            $this->audit(
+                $admin,
+                'team.registration_updated',
+                $updated,
+                $before,
+                $after,
+                $data['reason'] ?? null,
+                $requestId,
+            );
+
+            return $this->detail($updated);
+        });
     }
 
     public function verifyTeam(Admin $admin, Team $team, ?string $requestId): Team
@@ -140,32 +170,32 @@ class AdminRegistrationService
     {
         return DB::transaction(function () use ($admin, $registration, $requestId): Registration {
             $registration = Registration::query()->lockForUpdate()->findOrFail($registration->id);
-        if ($registration->status === RegistrationStatus::VERIFIED) {
-            return $registration->fresh();
-        }
-        if ($registration->status !== RegistrationStatus::WAITING_VERIFICATION || $registration->payment_proof_file_id === null) {
-            throw ValidationException::withMessages(['payment' => ['Pembayaran tidak sedang menunggu verifikasi.']]);
-        }
-
-        DB::transaction(function () use ($admin, $registration, $requestId): void {
-            $before = $registration->toArray();
-            $registration->update([
-                'status' => RegistrationStatus::VERIFIED,
-                'payment_verified_by' => $admin->id,
-                'payment_verified_at' => now(),
-                'paid_at' => now(),
-                'payment_rejection_reason' => null,
-            ]);
-
-            $team = $registration->team;
-            if ($registration->payment_for_stage_id !== null) {
-                $team->update(['current_stage_id' => $registration->payment_for_stage_id]);
-                $registration->update(['payment_for_stage_id' => null]);
-            } else {
-                $this->activateIfEligible($team);
+            if ($registration->status === RegistrationStatus::VERIFIED) {
+                return $registration->fresh();
             }
-            $this->audit($admin, 'payment.verify', $registration, $before, $registration->fresh()->toArray(), null, $requestId);
-        });
+            if ($registration->status !== RegistrationStatus::WAITING_VERIFICATION || $registration->payment_proof_file_id === null) {
+                throw ValidationException::withMessages(['payment' => ['Pembayaran tidak sedang menunggu verifikasi.']]);
+            }
+
+            DB::transaction(function () use ($admin, $registration, $requestId): void {
+                $before = $registration->toArray();
+                $registration->update([
+                    'status' => RegistrationStatus::VERIFIED,
+                    'payment_verified_by' => $admin->id,
+                    'payment_verified_at' => now(),
+                    'paid_at' => now(),
+                    'payment_rejection_reason' => null,
+                ]);
+
+                $team = $registration->team;
+                if ($registration->payment_for_stage_id !== null) {
+                    $team->update(['current_stage_id' => $registration->payment_for_stage_id]);
+                    $registration->update(['payment_for_stage_id' => null]);
+                } else {
+                    $this->activateIfEligible($team);
+                }
+                $this->audit($admin, 'payment.verify', $registration, $before, $registration->fresh()->toArray(), null, $requestId);
+            });
 
             return $this->loadPayment($registration->fresh());
         });
@@ -233,23 +263,23 @@ class AdminRegistrationService
     {
         return DB::transaction(function () use ($admin, $registration, $status, $note, $action, $requestId): Registration {
             $registration = Registration::query()->lockForUpdate()->findOrFail($registration->id);
-        if ($registration->status === $status && $registration->payment_rejection_reason === $note) {
-            return $registration->fresh()->load('team', 'paymentProofFile');
-        }
-        if ($registration->status !== RegistrationStatus::WAITING_VERIFICATION || $registration->payment_proof_file_id === null) {
-            throw ValidationException::withMessages(['payment' => ['Pembayaran tidak sedang menunggu verifikasi.']]);
-        }
+            if ($registration->status === $status && $registration->payment_rejection_reason === $note) {
+                return $registration->fresh()->load('team', 'paymentProofFile');
+            }
+            if ($registration->status !== RegistrationStatus::WAITING_VERIFICATION || $registration->payment_proof_file_id === null) {
+                throw ValidationException::withMessages(['payment' => ['Pembayaran tidak sedang menunggu verifikasi.']]);
+            }
 
-        DB::transaction(function () use ($admin, $registration, $status, $note, $action, $requestId): void {
-            $before = $registration->toArray();
-            $registration->update([
-                'status' => $status,
-                'payment_rejection_reason' => $note,
-                'payment_verified_by' => $admin->id,
-                'payment_verified_at' => now(),
-            ]);
-            $this->audit($admin, $action, $registration, $before, $registration->fresh()->toArray(), $note, $requestId);
-        });
+            DB::transaction(function () use ($admin, $registration, $status, $note, $action, $requestId): void {
+                $before = $registration->toArray();
+                $registration->update([
+                    'status' => $status,
+                    'payment_rejection_reason' => $note,
+                    'payment_verified_by' => $admin->id,
+                    'payment_verified_at' => now(),
+                ]);
+                $this->audit($admin, $action, $registration, $before, $registration->fresh()->toArray(), $note, $requestId);
+            });
 
             return $this->loadPayment($registration->fresh());
         });
@@ -297,6 +327,33 @@ class AdminRegistrationService
                 $team->update(['current_stage_id' => $stageId]);
             }
         }
+    }
+
+    private function registrationSnapshot(Team $team): array
+    {
+        $snapshot = $team->fresh()->load([
+            'members' => fn ($query) => $query->orderBy('sort_order'),
+            'registration',
+        ]);
+
+        return [
+            'team' => Arr::only($snapshot->toArray(), [
+                'id', 'code', 'email', 'name', 'phone', 'institution_name', 'institution_address',
+                'document_url', 'twibbon_url', 'status', 'verification_note', 'revision_step',
+            ]),
+            'members' => $snapshot->members
+                ->map(fn ($member): array => Arr::only($member->toArray(), [
+                    'id', 'name', 'role', 'email', 'major', 'faculty', 'student_id', 'photo_file_id', 'sort_order',
+                ]))
+                ->values()
+                ->all(),
+            'registration' => $snapshot->registration === null
+                ? null
+                : Arr::only($snapshot->registration->toArray(), [
+                    'id', 'competition_id', 'batch_id', 'status', 'team_completed_at', 'members_completed_at',
+                    'documents_completed_at', 'submitted_at', 'payment_required_at', 'payment_submitted_at',
+                ]),
+        ];
     }
 
     private function audit(Admin $admin, string $action, Team|Registration $subject, array $before, array $after, ?string $reason, ?string $requestId): void

@@ -7,5 +7,7 @@ export const ROUTES = {
     api: {
         todos: '/api/todos',
         dashboardSummary: '/api/dashboard/summary',
+        dashboardExam: (examId: string) => `/api/dashboard/exams/${examId}`,
+        dashboardStage: (stageId: string) => `/api/dashboard/stages/${stageId}`,
     },
 } as const;

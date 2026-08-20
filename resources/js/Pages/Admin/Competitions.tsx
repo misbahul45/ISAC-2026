@@ -32,7 +32,7 @@ export default function AdminCompetitions() {
   const query = useAdminCompetitions({ ...filters, search: debouncedSearch })
   const deleteMutation = useDeleteCompetition()
   const admin = principal?.principalType === 'ADMIN' ? principal.admin : null
-  const canManage = admin?.role === 'super_admin'
+  const canManage = admin?.role === 'super_admin' || admin?.role === 'admin_registration'
   const pagination = query.data?.metadata.pagination
 
   function openCreate() {
@@ -59,7 +59,7 @@ export default function AdminCompetitions() {
   return (
     <>
       <Seo title="Kompetisi Admin" description="Kelola kompetisi ISAC 2026." canonical="/admin/competitions" noindex />
-      <AdminPageHeader title="Kompetisi" description="Pantau periode dan status kompetisi. Perubahan data hanya tersedia untuk Super Admin." action={canManage ? <Button onClick={openCreate}><Plus />Buat Kompetisi</Button> : undefined} />
+      <AdminPageHeader title="Kompetisi" description="Kelola periode, status, dan konfigurasi kompetisi dari Admin." action={canManage ? <Button onClick={openCreate}><Plus />Buat Kompetisi</Button> : undefined} />
 
       <Card className="mb-5 border-border/60 bg-card/70"><CardContent className="grid gap-3 p-4 sm:grid-cols-[1fr_220px_220px]">
         <label className="relative"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => { setSearch(event.target.value); setFilters((current) => ({ ...current, page: 1 })) }} placeholder="Cari nama kompetisi..." className="pl-9" /></label>

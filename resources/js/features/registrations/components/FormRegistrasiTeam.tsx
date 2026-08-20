@@ -89,7 +89,7 @@ const FormRegistrasiTeam = ({ competitionType, defaultValues }: Props) => {
       toast.success('Registrasi tim berhasil!', {
         description: 'Mengalihkan ke halaman biodata...',
       })
-      router.visit(response.data.redirectTo)
+      router.visit(response.data.redirectTo, { replace: true })
     } catch (error) {
       toast.dismiss()
       if (error instanceof ApiClientError) {

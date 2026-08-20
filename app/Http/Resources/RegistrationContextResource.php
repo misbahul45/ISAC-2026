@@ -14,7 +14,7 @@ class RegistrationContextResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        $this->resource->loadMissing('registration.competition', 'registration.batch');
+        $this->resource->loadMissing('registration.competition', 'registration.batch', 'registration.paymentForStage');
         $registration = $this->resource->registration;
         $currentStep = $this->currentStep($registration);
 
@@ -39,6 +39,15 @@ class RegistrationContextResource extends JsonResource
                 'paymentRequiredAt' => $registration->payment_required_at?->toISOString(),
                 'paymentSubmittedAt' => $registration->payment_submitted_at?->toISOString(),
                 'paymentRejectionReason' => $registration->payment_rejection_reason,
+                'paymentForStage' => $registration->paymentForStage === null ? null : [
+                    'id' => $registration->paymentForStage->id,
+                    'name' => $registration->paymentForStage->name,
+                    'type' => $registration->paymentForStage->type,
+                    'order' => $registration->paymentForStage->order,
+                    'description' => $registration->paymentForStage->description,
+                    'startDate' => $registration->paymentForStage->start_date?->toISOString(),
+                    'endDate' => $registration->paymentForStage->end_date?->toISOString(),
+                ],
             ],
             'progress' => [
                 'teamCompleted' => $registration?->team_completed_at !== null,
@@ -72,7 +81,11 @@ class RegistrationContextResource extends JsonResource
         if ($registration->documents_completed_at === null) {
             return 'DOCUMENTS';
         }
-        if ($registration->status === RegistrationStatus::WAITING_PAYMENT || $registration->status === RegistrationStatus::REVISION_REQUIRED) {
+        $isStagePaymentCheckpoint = $registration->payment_for_stage_id !== null
+            && $registration->competition->payment_flow === Competition::PAYMENT_SEMIFINAL;
+
+        if (! $isStagePaymentCheckpoint
+            && ($registration->status === RegistrationStatus::WAITING_PAYMENT || $registration->status === RegistrationStatus::REVISION_REQUIRED)) {
             return 'PAYMENT';
         }
         if ($registration->competition->type === Competition::TYPE_OLIMPIADE && $registration->payment_submitted_at === null) {

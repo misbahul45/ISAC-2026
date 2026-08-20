@@ -27,26 +27,30 @@ const RegistrationLayout = ({ children, title, description }: { children: React.
   useEffect(() => {
     if (isLoading) return
     if (!isAuthenticated) {
-      router.visit('/auth/login')
+      router.visit('/auth/login', { replace: true })
       return
     }
     if (principal?.principalType === 'ADMIN') {
-      router.visit('/admin/dashboard')
+      router.visit('/admin/dashboard', { replace: true })
       return
     }
     const context = contextQuery.data?.data
     if (!context) return
     if (context.currentStep === 'DASHBOARD') {
-      router.visit('/dashboard')
+      router.visit('/dashboard', { replace: true })
       return
     }
     if (context.team.status === 'REVISION_REQUIRED' && pathname !== context.redirectTo) {
-      router.visit(context.redirectTo)
+      router.visit(context.redirectTo, { replace: true })
       return
     }
     const currentIndex = FLOW_PATHS.indexOf(pathname)
-    const allowedIndex = FLOW_PATHS.indexOf(context.redirectTo)
-    if (allowedIndex >= 0 && currentIndex > allowedIndex) router.visit(context.redirectTo)
+    const furthestAvailableIndex = FLOW_PATHS.indexOf(context.redirectTo)
+    const canVisitStep = currentIndex >= 0
+      && furthestAvailableIndex >= 0
+      && currentIndex <= furthestAvailableIndex
+
+    if (!canVisitStep) router.visit(context.redirectTo, { replace: true })
   }, [contextQuery.data, isAuthenticated, isLoading, pathname, principal])
 
   return (

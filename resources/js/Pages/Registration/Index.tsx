@@ -1,245 +1,59 @@
-import React, { useRef, useState } from 'react'
-import RegistrationLayout from '../../features/registrations/components/RegistrationLayout'
-import { Button } from '@/components/ui/button'
+import React from 'react'
 import { router } from '@inertiajs/react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import gsap from 'gsap'
-import { useGSAP } from '@gsap/react'
+import { ArrowRight, Clock3 } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  useCompetitions,
-  useSelectCompetition,
-} from '@/features/registrations/hooks/useRegistration'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import RegistrationLayout from '@/features/registrations/components/RegistrationLayout'
+import { useCompetitions, useRegistrationContext, useSelectCompetition } from '@/features/registrations/hooks/useRegistration'
+import type { CompetitionSummary } from '@/features/registrations/types/registrationTypes'
 
-const Index = () => {
-  const competitionsQuery = useCompetitions({
-    status: 'REGISTRATION_OPEN',
-  })
-  const selectCompetitionMutation = useSelectCompetition()
+export default function RegistrationCompetition() {
+  const competitionsQuery = useCompetitions({ status: 'REGISTRATION_OPEN' })
+  const selectCompetition = useSelectCompetition()
+  const contextQuery = useRegistrationContext()
   const competitions = competitionsQuery.data?.data ?? []
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mobileRef = useRef<HTMLDivElement>(null)
-
-  useGSAP(() => {
-    if (!mobileRef.current) return
-    const cards = mobileRef.current.querySelectorAll('.mobile-card')
-    gsap.from(cards, {
-      y: 40,
-      opacity: 0,
-      duration: 0.6,
-      stagger: 0.1,
-      ease: 'power3.out',
-    })
-  }, { scope: mobileRef, dependencies: [competitions.length] })
-
-  const goNext = () => {
-    if (isAnimating || competitions.length === 0) return
-    setIsAnimating(true)
-    setActiveIndex((prev) => (prev + 1) % competitions.length)
-    setTimeout(() => setIsAnimating(false), 500)
-  }
-
-  const goPrev = () => {
-    if (isAnimating || competitions.length === 0) return
-    setIsAnimating(true)
-    setActiveIndex(
-      (prev) => (prev - 1 + competitions.length) % competitions.length,
-    )
-    setTimeout(() => setIsAnimating(false), 500)
-  }
-
-  const handleSelect = async (competitionId: string) => {
-    const competition = competitions.find((item) => item.id === competitionId)
-    const batchId = competition?.openBatches[0]?.id
-
-    if (!batchId) return
-
+  const handleSelect = async (competition: CompetitionSummary) => {
+  const selectedCompetitionId = contextQuery.data?.data.registration?.competition.id
     try {
-      const response = await selectCompetitionMutation.mutateAsync({
-        competition_id: competitionId,
-        batch_id: batchId,
+      const response = await selectCompetition.mutateAsync({
+        competition_id: competition.id,
       })
-      router.visit(response.data.redirectTo)
+      toast.success(`${competition.name} berhasil dipilih.`)
+      router.visit(response.data.redirectTo, { replace: true })
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Gagal memilih competition')
-    }
-  }
-
-  const getCardStyle = (index: number) => {
-    const diff = index - activeIndex
-    const normalizedDiff =
-      (diff + competitions.length) % competitions.length
-    const adjustedDiff =
-      normalizedDiff > competitions.length / 2
-        ? normalizedDiff - competitions.length
-        : normalizedDiff
-    const isActive = adjustedDiff === 0
-    const isPrev =
-      adjustedDiff === -1 ||
-      (adjustedDiff === competitions.length - 1 && competitions.length > 2)
-    const isNext =
-      adjustedDiff === 1 ||
-      (adjustedDiff === -(competitions.length - 1) &&
-        competitions.length > 2)
-    let transform = 'translateX(0) scale(0.8) rotateY(0deg)'
-    let zIndex = 1
-    let opacity = 0
-
-    if (isActive) {
-      transform = 'translateX(0) scale(1.1) rotateY(0deg)'
-      zIndex = 10
-      opacity = 1
-    } else if (isPrev) {
-      transform = 'translateX(-120%) scale(0.85) rotateY(25deg)'
-      zIndex = 5
-      opacity = 0.7
-    } else if (isNext) {
-      transform = 'translateX(120%) scale(0.85) rotateY(-25deg)'
-      zIndex = 5
-      opacity = 0.7
-    }
-
-    return {
-      transform,
-      zIndex,
-      opacity,
-      transition: 'all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1)',
+      toast.error(error instanceof Error ? error.message : 'Kompetisi gagal dipilih. Coba lagi saat Batch pendaftaran aktif.')
     }
   }
 
   if (competitionsQuery.isLoading) {
-    return (
-      <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
-        Memuat competition...
-      </div>
-    )
+    return <div className="relative z-10 mx-auto w-full max-w-6xl space-y-5 px-4 py-10" role="status" aria-label="Memuat kompetisi"><Skeleton className="mx-auto h-14 max-w-2xl bg-card/70" /><div className="grid gap-5 md:grid-cols-3"><Skeleton className="h-72 bg-card/70" /><Skeleton className="h-72 bg-card/70" /><Skeleton className="h-72 bg-card/70" /></div></div>
   }
 
   if (competitionsQuery.error || competitions.length === 0) {
-    return (
-      <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
-        {competitionsQuery.error?.message ??
-          'Belum ada competition yang membuka pendaftaran.'}
-      </div>
-    )
+    return <div className="relative z-10 mx-auto w-full max-w-3xl px-4 py-16 text-center"><Card className="border border-dashed border-white/15 bg-card/55 backdrop-blur-xl"><CardContent className="px-6 py-12"><Clock3 className="mx-auto size-9 text-muted-foreground" /><h1 className="mt-4 text-xl font-bold">Pendaftaran belum tersedia</h1><p className="mt-2 text-sm text-muted-foreground">{competitionsQuery.error?.message ?? 'Belum ada Competition yang membuka pendaftaran.'}</p>{competitionsQuery.error && <Button variant="outline" className="mt-6" onClick={() => competitionsQuery.refetch()}>Coba Lagi</Button>}</CardContent></Card></div>
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 text-center text-primary-foreground">
-      <div className="hidden md:block">
-        <div className="relative flex items-center justify-center gap-4 min-h-[500px] perspective-[1200px]">
-          <button
-            onClick={goPrev}
-            className="relative z-50 p-3 rounded-full bg-card/80 backdrop-blur-md border-2 border-border text-white hover:bg-card hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 hover:scale-110"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
+    <div className="relative z-10 mx-auto w-full max-w-6xl space-y-8 px-4 py-10 text-primary-foreground sm:py-14">
+      <header className="mx-auto max-w-3xl text-center">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{selectedCompetitionId ? 'Kompetisi pilihan' : 'Pilih kompetisi'}</h1>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">{selectedCompetitionId ? 'Pilihan kompetisi sudah tersimpan bersama Batch pendaftaran dan tidak dapat diubah.' : 'Pilih salah satu kompetisi ISAC 2026 untuk melanjutkan pendaftaran.'}</p>
+      </header>
 
-          <div
-            ref={containerRef}
-            className="relative flex justify-center items-center w-full max-w-4xl h-[450px]"
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            {competitions.map((competition, index) => {
-              const isActive = index === activeIndex
+      <section className="grid gap-5 md:grid-cols-3" aria-label="Pilihan kompetisi">
+        {competitions.map((competition) => {
+          const isSelected = selectedCompetitionId === competition.id
+          const isSelectionLocked = Boolean(selectedCompetitionId)
 
-              return (
-                <div
-                  key={competition.id}
-                  className="absolute w-full max-w-sm shadow-2xl shadow-primary/20 bg-background/40"
-                  style={getCardStyle(index)}
-                >
-                  <div className={`relative flex h-full flex-col rounded-2xl border-2 p-6 text-center text-primary-foreground transition-all duration-300 ${isActive ? 'border-primary bg-card/60 backdrop-blur-md shadow-[0_0_40px_-10px_rgba(139,92,255,0.4)]' : 'border-border/50 bg-card/30 backdrop-blur-sm'}`}>
-                    <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
-                    <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
-                    <div className="relative z-10 flex flex-col h-full">
-                      <h2 className="mb-4 text-2xl font-bold lg:text-3xl">
-                        {competition.name}
-                      </h2>
-                      <p className="flex-1 text-sm md:text-base text-primary-foreground/80">
-                        {competition.description}
-                      </p>
-                      <Button
-                        className="mt-6 w-full rounded-xl font-semibold bg-primary hover:bg-primary/80 text-white"
-                        disabled={
-                          competition.openBatches.length === 0 ||
-                          selectCompetitionMutation.isPending
-                        }
-                        onClick={() => handleSelect(competition.id)}
-                      >
-                        {selectCompetitionMutation.isPending
-                          ? 'Memproses...'
-                          : 'Register'}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <button
-            onClick={goNext}
-            className="relative z-50 p-3 rounded-full bg-card/80 backdrop-blur-md border-2 border-border text-white hover:bg-card hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/20 hover:scale-110"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
-
-        <div className="flex justify-center gap-2 mt-6">
-          {competitions.map((competition, index) => (
-            <button
-              key={competition.id}
-              onClick={() => setActiveIndex(index)}
-              className={`w-3 h-3 rounded-full transition-all cursor-pointer ${index === activeIndex ? 'bg-primary w-8' : 'bg-border hover:bg-primary/50'}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div ref={mobileRef} className="md:hidden space-y-6">
-        {competitions.map((competition) => (
-          <div
-            key={competition.id}
-            className="mobile-card relative flex flex-col rounded-2xl border-2 border-border/50 bg-card/60 backdrop-blur-md p-6 text-center text-primary-foreground shadow-lg shadow-primary/10"
-          >
-            <span aria-hidden="true" className="header-border-track absolute inset-0 rounded-2xl pointer-events-none" />
-            <span aria-hidden="true" className="header-border-spin absolute inset-0 rounded-2xl pointer-events-none" />
-            <div className="relative z-10 flex flex-col">
-              <h2 className="mb-3 text-xl font-bold">{competition.name}</h2>
-              <p className="text-sm text-primary-foreground/80 mb-6">
-                {competition.description}
-              </p>
-              <Button
-                className="mt-6 w-full rounded-xl font-semibold bg-primary hover:bg-primary/80 text-white py-3"
-                disabled={
-                  competition.openBatches.length === 0 ||
-                  selectCompetitionMutation.isPending
-                }
-                onClick={() => handleSelect(competition.id)}
-              >
-                {selectCompetitionMutation.isPending
-                  ? 'Memproses...'
-                  : 'Register'}
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
+          return <Card key={competition.id} className="relative overflow-hidden border border-white/10 bg-card/55 shadow-xl shadow-black/15 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1"><span aria-hidden="true" className="header-border-track" /><span aria-hidden="true" className="header-border-spin" /><CardContent className="relative z-10 flex min-h-72 flex-col p-6"><p className="text-xs font-semibold tracking-[0.14em] text-secondary">{competition.type.replace(/_/g, ' ')}</p><h2 className="mt-4 text-2xl font-bold text-foreground">{competition.name}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{competition.description ?? 'Kompetisi ISAC 2026.'}</p><Button className="mt-auto w-full justify-between" size="lg" disabled={selectCompetition.isPending || isSelectionLocked} onClick={() => handleSelect(competition)}>{isSelected ? 'Lomba dipilih' : isSelectionLocked ? 'Pilihan dikunci' : selectCompetition.isPending ? 'Menyimpan pilihan...' : 'Pilih lomba'}<ArrowRight /></Button></CardContent></Card>
+        })}
+      </section>
     </div>
   )
 }
 
-Index.layout = (page: React.ReactNode) => (
-  <RegistrationLayout
-    title="Registrasi"
-    description="Pilih kategori lomba yang ingin Anda ikuti untuk memulai proses pendaftaran."
-  >
-    {page}
-  </RegistrationLayout>
+RegistrationCompetition.layout = (page: React.ReactNode) => (
+  <RegistrationLayout title="Registrasi" description="Pilih kompetisi ISAC 2026 untuk memulai pendaftaran.">{page}</RegistrationLayout>
 )
-
-export default Index

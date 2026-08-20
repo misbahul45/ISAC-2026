@@ -137,6 +137,7 @@ test('payment actions return the canonical resource and remain restricted by rol
     $this->withToken($judge->createToken('judge')->plainTextToken)
         ->postJson("/api/admin/registrations/{$registration->id}/payment/verify")
         ->assertForbidden();
+    $this->app['auth']->forgetGuards();
 
     $paymentAdmin = Admin::factory()->create(['role' => 'admin_payment', 'is_active' => true]);
     $this->withToken($paymentAdmin->createToken('payment')->plainTextToken)

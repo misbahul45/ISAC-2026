@@ -11,7 +11,7 @@ test('admin dashboard routes render their expected inertia pages', function (): 
         '/admin/competitions' => 'Admin/Competitions',
         '/admin/batches' => 'Admin/Batches',
         '/admin/stages' => 'Admin/Stages',
-        '/admin/audit-logs' => 'Admin/AuditLogs',
+        '/admin/questions' => 'Admin/Questions',
         '/admin/judging' => 'Admin/Judging',
     ];
 

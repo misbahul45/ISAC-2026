@@ -77,7 +77,7 @@ const Biodata = () => {
         })),
       })
       toast.success(response.message)
-      router.visit(response.data.redirectTo)
+      router.visit(response.data.redirectTo, { replace: true })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Gagal menyimpan biodata anggota')
     }
@@ -167,11 +167,11 @@ const Biodata = () => {
         ))}
       </div>
 
-      <div className="mt-12 pb-8">
+      <div className="relative z-20 mt-12 pb-8">
         <button
           ref={submitButtonRef}
           onClick={handleComplete}
-          disabled={!allMembersValid || finalizeMembers.isPending}
+          disabled={finalizeMembers.isPending}
           className="px-10 py-4 rounded-xl cursor-pointer bg-primary text-white font-bold text-lg hover:bg-primary/80 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-xl hover:scale-105"
         >
           {finalizeMembers.isPending ? (

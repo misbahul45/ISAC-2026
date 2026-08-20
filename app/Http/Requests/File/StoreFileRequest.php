@@ -20,8 +20,8 @@ class StoreFileRequest extends FormRequest
         }
 
         return $user instanceof Admin
-            && in_array($user->role, ['super_admin', 'admin_registration'], true)
-            && $purpose === 'BATCH_MODULE';
+            && in_array($user->role, ['super_admin', 'admin_registration', 'judge'], true)
+            && in_array($purpose, ['BATCH_MODULE', 'EXAM_IMAGE'], true);
     }
 
     /** @return array<string, array<int, mixed>> */
@@ -45,7 +45,7 @@ class StoreFileRequest extends FormRequest
                     }
                 },
             ],
-            'purpose' => ['required', Rule::in(['PAYMENT_PROOF', 'MEMBER_PHOTO', 'BATCH_MODULE', 'SUBMISSION'])],
+            'purpose' => ['required', Rule::in(['PAYMENT_PROOF', 'MEMBER_PHOTO', 'BATCH_MODULE', 'EXAM_IMAGE', 'SUBMISSION'])],
         ];
     }
 

@@ -12,7 +12,7 @@ export function UserDashboardRouteMiddleware({
 }: UserDashboardRouteMiddlewareProps) {
   const { url } = usePage()
   const { principal, isAuthenticated, isLoading } = useAuthSession()
-  const isUserDashboard = url.split('?')[0] === '/dashboard'
+  const isUserDashboard = url.split('?')[0].startsWith('/dashboard')
 
   const redirectTo = !isAuthenticated
     ? '/auth/login'

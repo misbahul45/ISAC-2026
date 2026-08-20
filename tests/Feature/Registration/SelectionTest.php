@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 uses(LazilyRefreshDatabase::class);
 
-test('team can select competition with batch for OLIMPIADE', function (): void {
+test('team automatically receives the active batch when selecting OLIMPIADE', function (): void {
     $team = Team::factory()->create();
     $competition = Competition::factory()->create([
         'status' => Competition::STATUS_REGISTRATION_OPEN,
@@ -24,7 +24,6 @@ test('team can select competition with batch for OLIMPIADE', function (): void {
     $this->withToken($team->createToken('auth-token')->plainTextToken)
         ->postJson('/api/registrations/me/selection', [
             'competition_id' => $competition->id,
-            'batch_id' => $batch->id,
         ])
         ->assertOk()
         ->assertJsonPath('status', 'success')
@@ -41,6 +40,49 @@ test('team can select competition with batch for OLIMPIADE', function (): void {
     expect($batch->fresh()->current_registrations)->toBe(1);
 });
 
+test('business competition keeps the latest active batch price without upfront payment', function (string $competitionType): void {
+    $team = Team::factory()->create();
+    $competition = Competition::factory()->create([
+        'status' => Competition::STATUS_REGISTRATION_OPEN,
+        'type' => $competitionType,
+        'payment_flow' => Competition::PAYMENT_SEMIFINAL,
+    ]);
+    $competition->batches()->create([
+        'name' => 'Batch 1', 'slug' => 'batch-1',
+        'start_date' => now()->subDay(), 'end_date' => now()->addMonth(),
+        'price' => 70000, 'quota' => 50, 'current_registrations' => 0,
+        'status' => BatchStatus::OPEN,
+    ]);
+    $selectedBatch = $competition->batches()->create([
+        'name' => 'Batch 2', 'slug' => 'batch-2',
+        'start_date' => now(), 'end_date' => now()->addMonth(),
+        'price' => 90000, 'quota' => 50, 'current_registrations' => 0,
+        'status' => BatchStatus::OPEN,
+    ]);
+
+    $this->withToken($team->createToken('auth-token')->plainTextToken)
+        ->postJson('/api/registrations/me/selection', [
+            'competition_id' => $competition->id,
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.context.registration.status', 'VERIFIED')
+        ->assertJsonPath('data.context.registration.batch.id', $selectedBatch->id)
+        ->assertJsonPath('data.context.registration.batch.price', '90000.00')
+        ->assertJsonPath('data.context.registration.paymentRequiredAt', null)
+        ->assertJsonPath('data.redirectTo', '/registration/team');
+
+    $this->assertDatabaseHas('registrations', [
+        'team_id' => $team->id,
+        'competition_id' => $competition->id,
+        'batch_id' => $selectedBatch->id,
+        'status' => 'VERIFIED',
+        'payment_required_at' => null,
+    ]);
+})->with([
+    Competition::TYPE_BUSINESS_PLAN,
+    Competition::TYPE_BUSINESS_IT_CASE,
+]);
+
 test('team cannot select competition when batch is full', function (): void {
     $team = Team::factory()->create();
     $competition = Competition::factory()->create(['status' => Competition::STATUS_REGISTRATION_OPEN]);
@@ -54,12 +96,11 @@ test('team cannot select competition when batch is full', function (): void {
     $this->withToken($team->createToken('auth-token')->plainTextToken)
         ->postJson('/api/registrations/me/selection', [
             'competition_id' => $competition->id,
-            'batch_id' => $batch->id,
         ])
         ->assertUnprocessable();
 });
 
-test('selecting the same competition and batch is idempotent', function (): void {
+test('selecting the same competition is idempotent after its active batch is assigned', function (): void {
     $team = Team::factory()->create();
     $competition = Competition::factory()->create(['status' => Competition::STATUS_REGISTRATION_OPEN]);
     $batch = $competition->batches()->create([
@@ -67,7 +108,7 @@ test('selecting the same competition and batch is idempotent', function (): void
         'start_date' => now(), 'end_date' => now()->addMonth(),
         'price' => 100000, 'quota' => 50, 'status' => BatchStatus::OPEN,
     ]);
-    $payload = ['competition_id' => $competition->id, 'batch_id' => $batch->id];
+    $payload = ['competition_id' => $competition->id];
     $token = $team->createToken('auth-token')->plainTextToken;
 
     $this->withToken($token)->postJson('/api/registrations/me/selection', $payload)->assertOk();
@@ -80,6 +121,5 @@ test('selecting the same competition and batch is idempotent', function (): void
 test('selection requires authentication', function (): void {
     $this->postJson('/api/registrations/me/selection', [
         'competition_id' => (string) Str::uuid(),
-        'batch_id' => (string) Str::uuid(),
     ])->assertUnauthorized();
 });

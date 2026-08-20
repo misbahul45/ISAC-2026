@@ -127,6 +127,33 @@ export type TeamRevisionPayload = {
   verification_note: string
 }
 
+export type AdminMemberUpdatePayload = {
+  id?: string
+  name: string
+  role: MemberRecord['role']
+  email: string
+  major: string | null
+  faculty: string | null
+  student_id: string
+  photo_file_id?: string | null
+  sort_order?: number
+}
+
+export type AdminTeamUpdatePayload = {
+  team: {
+    name: string
+    phone: string
+    institution_name: string
+    institution_address: string
+  }
+  members: AdminMemberUpdatePayload[]
+  documents: {
+    document_url: string
+    twibbon_url: string
+  }
+  reason?: string
+}
+
 export type PaymentMethod = 'BANK_TRANSFER' | 'QRIS'
 export type PaymentContext = 'REGISTRATION' | 'SEMIFINAL'
 

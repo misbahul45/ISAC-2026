@@ -35,7 +35,7 @@ const Documents = () => {
     try {
       const response = await updateDocuments.mutateAsync(data)
       toast.success(response.message)
-      router.visit(response.data.redirectTo)
+      router.visit(response.data.redirectTo, { replace: true })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Gagal menyimpan dokumen')
     }
